@@ -8,3 +8,5 @@ export const formatCurrency = (value: number): string => {
     currency: 'BRL',
   }).format(value)
 }
+
+export const formatBRL = formatCurrency

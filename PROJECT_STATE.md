@@ -77,17 +77,17 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **28/28 testes passando** (Vitest):
+- **Suíte de Testes Automatizados:** 🟢 **41/41 testes passando** (Vitest em 8 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
+  - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
-  - Comportamento de saldos negativos, listas vazias e períodos sem despesas.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
-  - Integridade de gravação e exclusão no repositório.
-  - Renderização correta e acessibilidade dos cards, seletor de mês, formulário e gráfico Donut SVG.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~100ms).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~4.7s).
-- **Acessibilidade:** Formulários, seletores e gráficos 100% associados com `htmlFor`, `id`, `aria-label` e `role="img"`, suporte a leitores de tela e contrastes adequados.
+  - Integridade de gravação e exclusão nos repositórios de transações e orçamento.
+  - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário e gráfico Donut SVG.
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~250ms).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.8s).
+- **Acessibilidade:** Formulários, seletores, inputs de orçamento e gráficos 100% associados com `htmlFor`, `id`, `aria-label` e `role="img"`, suporte a leitores de tela e contrastes adequados.
 
 ---
 
@@ -97,8 +97,8 @@ myFinance/
   - Seletor de mês/ano com navegação anterior/próximo, atalho para mês atual, modo "Todos os Períodos" e recálculo reativo de saldo e listagem.
 - [x] **📊 Gráficos de Distribuição de Despesas:**
   - Gráfico Donut SVG interativo com fatias proporcionais, legenda colorida, total centralizado e barras de progresso lineares por categoria.
-- [ ] **🎯 Barra de Meta / Orçamento Mensal:**
-  - Definição de teto de gastos mensal com indicador de progresso e alertas de proximidade do limite.
+- [x] **🎯 Barra de Meta / Orçamento Mensal:**
+  - Definição de teto de gastos mensal com indicador de progresso, persistência via `LocalStorageBudgetRepository`, feedback de 3 níveis (seguro, alerta 75%+, ultrapassado 100%+) e edição inline.
 - [ ] **🏷️ Filtros por Categoria & Busca:**
   - Barra de pesquisa textual e chips de filtro por categoria (Alimentação, Moradia, etc.).
 - [ ] **📤 Exportação de Extrato (CSV / PDF):**
@@ -110,8 +110,9 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Implementada com sucesso a **Funcionalidade 2: Gráficos de Distribuição de Despesas por Categoria**:
-  - Criado componente [ExpenseCategoryChart.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ExpenseCategoryChart.tsx) com gráfico Donut em SVG nativo, total centralizado, badges de porcentagem e barras de progresso individuais.
-  - Criada regra de domínio pura `calculateExpensesByCategory` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts) com mapeamento de cores consistentes e ordenação por maior volume de gasto.
-  - Suíte de testes expandida para **28 testes unitários e de integração (100% aprovados)**.
-- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 3: 🎯 Barra de Meta / Orçamento Mensal**.
+- **Última Ação:** Implementada com sucesso a **Funcionalidade 3: 🎯 Barra de Meta / Orçamento Mensal**:
+  - Criado componente [BudgetProgressBar.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/BudgetProgressBar.tsx) com barra visual dinâmica, feedback em 3 níveis (Seguro, Alerta 75%+, Estourado 100%+), cálculo de limite restante ou estouro, e ajuste de teto inline.
+  - Criado contrato [IBudgetRepository.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/repositories/IBudgetRepository.ts) e implementação concreta [LocalStorageBudgetRepository.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/data/repositories/LocalStorageBudgetRepository.ts).
+  - Criada regra de domínio pura `calculateBudgetProgress` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts).
+  - Suíte de testes expandida para **41 testes unitários e de integração (100% aprovados)**.
+- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 4: 🏷️ Filtros por Categoria & Busca**.

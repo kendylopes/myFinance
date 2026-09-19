@@ -1,4 +1,6 @@
 import type {
+  BudgetProgress,
+  BudgetStatus,
   CategoryExpenseSummary,
   CreateTransactionDTO,
   FinanceSummary,
@@ -145,4 +147,47 @@ export const validateTransactionData = (
   }
 
   return { isValid: true }
+}
+
+/**
+ * Calcula o progresso do orçamento mensal com base no total de despesas e no teto orçamentário definido.
+ */
+export const calculateBudgetProgress = (
+  totalExpense: number,
+  budgetAmount: number,
+): BudgetProgress => {
+  const safeBudget = Number.isNaN(budgetAmount) || budgetAmount < 0 ? 0 : budgetAmount
+  const safeExpense = Number.isNaN(totalExpense) || totalExpense < 0 ? 0 : totalExpense
+
+  if (safeBudget === 0) {
+    return {
+      budgetAmount: 0,
+      totalExpense: safeExpense,
+      spentPercentage: 0,
+      remainingAmount: 0,
+      isExceeded: safeExpense > 0,
+      status: safeExpense > 0 ? 'exceeded' : 'safe',
+    }
+  }
+
+  const rawPercentage = (safeExpense / safeBudget) * 100
+  const spentPercentage = Number(rawPercentage.toFixed(1))
+  const remainingAmount = safeBudget - safeExpense
+  const isExceeded = safeExpense > safeBudget
+
+  let status: BudgetStatus = 'safe'
+  if (isExceeded) {
+    status = 'exceeded'
+  } else if (spentPercentage >= 75) {
+    status = 'warning'
+  }
+
+  return {
+    budgetAmount: safeBudget,
+    totalExpense: safeExpense,
+    spentPercentage,
+    remainingAmount,
+    isExceeded,
+    status,
+  }
 }

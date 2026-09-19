@@ -1,4 +1,5 @@
 import { getCurrentYearMonth } from './core/formatters/date'
+import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
 import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
@@ -17,6 +18,8 @@ function App() {
     goToPreviousMonth,
     goToNextMonth,
     goToCurrentMonth,
+    budgetProgress,
+    updateBudget,
     isLoading,
     error,
     addTransaction,
@@ -54,6 +57,9 @@ function App() {
 
         {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
         <SummaryCards summary={summary} />
+
+        {/* BARRA DE META E ORÇAMENTO MENSAL */}
+        <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
 
         {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
         <ExpenseCategoryChart transactions={filteredTransactions} />

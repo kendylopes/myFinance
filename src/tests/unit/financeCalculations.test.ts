@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../../domain/models/transaction'
 import {
   calculateBalance,
+  calculateBudgetProgress,
   calculateExpensesByCategory,
   calculateSummary,
   calculateTotalExpense,
@@ -257,6 +258,46 @@ describe('financeCalculations (Regras de Domínio)', () => {
     it('deve retornar array vazio para lista de transações vazia', () => {
       const result = calculateExpensesByCategory([])
       expect(result).toEqual([])
+    })
+  })
+
+  describe('calculateBudgetProgress', () => {
+    it('deve calcular status "safe" quando o gasto estiver abaixo de 75%', () => {
+      const progress = calculateBudgetProgress(1500, 3000)
+      expect(progress.budgetAmount).toBe(3000)
+      expect(progress.totalExpense).toBe(1500)
+      expect(progress.spentPercentage).toBe(50)
+      expect(progress.remainingAmount).toBe(1500)
+      expect(progress.isExceeded).toBe(false)
+      expect(progress.status).toBe('safe')
+    })
+
+    it('deve calcular status "warning" quando o gasto estiver entre 75% e 99.9%', () => {
+      const progress = calculateBudgetProgress(2400, 3000)
+      expect(progress.spentPercentage).toBe(80)
+      expect(progress.remainingAmount).toBe(600)
+      expect(progress.isExceeded).toBe(false)
+      expect(progress.status).toBe('warning')
+    })
+
+    it('deve calcular status "exceeded" quando o gasto atingir ou ultrapassar 100%', () => {
+      const progress = calculateBudgetProgress(3500, 3000)
+      expect(progress.spentPercentage).toBe(116.7)
+      expect(progress.remainingAmount).toBe(-500)
+      expect(progress.isExceeded).toBe(true)
+      expect(progress.status).toBe('exceeded')
+    })
+
+    it('deve lidar corretamente com orçamento zero', () => {
+      const progressWithExpense = calculateBudgetProgress(500, 0)
+      expect(progressWithExpense.budgetAmount).toBe(0)
+      expect(progressWithExpense.spentPercentage).toBe(0)
+      expect(progressWithExpense.isExceeded).toBe(true)
+      expect(progressWithExpense.status).toBe('exceeded')
+
+      const progressWithoutExpense = calculateBudgetProgress(0, 0)
+      expect(progressWithoutExpense.isExceeded).toBe(false)
+      expect(progressWithoutExpense.status).toBe('safe')
     })
   })
 })

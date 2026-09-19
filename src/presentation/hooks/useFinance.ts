@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/date'
+import { LocalStorageBudgetRepository } from '../../data/repositories/LocalStorageBudgetRepository'
 import { LocalStorageTransactionRepository } from '../../data/repositories/LocalStorageTransactionRepository'
 import type {
+  BudgetProgress,
   CreateTransactionDTO,
   FinanceSummary,
   Transaction,
 } from '../../domain/models/transaction'
+import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 import type { ITransactionRepository } from '../../domain/repositories/ITransactionRepository'
 import {
+  calculateBudgetProgress,
   calculateSummary,
   filterTransactionsByMonth,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
 
-// Instância padrão do repositório
-const defaultRepository = new LocalStorageTransactionRepository()
+// Instâncias padrão dos repositórios
+const defaultTransactionRepository = new LocalStorageTransactionRepository()
+const defaultBudgetRepository = new LocalStorageBudgetRepository()
 
 export interface UseFinanceReturn {
   transactions: Transaction[]
@@ -26,6 +31,9 @@ export interface UseFinanceReturn {
   goToPreviousMonth: () => void
   goToNextMonth: () => void
   goToCurrentMonth: () => void
+  budgetAmount: number
+  budgetProgress: BudgetProgress
+  updateBudget: (newAmount: number) => Promise<boolean>
   isLoading: boolean
   error: string | null
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
@@ -34,19 +42,21 @@ export interface UseFinanceReturn {
 }
 
 export function useFinance(
-  repository: ITransactionRepository = defaultRepository,
+  transactionRepo: ITransactionRepository = defaultTransactionRepository,
+  budgetRepo: IBudgetRepository = defaultBudgetRepository,
 ): UseFinanceReturn {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
+  const [budgetAmount, setBudgetAmount] = useState<number>(3000)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Carregamento inicial de dados
+  // Carregamento inicial de dados de transações
   const refresh = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await repository.getAll()
+      const data = await transactionRepo.getAll()
       setTransactions(data)
     } catch (err) {
       console.error('[useFinance] Falha ao carregar transações:', err)
@@ -54,11 +64,24 @@ export function useFinance(
     } finally {
       setIsLoading(false)
     }
-  }, [repository])
+  }, [transactionRepo])
 
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  // Carregamento reativo do orçamento para o mês selecionado
+  useEffect(() => {
+    let isMounted = true
+    budgetRepo.getBudget(selectedMonth).then((amount) => {
+      if (isMounted) {
+        setBudgetAmount(amount)
+      }
+    })
+    return () => {
+      isMounted = false
+    }
+  }, [selectedMonth, budgetRepo])
 
   // Navegação de Meses
   const goToPreviousMonth = useCallback(() => {
@@ -90,6 +113,33 @@ export function useFinance(
     return calculateSummary(transactions)
   }, [transactions])
 
+  // Cálculo memorizado do progresso do orçamento mensal
+  const budgetProgress = useMemo<BudgetProgress>(() => {
+    return calculateBudgetProgress(summary.totalExpense, budgetAmount)
+  }, [summary.totalExpense, budgetAmount])
+
+  // Atualizar orçamento mensal
+  const updateBudget = useCallback(
+    async (newAmount: number): Promise<boolean> => {
+      if (Number.isNaN(newAmount) || newAmount < 0) {
+        setError('O teto orçamentário deve ser um valor válido e positivo.')
+        return false
+      }
+
+      try {
+        setError(null)
+        await budgetRepo.setBudget(selectedMonth, newAmount)
+        setBudgetAmount(newAmount)
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao atualizar orçamento:', err)
+        setError('Erro ao salvar novo orçamento.')
+        return false
+      }
+    },
+    [selectedMonth, budgetRepo],
+  )
+
   // Adicionar transação com validação de domínio prévia
   const addTransaction = useCallback(
     async (dto: CreateTransactionDTO): Promise<boolean> => {
@@ -101,7 +151,7 @@ export function useFinance(
 
       try {
         setError(null)
-        const created = await repository.create(dto)
+        const created = await transactionRepo.create(dto)
         setTransactions((prev) => [created, ...prev])
         return true
       } catch (err) {
@@ -110,7 +160,7 @@ export function useFinance(
         return false
       }
     },
-    [repository],
+    [transactionRepo],
   )
 
   // Deletar transação
@@ -118,7 +168,7 @@ export function useFinance(
     async (id: string): Promise<boolean> => {
       try {
         setError(null)
-        const success = await repository.delete(id)
+        const success = await transactionRepo.delete(id)
         if (success) {
           setTransactions((prev) => prev.filter((item) => item.id !== id))
         }
@@ -129,7 +179,7 @@ export function useFinance(
         return false
       }
     },
-    [repository],
+    [transactionRepo],
   )
 
   return {
@@ -142,6 +192,9 @@ export function useFinance(
     goToPreviousMonth,
     goToNextMonth,
     goToCurrentMonth,
+    budgetAmount,
+    budgetProgress,
+    updateBudget,
     isLoading,
     error,
     addTransaction,

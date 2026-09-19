@@ -41,3 +41,14 @@ export interface CategoryExpenseSummary {
   percentage: number
   color: string
 }
+
+export type BudgetStatus = 'safe' | 'warning' | 'exceeded'
+
+export interface BudgetProgress {
+  budgetAmount: number
+  totalExpense: number
+  spentPercentage: number
+  remainingAmount: number
+  isExceeded: boolean
+  status: BudgetStatus
+}
