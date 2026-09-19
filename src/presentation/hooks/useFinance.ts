@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/date'
 import { LocalStorageTransactionRepository } from '../../data/repositories/LocalStorageTransactionRepository'
 import type {
   CreateTransactionDTO,
@@ -8,6 +9,7 @@ import type {
 import type { ITransactionRepository } from '../../domain/repositories/ITransactionRepository'
 import {
   calculateSummary,
+  filterTransactionsByMonth,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
 
@@ -16,7 +18,14 @@ const defaultRepository = new LocalStorageTransactionRepository()
 
 export interface UseFinanceReturn {
   transactions: Transaction[]
+  filteredTransactions: Transaction[]
   summary: FinanceSummary
+  globalSummary: FinanceSummary
+  selectedMonth: string
+  setSelectedMonth: (month: string) => void
+  goToPreviousMonth: () => void
+  goToNextMonth: () => void
+  goToCurrentMonth: () => void
   isLoading: boolean
   error: string | null
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
@@ -28,6 +37,7 @@ export function useFinance(
   repository: ITransactionRepository = defaultRepository,
 ): UseFinanceReturn {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,8 +60,33 @@ export function useFinance(
     refresh()
   }, [refresh])
 
-  // Cálculo memorizado de métricas financeiras (Alta performance, sem re-cálculos à toa)
+  // Navegação de Meses
+  const goToPreviousMonth = useCallback(() => {
+    setSelectedMonth((curr) =>
+      curr === 'all' ? getCurrentYearMonth() : getAdjacentMonth(curr, -1),
+    )
+  }, [])
+
+  const goToNextMonth = useCallback(() => {
+    setSelectedMonth((curr) => (curr === 'all' ? getCurrentYearMonth() : getAdjacentMonth(curr, 1)))
+  }, [])
+
+  const goToCurrentMonth = useCallback(() => {
+    setSelectedMonth(getCurrentYearMonth())
+  }, [])
+
+  // Filtragem reativa por mês selecionado
+  const filteredTransactions = useMemo<Transaction[]>(() => {
+    return filterTransactionsByMonth(transactions, selectedMonth)
+  }, [transactions, selectedMonth])
+
+  // Cálculo memorizado de métricas financeiras do período selecionado
   const summary = useMemo<FinanceSummary>(() => {
+    return calculateSummary(filteredTransactions)
+  }, [filteredTransactions])
+
+  // Resumo global de todos os períodos
+  const globalSummary = useMemo<FinanceSummary>(() => {
     return calculateSummary(transactions)
   }, [transactions])
 
@@ -99,7 +134,14 @@ export function useFinance(
 
   return {
     transactions,
+    filteredTransactions,
     summary,
+    globalSummary,
+    selectedMonth,
+    setSelectedMonth,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
     isLoading,
     error,
     addTransaction,

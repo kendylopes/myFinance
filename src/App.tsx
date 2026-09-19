@@ -1,3 +1,5 @@
+import { getCurrentYearMonth } from './core/formatters/date'
+import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
 import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
 import { TransactionForm } from './presentation/components/dashboard/TransactionForm'
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
@@ -5,8 +7,24 @@ import { Header } from './presentation/components/layout/Header'
 import { useFinance } from './presentation/hooks/useFinance'
 
 function App() {
-  const { transactions, summary, isLoading, error, addTransaction, deleteTransaction } =
-    useFinance()
+  const {
+    transactions,
+    filteredTransactions,
+    summary,
+    selectedMonth,
+    setSelectedMonth,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
+    isLoading,
+    error,
+    addTransaction,
+    deleteTransaction,
+  } = useFinance()
+
+  const handleToggleAllPeriods = () => {
+    setSelectedMonth(selectedMonth === 'all' ? getCurrentYearMonth() : 'all')
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 antialiased p-4 md:p-8 selection:bg-emerald-500/30 selection:text-emerald-200">
@@ -24,14 +42,23 @@ function App() {
           </div>
         )}
 
-        {/* CARDS DE RESUMO (DASHBOARD) */}
+        {/* SELETOR E FILTRO POR PERÍODO / MÊS */}
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onCurrentMonth={goToCurrentMonth}
+          onToggleAllPeriods={handleToggleAllPeriods}
+        />
+
+        {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
         <SummaryCards summary={summary} />
 
-        {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA (DIREITA) */}
+        {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA DO PERÍODO (DIREITA) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <TransactionForm onAdd={addTransaction} />
           <TransactionList
-            transactions={transactions}
+            transactions={filteredTransactions}
             isLoading={isLoading}
             onDelete={deleteTransaction}
           />

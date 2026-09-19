@@ -41,6 +41,20 @@ export const calculateSummary = (transactions: Transaction[]): FinanceSummary =>
 }
 
 /**
+ * Filtra uma lista de transações retornando apenas as que pertencem ao mês especificado (YYYY-MM).
+ * Se yearMonth for 'all', retorna a lista completa.
+ */
+export const filterTransactionsByMonth = (
+  transactions: Transaction[],
+  yearMonth: string,
+): Transaction[] => {
+  if (!yearMonth || yearMonth === 'all') {
+    return transactions
+  }
+  return transactions.filter((item) => item.date?.startsWith(yearMonth))
+}
+
+/**
  * Valida se os dados para criar uma nova transação são válidos.
  */
 export const validateTransactionData = (

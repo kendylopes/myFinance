@@ -77,26 +77,29 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **17/17 testes passando** (Vitest):
+- **Suíte de Testes Automatizados:** 🟢 **23/23 testes passando** (Vitest):
   - Cálculos de receitas, despesas e saldo líquido.
+  - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
   - Comportamento de saldos negativos e listas vazias.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão no repositório.
-  - Renderização correta e acessibilidade dos cards e formulário.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~68ms).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.7s).
-- **Acessibilidade:** Formulários 100% associados com `htmlFor` e `id`, suporte a leitores de tela e contrastes adequados.
+  - Renderização correta e acessibilidade dos cards, seletor de mês e formulário.
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~78ms).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.6s).
+- **Acessibilidade:** Formulários e seletores 100% associados com `htmlFor` e `id`, suporte a leitores de tela e contrastes adequados.
 
 ---
 
 ## 📋 5. Roadmap de Próximas Funcionalidades (Backlog Priorizado)
 
-- [ ] **📅 Filtro por Período & Mês:**
-  - Seletor de mês/ano para visualizar apenas as transações do mês vigente com navegação anterior/próximo.
-- [ ] **🏷️ Filtros por Categoria & Busca:**
-  - Barra de pesquisa textual e chips de filtro por categoria (Alimentação, Moradia, etc.).
+- [x] **📅 Filtro por Período & Mês:**
+  - Seletor de mês/ano com navegação anterior/próximo, atalho para mês atual, modo "Todos os Períodos" e recálculo reativo de saldo e listagem.
 - [ ] **📊 Gráficos de Distribuição de Despesas:**
   - Gráfico de pizza/rosca interativo exibindo a porcentagem gasta em cada categoria.
+- [ ] **🎯 Barra de Meta / Orçamento Mensal:**
+  - Definição de teto de gastos mensal com indicador de progresso e alertas de proximidade do limite.
+- [ ] **🏷️ Filtros por Categoria & Busca:**
+  - Barra de pesquisa textual e chips de filtro por categoria (Alimentação, Moradia, etc.).
 - [ ] **📤 Exportação de Extrato (CSV / PDF):**
   - Download do relatório de movimentações financeiras em arquivo CSV estruturado ou PDF diagramado.
 - [ ] **☁️ Repositório em Nuvem (Supabase / Backend):**
@@ -106,9 +109,9 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Limpeza profunda do projeto realizada com sucesso:
-  - Removidos arquivos obsoletos do template do Vite (`src/App.css`, pasta `src/assets/`, `public/icons.svg` e `eslint.config.js`).
-  - Desinstalados 125 pacotes legados do ESLint no `package.json`, tornando o projeto 100% Biome-nativo.
-  - Criado favicon personalizado de carteira em SVG ([public/favicon.svg](file:///c:/Users/Kennedy/Desktop/dev/myFinance/public/favicon.svg)) e otimizado o [index.html](file:///c:/Users/Kennedy/Desktop/dev/myFinance/index.html) (`pt-BR`, meta description e título descritivo).
-  - Verificação de qualidade: **17/17 testes aprovados**, **0 erros no Biome**, **0 alertas no VS Code** e **build de produção 100% limpo**.
-- **Próximo Passo Recomendado:** Implementar o **Filtro por Período/Mês** ou a **Visualização Gráfica de Despesas por Categoria**.
+- **Última Ação:** Implementada com sucesso a **Funcionalidade 1: Filtro por Período & Navegação Mensal**:
+  - Adicionado componente [MonthSelector.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/MonthSelector.tsx) com controles de mês anterior/próximo, atalho "Mês Atual" e toggle "Todos os Períodos".
+  - Criada regra de domínio pura `filterTransactionsByMonth` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts).
+  - Expandido o hook [useFinance.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts) para calcular receitas, despesas e saldo isoladamente para o mês ativo.
+  - Suíte de testes expandida para **23 testes unitários e de integração (100% aprovados)**.
+- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 2: Gráficos de Distribuição de Despesas por Categoria**.
