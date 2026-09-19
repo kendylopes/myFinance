@@ -5,6 +5,7 @@ import type {
   CreateTransactionDTO,
   FinanceSummary,
   Transaction,
+  TransactionFilterOptions,
 } from '../models/transaction'
 
 const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
@@ -190,4 +191,46 @@ export const calculateBudgetProgress = (
     isExceeded,
     status,
   }
+}
+
+/**
+ * Filtra transações combinando busca textual por título/categoria, filtro de categoria e tipo (receita/despesa).
+ */
+export const filterTransactions = (
+  transactions: Transaction[],
+  options: TransactionFilterOptions = {},
+): Transaction[] => {
+  const { searchQuery, category, type } = options
+
+  const normalizedQuery = searchQuery?.trim().toLowerCase() || ''
+  const hasQuery = normalizedQuery.length > 0
+  const hasCategory = Boolean(category && category !== 'all')
+  const hasType = Boolean(type && type !== 'all')
+
+  if (!hasQuery && !hasCategory && !hasType) {
+    return transactions
+  }
+
+  return transactions.filter((t) => {
+    // Filtro por texto no título ou na categoria
+    if (hasQuery) {
+      const titleMatches = t.title.toLowerCase().includes(normalizedQuery)
+      const categoryMatches = (t.category || '').toLowerCase().includes(normalizedQuery)
+      if (!titleMatches && !categoryMatches) {
+        return false
+      }
+    }
+
+    // Filtro por categoria específica
+    if (hasCategory && t.category !== category) {
+      return false
+    }
+
+    // Filtro por tipo (income / expense)
+    if (hasType && t.type !== type) {
+      return false
+    }
+
+    return true
+  })
 }

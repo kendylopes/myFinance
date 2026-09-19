@@ -11,7 +11,9 @@ import { useFinance } from './presentation/hooks/useFinance'
 function App() {
   const {
     transactions,
+    periodTransactions,
     filteredTransactions,
+    availableCategories,
     summary,
     selectedMonth,
     setSelectedMonth,
@@ -20,6 +22,16 @@ function App() {
     goToCurrentMonth,
     budgetProgress,
     updateBudget,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    selectedType,
+    setSelectedType,
+    clearFilters,
+    hasActiveFilters,
+    totalFilteredCount,
+    totalPeriodCount,
     isLoading,
     error,
     addTransaction,
@@ -62,7 +74,7 @@ function App() {
         <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
 
         {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-        <ExpenseCategoryChart transactions={filteredTransactions} />
+        <ExpenseCategoryChart transactions={periodTransactions} />
 
         {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA DO PERÍODO (DIREITA) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -71,6 +83,17 @@ function App() {
             transactions={filteredTransactions}
             isLoading={isLoading}
             onDelete={deleteTransaction}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedType={selectedType}
+            onTypeChange={setSelectedType}
+            categories={availableCategories}
+            totalFilteredCount={totalFilteredCount}
+            totalPeriodCount={totalPeriodCount}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
           />
         </div>
       </div>

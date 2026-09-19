@@ -7,12 +7,14 @@ import type {
   CreateTransactionDTO,
   FinanceSummary,
   Transaction,
+  TransactionFilterType,
 } from '../../domain/models/transaction'
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 import type { ITransactionRepository } from '../../domain/repositories/ITransactionRepository'
 import {
   calculateBudgetProgress,
   calculateSummary,
+  filterTransactions,
   filterTransactionsByMonth,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
@@ -23,7 +25,9 @@ const defaultBudgetRepository = new LocalStorageBudgetRepository()
 
 export interface UseFinanceReturn {
   transactions: Transaction[]
+  periodTransactions: Transaction[]
   filteredTransactions: Transaction[]
+  availableCategories: string[]
   summary: FinanceSummary
   globalSummary: FinanceSummary
   selectedMonth: string
@@ -34,6 +38,17 @@ export interface UseFinanceReturn {
   budgetAmount: number
   budgetProgress: BudgetProgress
   updateBudget: (newAmount: number) => Promise<boolean>
+  // Filtros de busca e categoria
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  selectedCategory: string
+  setSelectedCategory: (category: string) => void
+  selectedType: TransactionFilterType
+  setSelectedType: (type: TransactionFilterType) => void
+  clearFilters: () => void
+  hasActiveFilters: boolean
+  totalFilteredCount: number
+  totalPeriodCount: number
   isLoading: boolean
   error: string | null
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
@@ -50,6 +65,11 @@ export function useFinance(
   const [budgetAmount, setBudgetAmount] = useState<number>(3000)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Estados dos filtros de busca e categoria
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedType, setSelectedType] = useState<TransactionFilterType>('all')
 
   // Carregamento inicial de dados de transações
   const refresh = useCallback(async () => {
@@ -98,15 +118,45 @@ export function useFinance(
     setSelectedMonth(getCurrentYearMonth())
   }, [])
 
-  // Filtragem reativa por mês selecionado
-  const filteredTransactions = useMemo<Transaction[]>(() => {
+  // Filtragem temporal das transações pelo mês selecionado
+  const periodTransactions = useMemo<Transaction[]>(() => {
     return filterTransactionsByMonth(transactions, selectedMonth)
   }, [transactions, selectedMonth])
 
+  // Extração das categorias distintas disponíveis no período/base
+  const availableCategories = useMemo<string[]>(() => {
+    const set = new Set<string>()
+    for (const item of transactions) {
+      if (item.category?.trim()) {
+        set.add(item.category.trim())
+      }
+    }
+    return Array.from(set).sort()
+  }, [transactions])
+
+  // Filtragem reativa das transações com base na busca textual, categoria e tipo
+  const filteredTransactions = useMemo<Transaction[]>(() => {
+    return filterTransactions(periodTransactions, {
+      searchQuery,
+      category: selectedCategory,
+      type: selectedType,
+    })
+  }, [periodTransactions, searchQuery, selectedCategory, selectedType])
+
+  // Limpar todos os filtros de busca
+  const clearFilters = useCallback(() => {
+    setSearchQuery('')
+    setSelectedCategory('all')
+    setSelectedType('all')
+  }, [])
+
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 || selectedCategory !== 'all' || selectedType !== 'all'
+
   // Cálculo memorizado de métricas financeiras do período selecionado
   const summary = useMemo<FinanceSummary>(() => {
-    return calculateSummary(filteredTransactions)
-  }, [filteredTransactions])
+    return calculateSummary(periodTransactions)
+  }, [periodTransactions])
 
   // Resumo global de todos os períodos
   const globalSummary = useMemo<FinanceSummary>(() => {
@@ -184,7 +234,9 @@ export function useFinance(
 
   return {
     transactions,
+    periodTransactions,
     filteredTransactions,
+    availableCategories,
     summary,
     globalSummary,
     selectedMonth,
@@ -195,6 +247,16 @@ export function useFinance(
     budgetAmount,
     budgetProgress,
     updateBudget,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    selectedType,
+    setSelectedType,
+    clearFilters,
+    hasActiveFilters,
+    totalFilteredCount: filteredTransactions.length,
+    totalPeriodCount: periodTransactions.length,
     isLoading,
     error,
     addTransaction,

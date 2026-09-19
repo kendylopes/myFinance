@@ -77,17 +77,18 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **41/41 testes passando** (Vitest em 8 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **53/53 testes passando** (Vitest em 9 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
+  - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão nos repositórios de transações e orçamento.
-  - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário e gráfico Donut SVG.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~250ms).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.8s).
-- **Acessibilidade:** Formulários, seletores, inputs de orçamento e gráficos 100% associados com `htmlFor`, `id`, `aria-label` e `role="img"`, suporte a leitores de tela e contrastes adequados.
+  - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros com chips e gráfico Donut SVG.
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~120ms).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.7s).
+- **Acessibilidade:** Formulários, inputs de busca, seletores de tipo, chips, inputs de orçamento e gráficos 100% associados com `htmlFor`, `id`, `aria-label` e `role="img"`, suporte a leitores de tela e contrastes adequados.
 
 ---
 
@@ -99,8 +100,8 @@ myFinance/
   - Gráfico Donut SVG interativo com fatias proporcionais, legenda colorida, total centralizado e barras de progresso lineares por categoria.
 - [x] **🎯 Barra de Meta / Orçamento Mensal:**
   - Definição de teto de gastos mensal com indicador de progresso, persistência via `LocalStorageBudgetRepository`, feedback de 3 níveis (seguro, alerta 75%+, ultrapassado 100%+) e edição inline.
-- [ ] **🏷️ Filtros por Categoria & Busca:**
-  - Barra de pesquisa textual e chips de filtro por categoria (Alimentação, Moradia, etc.).
+- [x] **🏷️ Filtros por Categoria & Busca:**
+  - Barra de pesquisa textual em tempo real, chips interativos com as categorias disponíveis, seletor por tipo (Todos, Entradas, Saídas) e contador de movimentações exibidas.
 - [ ] **📤 Exportação de Extrato (CSV / PDF):**
   - Download do relatório de movimentações financeiras em arquivo CSV estruturado ou PDF diagramado.
 - [ ] **☁️ Repositório em Nuvem (Supabase / Backend):**
@@ -110,9 +111,9 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Implementada com sucesso a **Funcionalidade 3: 🎯 Barra de Meta / Orçamento Mensal**:
-  - Criado componente [BudgetProgressBar.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/BudgetProgressBar.tsx) com barra visual dinâmica, feedback em 3 níveis (Seguro, Alerta 75%+, Estourado 100%+), cálculo de limite restante ou estouro, e ajuste de teto inline.
-  - Criado contrato [IBudgetRepository.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/repositories/IBudgetRepository.ts) e implementação concreta [LocalStorageBudgetRepository.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/data/repositories/LocalStorageBudgetRepository.ts).
-  - Criada regra de domínio pura `calculateBudgetProgress` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts).
-  - Suíte de testes expandida para **41 testes unitários e de integração (100% aprovados)**.
-- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 4: 🏷️ Filtros por Categoria & Busca**.
+- **Última Ação:** Implementada com sucesso a **Funcionalidade 4: 🏷️ Filtros por Categoria & Busca**:
+  - Criado componente [TransactionFilters.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionFilters.tsx) com campo de pesquisa em tempo real, botão de limpeza rápida, seletor de tipos (Todos, Entradas, Saídas) e chips de categorias ativas.
+  - Criada regra de domínio pura `filterTransactions` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts) combinando busca case-insensitive, filtragem por categoria e tipo sem mutações.
+  - Atualizado [TransactionList.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionList.tsx) com empty state inteligente e botão para limpar filtros quando nenhum resultado for encontrado.
+  - Suíte de testes expandida para **53 testes unitários e de integração (100% aprovados)**.
+- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 5: 📤 Exportação de Extrato (CSV / PDF)**.

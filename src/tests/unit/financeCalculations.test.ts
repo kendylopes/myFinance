@@ -7,6 +7,7 @@ import {
   calculateSummary,
   calculateTotalExpense,
   calculateTotalIncome,
+  filterTransactions,
   filterTransactionsByMonth,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
@@ -298,6 +299,95 @@ describe('financeCalculations (Regras de Domínio)', () => {
       const progressWithoutExpense = calculateBudgetProgress(0, 0)
       expect(progressWithoutExpense.isExceeded).toBe(false)
       expect(progressWithoutExpense.status).toBe('safe')
+    })
+  })
+
+  describe('filterTransactions', () => {
+    const sampleList: Transaction[] = [
+      {
+        id: '1',
+        title: 'Supermercado Mensal',
+        amount: 500,
+        type: 'expense',
+        category: 'Alimentação',
+        date: '2026-09-01',
+      },
+      {
+        id: '2',
+        title: 'Aluguel do Apartamento',
+        amount: 1200,
+        type: 'expense',
+        category: 'Moradia',
+        date: '2026-09-05',
+      },
+      {
+        id: '3',
+        title: 'Salário Mensal',
+        amount: 4500,
+        type: 'income',
+        category: 'Trabalho',
+        date: '2026-09-05',
+      },
+      {
+        id: '4',
+        title: 'Combustível Posto Shell',
+        amount: 200,
+        type: 'expense',
+        category: 'Transporte',
+        date: '2026-09-10',
+      },
+    ]
+
+    it('deve retornar a lista inalterada se nenhuma opção for fornecida', () => {
+      const result = filterTransactions(sampleList, {})
+      expect(result).toHaveLength(4)
+    })
+
+    it('deve filtrar por busca textual no título (case insensitive)', () => {
+      const result = filterTransactions(sampleList, { searchQuery: 'supermercado' })
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('1')
+
+      const resultUpper = filterTransactions(sampleList, { searchQuery: 'MENSAL' })
+      expect(resultUpper).toHaveLength(2) // 'Supermercado Mensal' e 'Salário Mensal'
+    })
+
+    it('deve filtrar por busca textual na categoria', () => {
+      const result = filterTransactions(sampleList, { searchQuery: 'transporte' })
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('4')
+    })
+
+    it('deve filtrar por categoria específica', () => {
+      const result = filterTransactions(sampleList, { category: 'Moradia' })
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('2')
+    })
+
+    it('deve filtrar por tipo (apenas receitas ou apenas despesas)', () => {
+      const incomes = filterTransactions(sampleList, { type: 'income' })
+      expect(incomes).toHaveLength(1)
+      expect(incomes[0].id).toBe('3')
+
+      const expenses = filterTransactions(sampleList, { type: 'expense' })
+      expect(expenses).toHaveLength(3)
+    })
+
+    it('deve combinar múltiplos filtros simultâneos (busca + categoria + tipo)', () => {
+      const result = filterTransactions(sampleList, {
+        searchQuery: 'mensal',
+        category: 'Alimentação',
+        type: 'expense',
+      })
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('1')
+
+      const noMatch = filterTransactions(sampleList, {
+        searchQuery: 'mensal',
+        category: 'Alimentação',
+        type: 'income',
+      })
+      expect(noMatch).toHaveLength(0)
     })
   })
 })

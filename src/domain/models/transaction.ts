@@ -52,3 +52,11 @@ export interface BudgetProgress {
   isExceeded: boolean
   status: BudgetStatus
 }
+
+export type TransactionFilterType = 'all' | 'income' | 'expense'
+
+export interface TransactionFilterOptions {
+  searchQuery?: string
+  category?: string
+  type?: TransactionFilterType
+}
