@@ -2,7 +2,8 @@
 
 > **Última atualização:** 19 de Setembro de 2026  
 > **Status Geral:** 🟢 Em Desenvolvimento / Arquitetura Sênior / 100% Testado / Biome Ativo  
-> **Repositório:** `c:\Users\Kennedy\Desktop\dev\myFinance`
+> **Repositório:** `kendylopes/myFinance` ([github.com/kendylopes/myFinance](https://github.com/kendylopes/myFinance))  
+> **Caminho Local:** `c:\Users\Kennedy\Desktop\dev\myFinance`
 
 ---
 
