@@ -1,0 +1,130 @@
+import { describe, expect, it } from 'vitest'
+import type { Transaction } from '../../domain/models/transaction'
+import {
+  calculateBalance,
+  calculateSummary,
+  calculateTotalExpense,
+  calculateTotalIncome,
+  validateTransactionData,
+} from '../../domain/services/financeCalculations'
+
+describe('financeCalculations (Regras de Domínio)', () => {
+  const mockTransactions: Transaction[] = [
+    {
+      id: '1',
+      title: 'Salário',
+      amount: 3000,
+      type: 'income',
+      category: 'Trabalho',
+      date: '2026-09-01',
+    },
+    {
+      id: '2',
+      title: 'Supermercado',
+      amount: 500,
+      type: 'expense',
+      category: 'Alimentação',
+      date: '2026-09-02',
+    },
+    {
+      id: '3',
+      title: 'Freelance',
+      amount: 750,
+      type: 'income',
+      category: 'Serviços',
+      date: '2026-09-05',
+    },
+    {
+      id: '4',
+      title: 'Internet',
+      amount: 150,
+      type: 'expense',
+      category: 'Moradia',
+      date: '2026-09-06',
+    },
+  ]
+
+  it('deve calcular corretamente a soma total de entradas (receitas)', () => {
+    const total = calculateTotalIncome(mockTransactions)
+    expect(total).toBe(3750) // 3000 + 750
+  })
+
+  it('deve calcular corretamente a soma total de saídas (despesas)', () => {
+    const total = calculateTotalExpense(mockTransactions)
+    expect(total).toBe(650) // 500 + 150
+  })
+
+  it('deve calcular o saldo líquido (Entradas - Saídas)', () => {
+    const balance = calculateBalance(3750, 650)
+    expect(balance).toBe(3100)
+  })
+
+  it('deve retornar saldo negativo se as despesas forem maiores que receitas', () => {
+    const balance = calculateBalance(1000, 1500)
+    expect(balance).toBe(-500)
+  })
+
+  it('deve retornar resumo completo correto através de calculateSummary', () => {
+    const summary = calculateSummary(mockTransactions)
+    expect(summary).toEqual({
+      totalIncome: 3750,
+      totalExpense: 650,
+      balance: 3100,
+    })
+  })
+
+  it('deve lidar com listas vazias retornando zeros', () => {
+    const summary = calculateSummary([])
+    expect(summary).toEqual({
+      totalIncome: 0,
+      totalExpense: 0,
+      balance: 0,
+    })
+  })
+
+  describe('validateTransactionData', () => {
+    it('deve validar com sucesso dados completos e corretos', () => {
+      const result = validateTransactionData({
+        title: 'Academia',
+        amount: 120,
+        type: 'expense',
+        category: 'Saúde',
+        date: '2026-09-10',
+      })
+      expect(result.isValid).toBe(true)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('deve rejeitar transação com descrição vazia', () => {
+      const result = validateTransactionData({
+        title: '   ',
+        amount: 120,
+        type: 'expense',
+        category: 'Saúde',
+        date: '2026-09-10',
+      })
+      expect(result.isValid).toBe(false)
+      expect(result.error).toBe('A descrição é obrigatória.')
+    })
+
+    it('deve rejeitar transação com valor zero ou negativo', () => {
+      const resultZero = validateTransactionData({
+        title: 'Café',
+        amount: 0,
+        type: 'expense',
+        category: 'Alimentação',
+        date: '2026-09-10',
+      })
+      expect(resultZero.isValid).toBe(false)
+
+      const resultNeg = validateTransactionData({
+        title: 'Café',
+        amount: -10,
+        type: 'expense',
+        category: 'Alimentação',
+        date: '2026-09-10',
+      })
+      expect(resultNeg.isValid).toBe(false)
+    })
+  })
+})
