@@ -1,5 +1,10 @@
 import { Layers } from 'lucide-react'
-import type { Transaction, TransactionFilterType } from '../../../domain/models/transaction'
+import type {
+  FinanceSummary,
+  Transaction,
+  TransactionFilterType,
+} from '../../../domain/models/transaction'
+import { ExportActions } from './ExportActions'
 import { TransactionFilters } from './TransactionFilters'
 import { TransactionItem } from './TransactionItem'
 
@@ -19,6 +24,9 @@ export interface TransactionListProps {
   totalPeriodCount?: number
   hasActiveFilters?: boolean
   onClearFilters?: () => void
+  // Props de exportação opcionais
+  exportSummary?: FinanceSummary
+  selectedMonth?: string
 }
 
 export const TransactionList = ({
@@ -36,6 +44,8 @@ export const TransactionList = ({
   totalPeriodCount,
   hasActiveFilters,
   onClearFilters,
+  exportSummary,
+  selectedMonth,
 }: TransactionListProps) => {
   const showFilters = Boolean(onSearchChange && onCategoryChange && onTypeChange)
 
@@ -44,16 +54,25 @@ export const TransactionList = ({
       aria-labelledby="list-title"
       className="lg:col-span-2 bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl shadow-sm space-y-4"
     >
-      <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/60 pb-3">
         <div className="flex items-center gap-2">
           <Layers className="w-5 h-5 text-emerald-400" aria-hidden="true" />
           <h2 id="list-title" className="text-lg font-semibold text-white">
             Histórico de Transações
           </h2>
+          <span className="text-xs text-slate-400 ml-1">
+            ({transactions.length} {transactions.length === 1 ? 'registro' : 'registros'})
+          </span>
         </div>
-        <span className="text-xs text-slate-400">
-          {transactions.length} {transactions.length === 1 ? 'registro' : 'registros'}
-        </span>
+
+        {/* AÇÕES DE EXPORTAÇÃO (CSV E PDF) */}
+        {exportSummary && selectedMonth && (
+          <ExportActions
+            transactions={transactions}
+            summary={exportSummary}
+            selectedMonth={selectedMonth}
+          />
+        )}
       </div>
 
       {/* ÁREA DE FILTROS & BUSCA */}

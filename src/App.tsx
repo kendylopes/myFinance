@@ -94,6 +94,8 @@ function App() {
             totalPeriodCount={totalPeriodCount}
             hasActiveFilters={hasActiveFilters}
             onClearFilters={clearFilters}
+            exportSummary={summary}
+            selectedMonth={selectedMonth}
           />
         </div>
       </div>
