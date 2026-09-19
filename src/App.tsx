@@ -1,4 +1,5 @@
 import { getCurrentYearMonth } from './core/formatters/date'
+import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
 import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
 import { TransactionForm } from './presentation/components/dashboard/TransactionForm'
@@ -53,6 +54,9 @@ function App() {
 
         {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
         <SummaryCards summary={summary} />
+
+        {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
+        <ExpenseCategoryChart transactions={filteredTransactions} />
 
         {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA DO PERÍODO (DIREITA) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

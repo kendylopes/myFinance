@@ -1,4 +1,34 @@
-import type { CreateTransactionDTO, FinanceSummary, Transaction } from '../models/transaction'
+import type {
+  CategoryExpenseSummary,
+  CreateTransactionDTO,
+  FinanceSummary,
+  Transaction,
+} from '../models/transaction'
+
+const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
+  Alimentação: '#f59e0b',
+  Moradia: '#3b82f6',
+  Transporte: '#8b5cf6',
+  Serviços: '#06b6d4',
+  Lazer: '#ec4899',
+  Saúde: '#f43f5e',
+  Educação: '#10b981',
+  Trabalho: '#6366f1',
+  Geral: '#64748b',
+}
+
+const FALLBACK_PALETTE = [
+  '#f59e0b',
+  '#3b82f6',
+  '#8b5cf6',
+  '#06b6d4',
+  '#ec4899',
+  '#f43f5e',
+  '#10b981',
+  '#6366f1',
+  '#14b8a6',
+  '#f97316',
+]
 
 /**
  * Calcula a soma total de todas as transações de entrada (receitas).
@@ -52,6 +82,44 @@ export const filterTransactionsByMonth = (
     return transactions
   }
   return transactions.filter((item) => item.date?.startsWith(yearMonth))
+}
+
+/**
+ * Agrupa as despesas por categoria, calcula o percentual de cada uma sobre o total e ordena da maior para a menor.
+ */
+export const calculateExpensesByCategory = (
+  transactions: Transaction[],
+): CategoryExpenseSummary[] => {
+  const expenses = transactions.filter((t) => t.type === 'expense' && t.amount > 0)
+  if (expenses.length === 0) return []
+
+  const totalExpense = expenses.reduce((acc, curr) => acc + curr.amount, 0)
+  if (totalExpense === 0) return []
+
+  // Agrupa a soma por categoria
+  const map = new Map<string, number>()
+  for (const item of expenses) {
+    const cat = item.category?.trim() || 'Geral'
+    map.set(cat, (map.get(cat) || 0) + item.amount)
+  }
+
+  // Converte para array ordenado da maior para a menor despesa
+  const sortedCategories = Array.from(map.entries())
+    .map(([category, amount], index) => {
+      const percentage = (amount / totalExpense) * 100
+      const color =
+        DEFAULT_CATEGORY_COLORS[category] || FALLBACK_PALETTE[index % FALLBACK_PALETTE.length]
+
+      return {
+        category,
+        amount,
+        percentage: Number(percentage.toFixed(1)),
+        color,
+      }
+    })
+    .sort((a, b) => b.amount - a.amount)
+
+  return sortedCategories
 }
 
 /**

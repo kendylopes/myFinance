@@ -77,16 +77,17 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **23/23 testes passando** (Vitest):
-  - Cálculos de receitas, despesas e saldo líquido.
+- **Suíte de Testes Automatizados:** 🟢 **28/28 testes passando** (Vitest):
+  - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
+  - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
-  - Comportamento de saldos negativos e listas vazias.
+  - Comportamento de saldos negativos, listas vazias e períodos sem despesas.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão no repositório.
-  - Renderização correta e acessibilidade dos cards, seletor de mês e formulário.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~78ms).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.6s).
-- **Acessibilidade:** Formulários e seletores 100% associados com `htmlFor` e `id`, suporte a leitores de tela e contrastes adequados.
+  - Renderização correta e acessibilidade dos cards, seletor de mês, formulário e gráfico Donut SVG.
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~100ms).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~4.7s).
+- **Acessibilidade:** Formulários, seletores e gráficos 100% associados com `htmlFor`, `id`, `aria-label` e `role="img"`, suporte a leitores de tela e contrastes adequados.
 
 ---
 
@@ -94,8 +95,8 @@ myFinance/
 
 - [x] **📅 Filtro por Período & Mês:**
   - Seletor de mês/ano com navegação anterior/próximo, atalho para mês atual, modo "Todos os Períodos" e recálculo reativo de saldo e listagem.
-- [ ] **📊 Gráficos de Distribuição de Despesas:**
-  - Gráfico de pizza/rosca interativo exibindo a porcentagem gasta em cada categoria.
+- [x] **📊 Gráficos de Distribuição de Despesas:**
+  - Gráfico Donut SVG interativo com fatias proporcionais, legenda colorida, total centralizado e barras de progresso lineares por categoria.
 - [ ] **🎯 Barra de Meta / Orçamento Mensal:**
   - Definição de teto de gastos mensal com indicador de progresso e alertas de proximidade do limite.
 - [ ] **🏷️ Filtros por Categoria & Busca:**
@@ -109,9 +110,8 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Implementada com sucesso a **Funcionalidade 1: Filtro por Período & Navegação Mensal**:
-  - Adicionado componente [MonthSelector.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/MonthSelector.tsx) com controles de mês anterior/próximo, atalho "Mês Atual" e toggle "Todos os Períodos".
-  - Criada regra de domínio pura `filterTransactionsByMonth` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts).
-  - Expandido o hook [useFinance.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts) para calcular receitas, despesas e saldo isoladamente para o mês ativo.
-  - Suíte de testes expandida para **23 testes unitários e de integração (100% aprovados)**.
-- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 2: Gráficos de Distribuição de Despesas por Categoria**.
+- **Última Ação:** Implementada com sucesso a **Funcionalidade 2: Gráficos de Distribuição de Despesas por Categoria**:
+  - Criado componente [ExpenseCategoryChart.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ExpenseCategoryChart.tsx) com gráfico Donut em SVG nativo, total centralizado, badges de porcentagem e barras de progresso individuais.
+  - Criada regra de domínio pura `calculateExpensesByCategory` em [financeCalculations.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts) com mapeamento de cores consistentes e ordenação por maior volume de gasto.
+  - Suíte de testes expandida para **28 testes unitários e de integração (100% aprovados)**.
+- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 3: 🎯 Barra de Meta / Orçamento Mensal**.

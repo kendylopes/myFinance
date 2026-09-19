@@ -34,3 +34,10 @@ export interface FinanceSummary {
   totalExpense: number
   balance: number
 }
+
+export interface CategoryExpenseSummary {
+  category: string
+  amount: number
+  percentage: number
+  color: string
+}

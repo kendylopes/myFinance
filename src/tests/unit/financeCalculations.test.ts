@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Transaction } from '../../domain/models/transaction'
 import {
   calculateBalance,
+  calculateExpensesByCategory,
   calculateSummary,
   calculateTotalExpense,
   calculateTotalIncome,
@@ -179,6 +180,83 @@ describe('financeCalculations (Regras de Domínio)', () => {
     it('deve retornar todas as transações quando o período for "all"', () => {
       const result = filterTransactionsByMonth(multiMonthTransactions, 'all')
       expect(result).toHaveLength(4)
+    })
+  })
+
+  describe('calculateExpensesByCategory', () => {
+    const expenseTransactions: Transaction[] = [
+      {
+        id: '1',
+        title: 'Almoço',
+        amount: 200,
+        type: 'expense',
+        category: 'Alimentação',
+        date: '2026-09-01',
+      },
+      {
+        id: '2',
+        title: 'Jantar',
+        amount: 100,
+        type: 'expense',
+        category: 'Alimentação',
+        date: '2026-09-02',
+      },
+      {
+        id: '3',
+        title: 'Aluguel',
+        amount: 700,
+        type: 'expense',
+        category: 'Moradia',
+        date: '2026-09-05',
+      },
+      {
+        id: '4',
+        title: 'Salário',
+        amount: 5000,
+        type: 'income',
+        category: 'Trabalho',
+        date: '2026-09-05',
+      },
+    ]
+
+    it('deve agrupar, somar e calcular porcentagens corretas das despesas', () => {
+      const result = calculateExpensesByCategory(expenseTransactions)
+      // Total de despesas: 200 + 100 + 700 = 1000
+      // Moradia: 700 (70%)
+      // Alimentação: 300 (30%)
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({
+        category: 'Moradia',
+        amount: 700,
+        percentage: 70,
+        color: expect.any(String),
+      })
+      expect(result[1]).toEqual({
+        category: 'Alimentação',
+        amount: 300,
+        percentage: 30,
+        color: expect.any(String),
+      })
+    })
+
+    it('deve retornar array vazio quando não houver despesas', () => {
+      const onlyIncomes: Transaction[] = [
+        {
+          id: '1',
+          title: 'Salário',
+          amount: 3000,
+          type: 'income',
+          category: 'Trabalho',
+          date: '2026-09-01',
+        },
+      ]
+      const result = calculateExpensesByCategory(onlyIncomes)
+      expect(result).toEqual([])
+    })
+
+    it('deve retornar array vazio para lista de transações vazia', () => {
+      const result = calculateExpensesByCategory([])
+      expect(result).toEqual([])
     })
   })
 })
