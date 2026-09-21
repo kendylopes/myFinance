@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **75/75 testes passando** (Vitest em 15 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **86/86 testes passando** (Vitest em 19 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
@@ -86,14 +86,16 @@ myFinance/
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
-  - Integridade de gravação e exclusão nos repositórios de transações e orçamento.
+  - Integridade de gravação e exclusão nos repositórios de transações e orçamento (LocalStorage e Supabase).
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
+  - **[NOVO] Persistência em Nuvem (Supabase):** Repositórios desacoplados `SupabaseTransactionRepository` e `SupabaseBudgetRepository` com tipagem estrita e cobertura unitária com mocks.
+  - **[NOVO] Injeção Dinâmica & Fallback:** `repositoryFactory` com detecção automática de credenciais e alternância transparente entre nuvem e armazenamento local.
   - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
   - **[NOVO] Auto-Classificação Inteligente:** Predição de categorias e tipos em tempo real conforme a digitação da descrição via serviço puro `categoryPredictor.ts`.
   - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
   - **[NOVO] Curva Vetorial de Tendência:** Validação unitária do componente vetorial `BalanceSparkline` com paths Bézier SVG puros.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 47 arquivos).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção).
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 55 arquivos).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~2.3s).
 - **Acessibilidade:** Padrão WAI-ARIA estrito, foco visível, contraste calibrado e compatibilidade total com leitores de tela e preferência de movimento reduzido (`prefers-reduced-motion`).
 
 ---
@@ -119,16 +121,26 @@ myFinance/
   - Laser Shimmer translúcido deslizante em botões de ação e barra de meta orçamentária (`animate-shimmer-sweep`).
   - Mini Sparkline SVG com curva Bézier suave de tendência financeira dentro do card de saldo (`BalanceSparkline`).
   - Sound Design tátil nativo via Web Audio API com sintetizador analógico de vidro/cerâmica e botão de mute no Header (`soundFX`).
-- [ ] **☁️ Repositório em Nuvem (Supabase / Backend):**
-  - Implementação de `SupabaseTransactionRepository` e `SupabaseBudgetRepository` para sincronização remota, persistência em nuvem e suporte multi-usuário (preparação para bot e celular).
+- [x] **☁️ Repositório em Nuvem (Supabase / Backend):**
+  - Implementação de `SupabaseTransactionRepository` e `SupabaseBudgetRepository` para sincronização remota, persistência em nuvem e suporte multi-dispositivo.
+  - Script SQL de automação `supabase/schema.sql` com tabelas, índices e políticas de Row Level Security (RLS).
+  - Indicador dinâmico de status no cabeçalho (*"☁️ Nuvem Ativa"* vs *"💾 Armazenamento Local"*).
+- [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
+  - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
+- [ ] **🔒 Autenticação de Usuários (Supabase Auth):**
+  - Login e Cadastro para dados isolados por usuário.
 
 ---
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluídas com maestria as melhorias de **Categorias Inteligentes & Ícones no Extrato**:
-  - **Ícones Temáticos no Extrato:** Cada transação na lista de histórico agora ostenta o ícone específico de sua categoria (🍔 Alimentação, 🚗 Transporte, 💼 Salário, 🏠 Moradia, etc.) com mini badge indicador no canto inferior direito (+ verde ou - vermelho).
-  - **Auto-Classificação Inteligente:** Ao digitar a descrição ("mercado", "gasolina", "salário", "uber", etc.), o sistema preenche e sugere automaticamente a categoria e o tipo correspondentes em tempo real, exibindo badge delicado "✨ Sugerido", com suporte a override manual e dropdown opaco em vidro sem cortes.
-  - **Qualidade & Testes:** Suíte ampliada para **75/75 testes aprovados** (15 arquivos), Biome 100% limpo e build de produção validado.
-- **Próximo Passo Recomendado:** Implementar a **Conexão com Banco de Dados em Nuvem (Supabase)** para permitir persistência remota e sincronização em tempo real.
+- **Última Ação:** Concluída com êxito a **Integração com o Banco de Dados em Nuvem (Supabase)**:
+  - Implementado cliente singleton `supabaseClient.ts` com validação de credenciais.
+  - Implementados `SupabaseTransactionRepository.ts` e `SupabaseBudgetRepository.ts` respeitando estritamente os contratos de domínio `ITransactionRepository` e `IBudgetRepository`.
+  - Implementada a `repositoryFactory.ts` com fallback transparente para LocalStorage quando não houver credenciais.
+  - Criado o script `supabase/schema.sql` com tabelas, índices e políticas RLS.
+  - Adicionado badge de status dinâmico no Header informando o modo de conexão ativo.
+  - Suíte de testes expandida para **86/86 testes aprovados** (19 arquivos no Vitest), Biome 100% limpo em 55 arquivos e build de produção validado em 2.39s.
+- **Próximo Passo Recomendado:** Inserir as credenciais reais no arquivo `.env` (URL e Anon Key do Supabase) e/ou realizar o **Deploy Online no Vercel**.
+
 

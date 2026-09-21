@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/date'
-import { LocalStorageBudgetRepository } from '../../data/repositories/LocalStorageBudgetRepository'
-import { LocalStorageTransactionRepository } from '../../data/repositories/LocalStorageTransactionRepository'
+import {
+  createBudgetRepository,
+  createTransactionRepository,
+  getActiveDataSource,
+} from '../../data/repositories/repositoryFactory'
 import type {
   BudgetProgress,
   CreateTransactionDTO,
@@ -19,9 +22,9 @@ import {
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
 
-// Instâncias padrão dos repositórios
-const defaultTransactionRepository = new LocalStorageTransactionRepository()
-const defaultBudgetRepository = new LocalStorageBudgetRepository()
+// Instâncias padrão dos repositórios (Nuvem com Supabase ou Fallback Seguro LocalStorage)
+const defaultTransactionRepository = createTransactionRepository()
+const defaultBudgetRepository = createBudgetRepository()
 
 export interface UseFinanceReturn {
   transactions: Transaction[]
@@ -51,6 +54,7 @@ export interface UseFinanceReturn {
   totalPeriodCount: number
   isLoading: boolean
   error: string | null
+  dataSource: 'supabase' | 'localStorage'
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   refresh: () => Promise<void>
@@ -259,6 +263,7 @@ export function useFinance(
     totalPeriodCount: periodTransactions.length,
     isLoading,
     error,
+    dataSource: getActiveDataSource(),
     addTransaction,
     deleteTransaction,
     refresh,

@@ -1,12 +1,13 @@
-import { Volume2, VolumeX, Wallet } from 'lucide-react'
+import { Cloud, Database, Volume2, VolumeX, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 
 interface HeaderProps {
   transactionCount: number
+  dataSource?: 'supabase' | 'localStorage'
 }
 
-export const Header = ({ transactionCount }: HeaderProps) => {
+export const Header = ({ transactionCount, dataSource = 'localStorage' }: HeaderProps) => {
   const [soundEnabled, setSoundEnabled] = useState(() => soundFX.isEnabled())
 
   const handleToggleSound = () => {
@@ -34,6 +35,33 @@ export const Header = ({ transactionCount }: HeaderProps) => {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Indicador de Status da Nuvem / Armazenamento */}
+        <div
+          className={`hidden xs:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium backdrop-blur-md transition-all ${
+            dataSource === 'supabase'
+              ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+              : 'bg-white/5 border-white/10 text-zinc-400'
+          }`}
+          title={
+            dataSource === 'supabase'
+              ? 'Conectado à nuvem (Supabase PostgreSQL ativo)'
+              : 'Modo Local (LocalStorage). Configure o .env para sincronização em nuvem.'
+          }
+        >
+          {dataSource === 'supabase' ? (
+            <>
+              <Cloud className="w-3.5 h-3.5 text-emerald-400 animate-pulse" aria-hidden="true" />
+              <span>Nuvem Ativa</span>
+            </>
+          ) : (
+            <>
+              <Database className="w-3.5 h-3.5 text-zinc-400" aria-hidden="true" />
+              <span className="hidden sm:inline">Armazenamento Local</span>
+              <span className="sm:hidden">Local</span>
+            </>
+          )}
+        </div>
+
         {/* Botão de Micro-feedback Háptico/Sonoro */}
         <button
           type="button"

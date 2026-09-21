@@ -34,6 +34,7 @@ function App() {
     totalPeriodCount,
     isLoading,
     error,
+    dataSource,
     addTransaction,
     deleteTransaction,
   } = useFinance()
@@ -54,7 +55,7 @@ function App() {
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-8">
         {/* CABEÇALHO DESACOPLADO */}
-        <Header transactionCount={transactions.length} />
+        <Header transactionCount={transactions.length} dataSource={dataSource} />
 
         {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
         {error && (
