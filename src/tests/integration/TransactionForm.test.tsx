@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { TransactionForm } from '../../presentation/components/dashboard/TransactionForm'
@@ -12,11 +12,11 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
 
     // Preenche a descrição
     const titleInput = screen.getByTestId('input-title')
-    await user.type(titleInput, 'Almoço Restaurante')
+    fireEvent.change(titleInput, { target: { value: 'Almoço Restaurante' } })
 
     // Preenche o valor
     const amountInput = screen.getByTestId('input-amount')
-    await user.type(amountInput, '75.50')
+    fireEvent.change(amountInput, { target: { value: '75.50' } })
 
     // Clica para enviar
     const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
@@ -48,4 +48,21 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/informe uma descrição/i)
     expect(mockOnAdd).not.toHaveBeenCalled()
   })
+
+  it('deve auto-sugerir a categoria ao digitar palavras-chave conhecidas na descrição', async () => {
+    const mockOnAdd = vi.fn().mockResolvedValue(true)
+    const user = userEvent.setup()
+
+    render(<TransactionForm onAdd={mockOnAdd} />)
+
+    const titleInput = screen.getByTestId('input-title')
+    await user.type(titleInput, 'Gasolina aditivada')
+
+    // Deve exibir o badge "Sugerido"
+    expect(screen.getByText(/Sugerido/i)).toBeInTheDocument()
+
+    // Categoria deve ter mudado para Transporte
+    const categoryInput = screen.getByTestId('input-category')
+    expect(categoryInput).toHaveValue('Transporte')
+  }, 20000)
 })

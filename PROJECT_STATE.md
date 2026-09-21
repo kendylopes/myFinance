@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **66/66 testes passando** (Vitest em 13 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **75/75 testes passando** (Vitest em 15 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
@@ -88,10 +88,12 @@ myFinance/
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão nos repositórios de transações e orçamento.
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
+  - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
+  - **[NOVO] Auto-Classificação Inteligente:** Predição de categorias e tipos em tempo real conforme a digitação da descrição via serviço puro `categoryPredictor.ts`.
   - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
   - **[NOVO] Curva Vetorial de Tendência:** Validação unitária do componente vetorial `BalanceSparkline` com paths Bézier SVG puros.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 48 arquivos).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~9s).
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 47 arquivos).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção).
 - **Acessibilidade:** Padrão WAI-ARIA estrito, foco visível, contraste calibrado e compatibilidade total com leitores de tela e preferência de movimento reduzido (`prefers-reduced-motion`).
 
 ---
@@ -106,6 +108,9 @@ myFinance/
   - Definição de teto de gastos mensal com indicador de progresso, persistência via `LocalStorageBudgetRepository`, feedback de 3 níveis (seguro, alerta 75%+, ultrapassado 100%+) e edição inline.
 - [x] **🏷️ Filtros por Categoria & Busca:**
   - Barra de pesquisa textual em tempo real, chips interativos com as categorias disponíveis, seletor por tipo (Todos, Entradas, Saídas) e contador de movimentações exibidas.
+- [x] **🎭 Ícones das Categorias & Auto-Classificação:**
+  - Ícones reais correspondentes no extrato com mini badge discreto de tipo (+ / -).
+  - Predição instantânea de categoria e tipo (receita/despesa) conforme digitação da descrição ("gasolina", "almoço", "salário", etc.) com badge suave "Sugerido".
 - [x] **📤 Exportação de Extrato (CSV / PDF):**
   - Download do relatório de movimentações financeiras em arquivo CSV estruturado compatível com Excel/Sheets e emissão de extrato diagramado pronto para impressão ou salvamento em PDF nativo via navegador (0 KB de dependências extras).
 - [x] **🏆 Elevação de UI ao Padrão Awwwards (Motion & Micro-interactions):**
@@ -121,11 +126,9 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída com êxito a **Elevação da UI para o Padrão Awwwards (Site of the Day Quality)**:
-  - Implementado **Spotlight Interativo** sobre as superfícies de vidro usando listener passivo via `ref` para alta performance a 120 FPS sem re-renders.
-  - Implementado **Animated Currency Ticker** para contagem fluida e viva de valores financeiros com easing cúbico suave.
-  - Implementado **Laser Shimmer** especular sobre o botão de submissão e sobre a barra de orçamento.
-  - Implementado **BalanceSparkline** SVG com interpolação Bézier contínua no card de saldo.
-  - Implementado **Sound Design Háptico** (Web Audio API nativa com zero dependências externas) e alternância no Header.
-  - Suíte de testes expandida para **66/66 aprovados** em 13 arquivos, Biome 100% limpo em 48 arquivos e build de produção validado.
-- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 6: ☁️ Conexão com Banco de Dados em Nuvem (Supabase)** para permitir envio direto de movimentações via celular.
+- **Última Ação:** Concluídas com maestria as melhorias de **Categorias Inteligentes & Ícones no Extrato**:
+  - **Ícones Temáticos no Extrato:** Cada transação na lista de histórico agora ostenta o ícone específico de sua categoria (🍔 Alimentação, 🚗 Transporte, 💼 Salário, 🏠 Moradia, etc.) com mini badge indicador no canto inferior direito (+ verde ou - vermelho).
+  - **Auto-Classificação Inteligente:** Ao digitar a descrição ("mercado", "gasolina", "salário", "uber", etc.), o sistema preenche e sugere automaticamente a categoria e o tipo correspondentes em tempo real, exibindo badge delicado "✨ Sugerido", com suporte a override manual e dropdown opaco em vidro sem cortes.
+  - **Qualidade & Testes:** Suíte ampliada para **75/75 testes aprovados** (15 arquivos), Biome 100% limpo e build de produção validado.
+- **Próximo Passo Recomendado:** Implementar a **Conexão com Banco de Dados em Nuvem (Supabase)** para permitir persistência remota e sincronização em tempo real.
+

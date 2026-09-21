@@ -1,7 +1,8 @@
-import { ArrowDownCircle, ArrowUpCircle, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
 
 interface TransactionItemProps {
@@ -11,6 +12,7 @@ interface TransactionItemProps {
 
 export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps) => {
   const isIncome = transaction.type === 'income'
+  const CategoryIcon = getCategoryIcon(transaction.category)
 
   const handleDelete = () => {
     soundFX.playClick()
@@ -23,18 +25,28 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
       className="flex items-center justify-between p-4 glass-pill rounded-2xl hover:border-white/20 hover:bg-white/6 transition-all group shadow-sm"
     >
       <div className="flex items-center gap-3.5">
-        <div
-          className={`p-2.5 rounded-xl border backdrop-blur-md shadow-sm ${
-            isIncome
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
-              : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
-          }`}
-        >
-          {isIncome ? (
-            <ArrowUpCircle className="w-5 h-5" aria-hidden="true" />
-          ) : (
-            <ArrowDownCircle className="w-5 h-5" aria-hidden="true" />
-          )}
+        <div className="relative">
+          <div
+            className={`p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-transform group-hover:scale-105 ${
+              isIncome
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
+            }`}
+          >
+            <CategoryIcon className="w-5 h-5" aria-hidden="true" />
+          </div>
+          {/* Mini-badge discreto indicando tipo (+ para entrada, - para saída) */}
+          <div
+            className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border text-[9px] font-bold shadow-xs ${
+              isIncome
+                ? 'bg-emerald-500 text-zinc-950 border-zinc-900'
+                : 'bg-rose-500 text-white border-zinc-900'
+            }`}
+            aria-hidden="true"
+            title={isIncome ? 'Entrada' : 'Saída'}
+          >
+            {isIncome ? '+' : '-'}
+          </div>
         </div>
         <div>
           <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
