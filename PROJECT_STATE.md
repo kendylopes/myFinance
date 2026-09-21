@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **61/61 testes passando** (Vitest em 11 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **66/66 testes passando** (Vitest em 13 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
@@ -88,9 +88,11 @@ myFinance/
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão nos repositórios de transações e orçamento.
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` executa em ~500ms).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~1.7s).
-- **Acessibilidade:** Formulários, botões de exportação com aria-label, seletores, chips, inputs de orçamento e gráficos 100% acessíveis e sem dependências pesadas.
+  - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
+  - **[NOVO] Curva Vetorial de Tendência:** Validação unitária do componente vetorial `BalanceSparkline` com paths Bézier SVG puros.
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 48 arquivos).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~9s).
+- **Acessibilidade:** Padrão WAI-ARIA estrito, foco visível, contraste calibrado e compatibilidade total com leitores de tela e preferência de movimento reduzido (`prefers-reduced-motion`).
 
 ---
 
@@ -106,16 +108,24 @@ myFinance/
   - Barra de pesquisa textual em tempo real, chips interativos com as categorias disponíveis, seletor por tipo (Todos, Entradas, Saídas) e contador de movimentações exibidas.
 - [x] **📤 Exportação de Extrato (CSV / PDF):**
   - Download do relatório de movimentações financeiras em arquivo CSV estruturado compatível com Excel/Sheets e emissão de extrato diagramado pronto para impressão ou salvamento em PDF nativo via navegador (0 KB de dependências extras).
+- [x] **🏆 Elevação de UI ao Padrão Awwwards (Motion & Micro-interactions):**
+  - Spotlight interativo de cursor nos cards (`useSpotlight` passivo a 120 FPS).
+  - Animated Counter Tickers com interpolação numérica suave e desaceleração cúbica (`AnimatedCurrency`).
+  - Laser Shimmer translúcido deslizante em botões de ação e barra de meta orçamentária (`animate-shimmer-sweep`).
+  - Mini Sparkline SVG com curva Bézier suave de tendência financeira dentro do card de saldo (`BalanceSparkline`).
+  - Sound Design tátil nativo via Web Audio API com sintetizador analógico de vidro/cerâmica e botão de mute no Header (`soundFX`).
 - [ ] **☁️ Repositório em Nuvem (Supabase / Backend):**
-  - Implementação de `SupabaseTransactionRepository` e `SupabaseBudgetRepository` para sincronização remota, persistência em nuvem e suporte multi-usuário.
+  - Implementação de `SupabaseTransactionRepository` e `SupabaseBudgetRepository` para sincronização remota, persistência em nuvem e suporte multi-usuário (preparação para bot e celular).
 
 ---
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Implementada com sucesso a **Funcionalidade 5: 📤 Exportação de Extrato (CSV / PDF)**:
-  - Criado serviço de domínio puro [exportService.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/exportService.ts) com funções `generateCsvContent` (com suporte a UTF-8 BOM e delimitador `;`) e `generatePrintableHtml` (relatório profissional estilizado com cards e tabela).
-  - Criado utilitário [download.ts](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/core/utils/download.ts) para download direto no navegador e impressão via janela/iframe.
-  - Criado componente [ExportActions.tsx](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ExportActions.tsx) e integrado ao cabeçalho da listagem de transações.
-  - Suíte de testes expandida para **61 testes unitários e de integração (100% aprovados)**.
-- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 6: ☁️ Repositório em Nuvem (Supabase / Backend)**.
+- **Última Ação:** Concluída com êxito a **Elevação da UI para o Padrão Awwwards (Site of the Day Quality)**:
+  - Implementado **Spotlight Interativo** sobre as superfícies de vidro usando listener passivo via `ref` para alta performance a 120 FPS sem re-renders.
+  - Implementado **Animated Currency Ticker** para contagem fluida e viva de valores financeiros com easing cúbico suave.
+  - Implementado **Laser Shimmer** especular sobre o botão de submissão e sobre a barra de orçamento.
+  - Implementado **BalanceSparkline** SVG com interpolação Bézier contínua no card de saldo.
+  - Implementado **Sound Design Háptico** (Web Audio API nativa com zero dependências externas) e alternância no Header.
+  - Suíte de testes expandida para **66/66 aprovados** em 13 arquivos, Biome 100% limpo em 48 arquivos e build de produção validado.
+- **Próximo Passo Recomendado:** Implementar a **Funcionalidade 6: ☁️ Conexão com Banco de Dados em Nuvem (Supabase)** para permitir envio direto de movimentações via celular.

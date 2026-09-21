@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { formatBRL } from '../../../core/formatters/currency'
+import { soundFX } from '../../../core/sound/soundEffects'
 import type { BudgetProgress } from '../../../domain/models/transaction'
+import { useSpotlight } from '../../hooks/useSpotlight'
 
 export interface BudgetProgressBarProps {
   progress: BudgetProgress
@@ -11,13 +13,16 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState(progress.budgetAmount.toString())
   const [isSaving, setIsSaving] = useState(false)
+  const cardRef = useSpotlight<HTMLDivElement>()
 
   const handleStartEdit = () => {
+    soundFX.playClick()
     setInputValue(progress.budgetAmount.toString())
     setIsEditing(true)
   }
 
   const handleCancelEdit = () => {
+    soundFX.playClick()
     setIsEditing(false)
     setInputValue(progress.budgetAmount.toString())
   }
@@ -31,6 +36,7 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
     const success = await onUpdateBudget(numeric)
     setIsSaving(false)
     if (success) {
+      soundFX.playSuccess()
       setIsEditing(false)
     }
   }
@@ -61,13 +67,14 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
 
   return (
     <div
+      ref={cardRef}
       data-testid="budget-progress-card"
-      className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden transition-all duration-300"
+      className="glass-card spotlight-card rounded-3xl p-6 relative overflow-hidden transition-all duration-300"
     >
       {/* Luz ambiente de fundo */}
       <div
         aria-hidden="true"
-        className={`absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-15 ${
+        className={`absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl pointer-events-none opacity-20 transition-all duration-500 ${
           progress.status === 'exceeded'
             ? 'bg-rose-500'
             : progress.status === 'warning'
@@ -77,11 +84,11 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
       />
 
       {/* CABEÇALHO */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-slate-800/80 rounded-2xl border border-slate-700/60 text-slate-300">
+          <div className="p-2.5 bg-white/4 backdrop-blur-md rounded-2xl border border-white/10 text-zinc-200 shadow-sm">
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 text-emerald-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -96,8 +103,10 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
             </svg>
           </div>
           <div>
-            <h2 className="text-base font-semibold text-slate-200">Teto de Gastos & Meta Mensal</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-base font-semibold text-white drop-shadow-sm">
+              Teto de Gastos & Meta Mensal
+            </h2>
+            <p className="text-xs text-zinc-400">
               Controle seu consumo de despesas para não estourar o mês
             </p>
           </div>
@@ -105,7 +114,7 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
 
         <div className="flex items-center gap-3 self-end sm:self-center">
           <span
-            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusConfig.badgeClass}`}
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border backdrop-blur-md ${statusConfig.badgeClass}`}
           >
             {statusConfig.badgeText}
           </span>
@@ -114,7 +123,7 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
             <button
               type="button"
               onClick={handleStartEdit}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium glass-pill text-zinc-300 hover:text-white hover:border-white/20 transition-all duration-200 cursor-pointer shadow-sm"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -140,10 +149,10 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
       {isEditing ? (
         <form
           onSubmit={handleSave}
-          className="mb-6 p-4 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex flex-col sm:flex-row items-center gap-3 animate-fadeIn"
+          className="mb-6 p-4 glass-pill rounded-2xl flex flex-col sm:flex-row items-center gap-3 relative z-10"
         >
           <div className="w-full sm:flex-1">
-            <label htmlFor="budget-input" className="block text-xs text-slate-400 mb-1">
+            <label htmlFor="budget-input" className="block text-xs text-zinc-300 mb-1">
               Definir teto orçamentário para o mês (R$):
             </label>
             <input
@@ -154,7 +163,7 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
               required
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all"
+              className="w-full glass-input rounded-xl px-3.5 py-2 text-sm text-white placeholder-zinc-500 transition-all"
               placeholder="Ex: 3500"
             />
           </div>
@@ -163,14 +172,14 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
               type="button"
               onClick={handleCancelEdit}
               disabled={isSaving}
-              className="px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-white/5 transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-4 py-2 rounded-xl text-xs font-medium bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-semibold transition-colors shadow-lg shadow-emerald-500/20"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-zinc-950 transition-colors shadow-lg shadow-emerald-500/25 cursor-pointer"
             >
               {isSaving ? 'Salvando...' : 'Salvar Teto'}
             </button>
@@ -179,23 +188,19 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
       ) : null}
 
       {/* MÉTRICAS DE RESUMO DO ORÇAMENTO */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        <div className="bg-slate-950/40 p-3.5 rounded-2xl border border-slate-800/60">
-          <span className="text-xs text-slate-400 block mb-0.5">Gasto Realizado</span>
-          <span className="text-lg font-bold text-slate-100">
-            {formatBRL(progress.totalExpense)}
-          </span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 relative z-10">
+        <div className="glass-pill p-3.5 rounded-2xl">
+          <span className="text-xs text-zinc-400 block mb-0.5">Gasto Realizado</span>
+          <span className="text-lg font-bold text-white">{formatBRL(progress.totalExpense)}</span>
         </div>
 
-        <div className="bg-slate-950/40 p-3.5 rounded-2xl border border-slate-800/60">
-          <span className="text-xs text-slate-400 block mb-0.5">Teto Orçamentário</span>
-          <span className="text-lg font-bold text-slate-100">
-            {formatBRL(progress.budgetAmount)}
-          </span>
+        <div className="glass-pill p-3.5 rounded-2xl">
+          <span className="text-xs text-zinc-400 block mb-0.5">Teto Orçamentário</span>
+          <span className="text-lg font-bold text-white">{formatBRL(progress.budgetAmount)}</span>
         </div>
 
-        <div className="bg-slate-950/40 p-3.5 rounded-2xl border border-slate-800/60">
-          <span className="text-xs text-slate-400 block mb-0.5">
+        <div className="glass-pill p-3.5 rounded-2xl">
+          <span className="text-xs text-zinc-400 block mb-0.5">
             {progress.isExceeded ? 'Estouro Orçamentário' : 'Limite Restante'}
           </span>
           <span className={`text-lg font-bold ${statusConfig.textColor}`}>
@@ -206,26 +211,32 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
         </div>
       </div>
 
-      {/* BARRA DE PROGRESSO VISUAL */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs text-slate-400">
+      {/* BARRA DE PROGRESSO VISUAL COM LASER SHIMMER */}
+      <div className="space-y-2 relative z-10">
+        <div className="flex items-center justify-between text-xs text-zinc-400">
           <span>Consumo da meta</span>
           <span className={`font-semibold ${statusConfig.textColor}`}>
             {progress.spentPercentage}%
           </span>
         </div>
 
-        <div className="w-full h-3.5 bg-slate-950/80 rounded-full overflow-hidden p-0.5 border border-slate-800">
+        <div className="w-full h-3.5 bg-zinc-950/70 rounded-full overflow-hidden p-0.5 border border-white/10 shadow-inner relative">
           <div
             data-testid="budget-progress-indicator"
-            className={`h-full rounded-full bg-gradient-to-r ${statusConfig.barGradient} transition-all duration-700 ease-out`}
+            className={`h-full rounded-full bg-linear-to-r ${statusConfig.barGradient} transition-all duration-700 ease-out relative overflow-hidden`}
             style={{ width: `${visualPercentage}%` }}
-          />
+          >
+            {/* Feixe de Laser Shimmer Especular */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 w-24 bg-linear-to-r from-transparent via-white/40 to-transparent animate-shimmer-sweep pointer-events-none"
+            />
+          </div>
         </div>
       </div>
 
       {/* MENSAGEM CONTEXTUAL MOTIVACIONAL / ALERTA */}
-      <div className="mt-4 pt-4 border-t border-slate-800/60 text-xs text-slate-400 flex items-center justify-between">
+      <div className="mt-4 pt-4 border-t border-zinc-800/60 text-xs text-zinc-400 flex items-center justify-between">
         <span>
           {progress.budgetAmount === 0 ? (
             'Defina um teto orçamentário para acompanhar o progresso mensal.'

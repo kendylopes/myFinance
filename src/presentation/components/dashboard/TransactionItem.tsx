@@ -1,6 +1,7 @@
 import { ArrowDownCircle, ArrowUpCircle, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
+import { soundFX } from '../../../core/sound/soundEffects'
 import type { Transaction } from '../../../domain/models/transaction'
 
 interface TransactionItemProps {
@@ -11,17 +12,22 @@ interface TransactionItemProps {
 export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps) => {
   const isIncome = transaction.type === 'income'
 
+  const handleDelete = () => {
+    soundFX.playClick()
+    onDelete(transaction.id)
+  }
+
   return (
     <div
       data-testid={`transaction-item-${transaction.id}`}
-      className="flex items-center justify-between p-4 bg-slate-950/60 border border-slate-800/60 rounded-xl hover:border-slate-700/80 transition-all group"
+      className="flex items-center justify-between p-4 glass-pill rounded-2xl hover:border-white/20 hover:bg-white/6 transition-all group shadow-sm"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3.5">
         <div
-          className={`p-2.5 rounded-xl ${
+          className={`p-2.5 rounded-xl border backdrop-blur-md shadow-sm ${
             isIncome
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+              : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
           }`}
         >
           {isIncome ? (
@@ -31,9 +37,11 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
           )}
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">{transaction.title}</p>
-          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-            <span className="bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+          <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
+            {transaction.title}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
+            <span className="glass-pill px-2 py-0.5 rounded-lg text-[11px] text-zinc-300">
               {transaction.category}
             </span>
             <span>•</span>
@@ -54,10 +62,10 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
         <button
           type="button"
           data-testid={`delete-btn-${transaction.id}`}
-          onClick={() => onDelete(transaction.id)}
+          onClick={handleDelete}
           aria-label={`Excluir transação ${transaction.title}`}
           title="Excluir transação"
-          className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
+          className="p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
         </button>

@@ -38,18 +38,18 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
     <section
       aria-labelledby="chart-title"
       data-testid="expense-category-chart"
-      className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-2xl shadow-sm space-y-6"
+      className="glass-card p-6 rounded-3xl space-y-6"
     >
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+      <div className="flex items-center justify-between border-b border-white/8 pb-3">
         <div className="flex items-center gap-2">
           <PieChart className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-          <h2 id="chart-title" className="text-lg font-semibold text-white">
+          <h2 id="chart-title" className="text-lg font-semibold text-white drop-shadow-sm">
             Distribuição de Despesas
           </h2>
         </div>
         {categoryExpenses.length > 0 && (
-          <span className="text-xs text-slate-400 font-medium">
+          <span className="text-xs text-slate-300 font-medium px-2.5 py-1 rounded-xl glass-pill">
             Total: {formatCurrency(totalExpense)}
           </span>
         )}
@@ -58,14 +58,16 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
       {categoryExpenses.length === 0 ? (
         <div
           data-testid="chart-empty-state"
-          className="text-center py-10 text-slate-500 border border-dashed border-slate-800/80 rounded-xl"
+          className="text-center py-10 text-slate-400 border border-dashed border-white/10 rounded-2xl glass-pill"
         >
           <PieChart
-            className="w-10 h-10 mx-auto mb-2 text-slate-600 opacity-60"
+            className="w-10 h-10 mx-auto mb-2 text-slate-500 opacity-60"
             aria-hidden="true"
           />
-          <p className="font-medium text-sm">Sem despesas registradas neste período</p>
-          <p className="text-xs text-slate-600 mt-1">
+          <p className="font-medium text-sm text-slate-300">
+            Sem despesas registradas neste período
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
             As despesas adicionadas aparecerão aqui divididas por categoria.
           </p>
         </div>

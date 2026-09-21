@@ -1,3 +1,4 @@
+import { soundFX } from '../../../core/sound/soundEffects'
 import type { TransactionFilterType } from '../../../domain/models/transaction'
 
 export interface TransactionFiltersProps {
@@ -27,18 +28,33 @@ export function TransactionFilters({
   hasActiveFilters,
   onClearFilters,
 }: TransactionFiltersProps) {
+  const handleTypeSelect = (type: TransactionFilterType) => {
+    soundFX.playClick()
+    onTypeChange(type)
+  }
+
+  const handleCategorySelect = (category: string) => {
+    soundFX.playClick()
+    onCategoryChange(category)
+  }
+
+  const handleClear = () => {
+    soundFX.playClick()
+    onClearFilters()
+  }
+
   return (
     <div
       data-testid="transaction-filters"
-      className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-3xl p-5 shadow-lg space-y-4 mb-6"
+      className="glass-pill rounded-3xl p-5 shadow-lg space-y-4 mb-6"
     >
       {/* LINHA SUPERIOR: BARRA DE PESQUISA + SELETOR DE TIPO */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         {/* INPUT DE BUSCA TEXTUAL */}
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
             <svg
-              className="w-4 h-4"
+              className="w-4 h-4 text-emerald-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -58,14 +74,14 @@ export function TransactionFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por descrição ou categoria..."
-            className="w-full bg-slate-950/80 border border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition-all duration-200"
+            className="w-full glass-input rounded-2xl pl-10 pr-10 py-2.5 text-sm placeholder:text-zinc-500"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Limpar busca"
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
             >
               <svg
                 className="w-4 h-4"
@@ -82,36 +98,36 @@ export function TransactionFilters({
         </div>
 
         {/* SELETOR DE TIPO (TODOS / ENTRADAS / SAÍDAS) */}
-        <div className="flex bg-slate-950/80 p-1 rounded-2xl border border-slate-800/80 self-start sm:self-auto shrink-0">
+        <div className="flex glass-pill p-1 rounded-2xl self-start sm:self-auto shrink-0 shadow-sm">
           <button
             type="button"
-            onClick={() => onTypeChange('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            onClick={() => handleTypeSelect('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               selectedType === 'all'
-                ? 'bg-slate-800 text-slate-100 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/10 text-white shadow-sm border border-white/15'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             Todos
           </button>
           <button
             type="button"
-            onClick={() => onTypeChange('income')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            onClick={() => handleTypeSelect('income')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               selectedType === 'income'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'text-slate-400 hover:text-emerald-400'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm'
+                : 'text-zinc-400 hover:text-emerald-400'
             }`}
           >
             Entradas
           </button>
           <button
             type="button"
-            onClick={() => onTypeChange('expense')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            onClick={() => handleTypeSelect('expense')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               selectedType === 'expense'
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                : 'text-slate-400 hover:text-rose-400'
+                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-sm'
+                : 'text-zinc-400 hover:text-rose-400'
             }`}
           >
             Saídas
@@ -120,15 +136,15 @@ export function TransactionFilters({
       </div>
 
       {/* LINHA INFERIOR: CHIPS DE CATEGORIA */}
-      <div className="pt-2 border-t border-slate-800/40">
+      <div className="pt-2 border-t border-white/8">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
           <button
             type="button"
-            onClick={() => onCategoryChange('all')}
-            className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            onClick={() => handleCategorySelect('all')}
+            className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
               selectedCategory === 'all'
-                ? 'bg-slate-100 text-slate-900 font-semibold shadow-md'
-                : 'bg-slate-800/70 text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 border border-slate-700/50'
+                ? 'bg-white text-zinc-950 font-semibold shadow-md'
+                : 'glass-pill text-zinc-300 hover:text-white hover:border-white/20'
             }`}
           >
             Todas
@@ -140,11 +156,11 @@ export function TransactionFilters({
               <button
                 key={category}
                 type="button"
-                onClick={() => onCategoryChange(category)}
-                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                onClick={() => handleCategorySelect(category)}
+                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-emerald-500 text-slate-950 font-semibold shadow-md shadow-emerald-500/20'
-                    : 'bg-slate-800/70 text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 border border-slate-700/50'
+                    ? 'bg-emerald-500 text-zinc-950 font-semibold shadow-md shadow-emerald-500/25'
+                    : 'glass-pill text-zinc-300 hover:text-white hover:border-white/20'
                 }`}
               >
                 {category}
@@ -156,16 +172,16 @@ export function TransactionFilters({
 
       {/* RODAPÉ DO FILTRO: CONTADOR E BOTÃO LIMPAR FILTROS */}
       {hasActiveFilters && (
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/40">
+        <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-white/8">
           <span>
-            Exibindo <strong className="text-slate-200">{totalFilteredCount}</strong> de{' '}
-            <strong className="text-slate-200">{totalPeriodCount}</strong> movimentações
+            Exibindo <strong className="text-white">{totalFilteredCount}</strong> de{' '}
+            <strong className="text-white">{totalPeriodCount}</strong> movimentações
           </span>
 
           <button
             type="button"
-            onClick={onClearFilters}
-            className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-medium hover:underline transition-colors"
+            onClick={handleClear}
+            className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-medium hover:underline transition-colors cursor-pointer"
           >
             Limpar filtros
           </button>

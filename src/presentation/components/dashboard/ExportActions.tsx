@@ -1,4 +1,5 @@
 import { formatMonthYear } from '../../../core/formatters/date'
+import { soundFX } from '../../../core/sound/soundEffects'
 import { downloadBlob, openPrintWindow } from '../../../core/utils/download'
 import type { FinanceSummary, Transaction } from '../../../domain/models/transaction'
 import { generateCsvContent, generatePrintableHtml } from '../../../domain/services/exportService'
@@ -14,6 +15,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
 
   const handleExportCsv = () => {
     if (!hasTransactions) return
+    soundFX.playSuccess()
     const csv = generateCsvContent(transactions)
     const monthSuffix = selectedMonth === 'all' ? 'todos_periodos' : selectedMonth
     const filename = `extrato_myfinance_${monthSuffix}.csv`
@@ -22,6 +24,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
 
   const handleExportPdf = () => {
     if (!hasTransactions) return
+    soundFX.playSuccess()
     const periodLabel = formatMonthYear(selectedMonth)
     const html = generatePrintableHtml(transactions, summary, periodLabel)
     openPrintWindow(html)
@@ -35,7 +38,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
         disabled={!hasTransactions}
         title={hasTransactions ? 'Baixar planilha em formato CSV' : 'Sem dados para exportar'}
         aria-label="Exportar CSV"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-sm"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 shadow-sm cursor-pointer"
       >
         <svg
           className="w-3.5 h-3.5 text-emerald-400"
@@ -60,7 +63,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
         disabled={!hasTransactions}
         title={hasTransactions ? 'Imprimir extrato ou salvar como PDF' : 'Sem dados para exportar'}
         aria-label="Imprimir Extrato ou PDF"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shadow-sm"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 shadow-sm cursor-pointer"
       >
         <svg
           className="w-3.5 h-3.5 text-cyan-400"

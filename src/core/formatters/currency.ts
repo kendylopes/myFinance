@@ -10,3 +10,4 @@ export const formatCurrency = (value: number): string => {
 }
 
 export const formatBRL = formatCurrency
+export const formatCurrencyBRL = formatCurrency
