@@ -147,5 +147,3 @@ myFinance/
   - `Header.tsx` simplificado com status fixo "Nuvem Ativa" e perfil do usuário.
   - Suíte de testes atualizada: **92 testes aprovados** (20 arquivos no Vitest), Biome 100% limpo em 63 arquivos e build de produção compilado em 3.48s.
 - **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** para publicar a aplicação na web com URL pública HTTPS.
-
-

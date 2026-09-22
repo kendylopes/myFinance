@@ -111,7 +111,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
                             color: '#090a0f',
                           }}
                         >
-                          <Check className="w-3 h-3 stroke-[3]" />
+                          <Check className="w-3 h-3 stroke-3" />
                           Ativo
                         </span>
                       )}

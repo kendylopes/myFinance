@@ -135,7 +135,7 @@ export const Header = ({
               {userInitial}
             </div>
             <div className="hidden md:block text-left">
-              <span className="text-xs font-medium text-white block leading-tight truncate max-w-[120px]">
+              <span className="text-xs font-medium text-white block leading-tight truncate max-w-30">
                 {user.name || user.email}
               </span>
               <span className="text-[10px] text-zinc-400 block leading-tight">Autenticado</span>

@@ -283,7 +283,7 @@ export function Sidebar({
 
               {!isCollapsed && user && (
                 <div className="overflow-hidden text-left">
-                  <span className="text-xs font-semibold text-white block truncate max-w-[120px]">
+                  <span className="text-xs font-semibold text-white block truncate max-w-30">
                     {user.name || user.email}
                   </span>
                   <span className="text-[10px] text-zinc-400 block truncate">Online</span>
