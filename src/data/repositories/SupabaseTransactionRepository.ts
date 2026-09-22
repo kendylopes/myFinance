@@ -40,8 +40,6 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
         type: row.type as 'income' | 'expense',
         category: String(row.category),
         date: String(row.date),
-        origin: row.origin ? String(row.origin) : undefined,
-        destination: row.destination ? String(row.destination) : undefined,
       }))
     } catch (err) {
       console.error('[SupabaseTransactionRepository] Exceção ao buscar transações:', err)
@@ -57,8 +55,6 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
       type: data.type,
       category: data.category.trim() || 'Geral',
       date: data.date,
-      origin: data.origin?.trim() || null,
-      destination: data.destination?.trim() || null,
     }
 
     const { data: createdRow, error } = await client
@@ -79,8 +75,6 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
       type: createdRow.type as 'income' | 'expense',
       category: String(createdRow.category),
       date: String(createdRow.date),
-      origin: createdRow.origin ? String(createdRow.origin) : undefined,
-      destination: createdRow.destination ? String(createdRow.destination) : undefined,
     }
   }
 

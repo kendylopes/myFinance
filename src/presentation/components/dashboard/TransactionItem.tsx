@@ -58,22 +58,6 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
             </span>
             <span>•</span>
             <span>{formatDate(transaction.date)}</span>
-            {(transaction.origin || transaction.destination) && (
-              <>
-                <span>•</span>
-                <span className="text-[11px] text-zinc-300 flex items-center gap-1 font-mono">
-                  {transaction.origin && (
-                    <span className="text-zinc-400">{transaction.origin}</span>
-                  )}
-                  {transaction.origin && transaction.destination && (
-                    <span className="text-emerald-400/80">→</span>
-                  )}
-                  {transaction.destination && (
-                    <span className="text-zinc-200 font-medium">{transaction.destination}</span>
-                  )}
-                </span>
-              </>
-            )}
           </div>
         </div>
       </div>

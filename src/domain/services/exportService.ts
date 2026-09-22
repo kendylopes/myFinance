@@ -19,21 +19,17 @@ const escapeCsvField = (field: string | number): string => {
  */
 export const generateCsvContent = (transactions: Transaction[]): string => {
   const BOM = '\uFEFF'
-  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Origem', 'Destino', 'Valor (R$)'].join(
-    ';',
-  )
+  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor (R$)'].join(';')
 
   const rows = transactions.map((t) => {
     const formattedDate = formatDate(t.date)
     const title = escapeCsvField(t.title)
     const category = escapeCsvField(t.category || 'Geral')
     const type = t.type === 'income' ? 'Receita' : 'Despesa'
-    const origin = escapeCsvField(t.origin || '')
-    const destination = escapeCsvField(t.destination || '')
     // Formata o número com 2 casas decimais e vírgula como separador decimal
     const amountStr = t.amount.toFixed(2).replace('.', ',')
 
-    return [formattedDate, title, category, type, origin, destination, amountStr].join(';')
+    return [formattedDate, title, category, type, amountStr].join(';')
   })
 
   return BOM + [header, ...rows].join('\r\n')
@@ -57,7 +53,7 @@ export const generatePrintableHtml = (
 
   const rowsHtml =
     transactions.length === 0
-      ? '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>'
+      ? '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>'
       : transactions
           .map(
             (t, index) => `
@@ -65,9 +61,6 @@ export const generatePrintableHtml = (
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">${formatDate(t.date)}</td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #0f172a;">${t.title}</td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #475569;">${t.category || 'Geral'}</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
-          ${t.origin || t.destination ? `${t.origin || '-'} → ${t.destination || '-'}` : '-'}
-        </td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px;">
           <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; ${
             t.type === 'income'
@@ -209,10 +202,9 @@ export const generatePrintableHtml = (
     <thead>
       <tr>
         <th style="width: 15%;">Data</th>
-        <th style="width: 25%;">Descrição</th>
-        <th style="width: 15%;">Categoria</th>
-        <th style="width: 20%;">Origem → Destino</th>
-        <th style="width: 10%;">Tipo</th>
+        <th style="width: 35%;">Descrição</th>
+        <th style="width: 20%;">Categoria</th>
+        <th style="width: 15%;">Tipo</th>
         <th style="width: 15%; text-align: right;">Valor</th>
       </tr>
     </thead>

@@ -3,8 +3,10 @@ import type { AuthUser } from '../../core/auth/authService'
 import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/date'
 import {
   createBudgetRepository,
+  createCategoryRepository,
   createTransactionRepository,
 } from '../../data/repositories/repositoryFactory'
+import type { Category, CreateCategoryDTO } from '../../domain/models/categories'
 import type {
   BudgetProgress,
   CreateTransactionDTO,
@@ -13,6 +15,7 @@ import type {
   TransactionFilterType,
 } from '../../domain/models/transaction'
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
+import type { ICategoryRepository } from '../../domain/repositories/ICategoryRepository'
 import type { ITransactionRepository } from '../../domain/repositories/ITransactionRepository'
 import {
   calculateBudgetProgress,
@@ -27,6 +30,9 @@ export interface UseFinanceReturn {
   periodTransactions: Transaction[]
   filteredTransactions: Transaction[]
   availableCategories: string[]
+  categories: Category[]
+  addCategory: (dto: CreateCategoryDTO) => Promise<Category | null>
+  deleteCategory: (id: string) => Promise<boolean>
   summary: FinanceSummary
   globalSummary: FinanceSummary
   selectedMonth: string
@@ -60,6 +66,7 @@ export function useFinance(
   customTransactionRepo?: ITransactionRepository,
   customBudgetRepo?: IBudgetRepository,
   user?: AuthUser | null,
+  customCategoryRepo?: ICategoryRepository,
 ): UseFinanceReturn {
   const activeTransactionRepo = useMemo(() => {
     return customTransactionRepo || createTransactionRepository()
@@ -69,7 +76,12 @@ export function useFinance(
     return customBudgetRepo || createBudgetRepository()
   }, [customBudgetRepo])
 
+  const activeCategoryRepo = useMemo(() => {
+    return customCategoryRepo || createCategoryRepository()
+  }, [customCategoryRepo])
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
   const [budgetAmount, setBudgetAmount] = useState<number>(3000)
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -80,20 +92,30 @@ export function useFinance(
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<TransactionFilterType>('all')
 
+  // Carregamento de categorias personalizadas
+  const refreshCategories = useCallback(async () => {
+    try {
+      const data = await activeCategoryRepo.getAll()
+      setCategories(data)
+    } catch (err) {
+      console.error('[useFinance] Falha ao carregar categorias:', err)
+    }
+  }, [activeCategoryRepo])
+
   // Carregamento de dados de transações do repositório ativo
   const refresh = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await activeTransactionRepo.getAll()
-      setTransactions(data)
+      const [transData] = await Promise.all([activeTransactionRepo.getAll(), refreshCategories()])
+      setTransactions(transData)
     } catch (err) {
       console.error('[useFinance] Falha ao carregar transações:', err)
       setError('Não foi possível carregar os lançamentos financeiros.')
     } finally {
       setIsLoading(false)
     }
-  }, [activeTransactionRepo])
+  }, [activeTransactionRepo, refreshCategories])
 
   useEffect(() => {
     refresh()
@@ -134,7 +156,7 @@ export function useFinance(
     return filterTransactionsByMonth(transactions, selectedMonth)
   }, [transactions, selectedMonth])
 
-  // Extração das categorias distintas disponíveis no período/base
+  // Extração das categorias distintas disponíveis no período/base e cadastradas
   const availableCategories = useMemo<string[]>(() => {
     const set = new Set<string>()
     for (const item of transactions) {
@@ -142,8 +164,13 @@ export function useFinance(
         set.add(item.category.trim())
       }
     }
+    for (const cat of categories) {
+      if (cat.name?.trim()) {
+        set.add(cat.name.trim())
+      }
+    }
     return Array.from(set).sort()
-  }, [transactions])
+  }, [transactions, categories])
 
   // Filtragem reativa das transações com base na busca textual, categoria e tipo
   const filteredTransactions = useMemo<Transaction[]>(() => {
@@ -243,11 +270,51 @@ export function useFinance(
     [activeTransactionRepo],
   )
 
+  // Adicionar categoria personalizada
+  const addCategory = useCallback(
+    async (dto: CreateCategoryDTO): Promise<Category | null> => {
+      try {
+        setError(null)
+        const created = await activeCategoryRepo.create(dto)
+        setCategories((prev) => {
+          const exists = prev.some((c) => c.id === created.id)
+          return exists ? prev : [...prev, created]
+        })
+        return created
+      } catch (err) {
+        console.error('[useFinance] Falha ao criar categoria:', err)
+        setError('Erro ao salvar categoria personalizada.')
+        return null
+      }
+    },
+    [activeCategoryRepo],
+  )
+
+  // Deletar categoria personalizada
+  const deleteCategory = useCallback(
+    async (id: string): Promise<boolean> => {
+      try {
+        setError(null)
+        await activeCategoryRepo.delete(id)
+        setCategories((prev) => prev.filter((item) => item.id !== id))
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao excluir categoria:', err)
+        setError('Erro ao excluir categoria personalizada.')
+        return false
+      }
+    },
+    [activeCategoryRepo],
+  )
+
   return {
     transactions,
     periodTransactions,
     filteredTransactions,
     availableCategories,
+    categories,
+    addCategory,
+    deleteCategory,
     summary,
     globalSummary,
     selectedMonth,

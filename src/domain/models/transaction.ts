@@ -19,8 +19,6 @@ export interface Transaction {
   type: TransactionType
   category: TransactionCategory
   date: string
-  origin?: string
-  destination?: string
 }
 
 export interface CreateTransactionDTO {
@@ -29,8 +27,6 @@ export interface CreateTransactionDTO {
   type: TransactionType
   category: string
   date: string
-  origin?: string
-  destination?: string
 }
 
 export interface FinanceSummary {

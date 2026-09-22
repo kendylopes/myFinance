@@ -19,6 +19,8 @@ function App() {
     periodTransactions,
     filteredTransactions,
     availableCategories,
+    categories,
+    addCategory,
     summary,
     selectedMonth,
     setSelectedMonth,
@@ -120,7 +122,11 @@ function App() {
 
         {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA DO PERÍODO (DIREITA) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <TransactionForm onAdd={addTransaction} />
+          <TransactionForm
+            onAdd={addTransaction}
+            categories={categories}
+            onAddCategory={addCategory}
+          />
           <TransactionList
             transactions={filteredTransactions}
             isLoading={isLoading}

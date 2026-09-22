@@ -19,8 +19,6 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
     category TEXT NOT NULL,
     date DATE NOT NULL,
-    origin TEXT,
-    destination TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
@@ -30,7 +28,21 @@ CREATE INDEX IF NOT EXISTS idx_transactions_date ON public.transactions (date DE
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON public.transactions (type);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON public.transactions (category);
 
--- 3. Tabela de Metas / Orçamento Mensal (por Usuário)
+-- 3. Tabela de Categorias Personalizadas (Entrada e Saída)
+CREATE TABLE IF NOT EXISTS public.categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    name TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
+    icon TEXT NOT NULL DEFAULT 'Tag',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    UNIQUE (user_id, name, type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_categories_user_id ON public.categories (user_id);
+CREATE INDEX IF NOT EXISTS idx_categories_type ON public.categories (type);
+
+-- 4. Tabela de Metas / Orçamento Mensal (por Usuário)
 CREATE TABLE IF NOT EXISTS public.budgets (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
     id TEXT NOT NULL DEFAULT 'global',
@@ -42,8 +54,9 @@ CREATE TABLE IF NOT EXISTS public.budgets (
 -- ==============================================================================
 -- 🔒 Políticas de Segurança por Usuário (Row Level Security - RLS)
 -- ==============================================================================
--- Habilitar RLS em ambas as tabelas
+-- Habilitar RLS em todas as tabelas
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
 
 -- Transações: cada usuário autenticado manipula apenas os seus dados
@@ -61,6 +74,13 @@ CREATE POLICY "Transacoes do usuario autenticado - DELETE"
     ON public.transactions FOR DELETE
     TO authenticated
     USING (auth.uid() = user_id);
+
+-- Categorias: cada usuário autenticado manipula apenas as suas categorias personalizadas
+CREATE POLICY "Categorias do usuario autenticado - ALL"
+    ON public.categories FOR ALL
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- Metas Orçamentárias: cada usuário autenticado manipula apenas as suas metas
 CREATE POLICY "Metas do usuario autenticado - SELECT"

@@ -66,28 +66,54 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     expect(categoryInput).toHaveValue('Transporte')
   }, 20000)
 
-  it('deve enviar campos de origem e destino quando preenchidos', async () => {
+  it('deve permitir criar e selecionar uma nova categoria personalizada', async () => {
     const mockOnAdd = vi.fn().mockResolvedValue(true)
+    const mockOnAddCategory = vi.fn().mockResolvedValue({
+      id: 'custom-cat-1',
+      name: 'Pet Shop',
+      type: 'expense',
+      icon: 'Tag',
+      isCustom: true,
+    })
     const user = userEvent.setup()
 
-    render(<TransactionForm onAdd={mockOnAdd} />)
+    render(<TransactionForm onAdd={mockOnAdd} onAddCategory={mockOnAddCategory} />)
 
-    fireEvent.change(screen.getByTestId('input-title'), { target: { value: 'Compras da Semana' } })
-    fireEvent.change(screen.getByTestId('input-amount'), { target: { value: '250' } })
-    fireEvent.change(screen.getByTestId('input-origin'), { target: { value: 'Cartão Nubank' } })
-    fireEvent.change(screen.getByTestId('input-destination'), {
-      target: { value: 'Supermercado Carrefour' },
+    // Abre o dropdown de categorias
+    const selectBtn = screen.getByTestId('category-select-btn')
+    await user.click(selectBtn)
+
+    // Clica no botão para criar nova categoria
+    const createCatBtn = screen.getByRole('button', { name: /\+ Criar nova categoria/i })
+    await user.click(createCatBtn)
+
+    // Preenche o nome da nova categoria
+    const newCatInput = screen.getByPlaceholderText(/Ex: Dividendos, Pet Shop/i)
+    await user.type(newCatInput, 'Pet Shop')
+
+    // Clica em Salvar Categoria
+    const saveBtn = screen.getByRole('button', { name: /Salvar Categoria/i })
+    await user.click(saveBtn)
+
+    expect(mockOnAddCategory).toHaveBeenCalledWith({
+      name: 'Pet Shop',
+      type: 'expense',
+      icon: 'Tag',
     })
+
+    // Preenche os outros campos e submete
+    fireEvent.change(screen.getByTestId('input-title'), { target: { value: 'Vacina do cachorro' } })
+    fireEvent.change(screen.getByTestId('input-amount'), { target: { value: '120' } })
 
     const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
     await user.click(submitBtn)
 
     expect(mockOnAdd).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Compras da Semana',
-        amount: 250,
-        origin: 'Cartão Nubank',
-        destination: 'Supermercado Carrefour',
+        title: 'Vacina do cachorro',
+        amount: 120,
+        category: 'Pet Shop',
+        type: 'expense',
       }),
     )
   })
