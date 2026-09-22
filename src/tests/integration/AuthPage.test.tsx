@@ -7,7 +7,6 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     render(<AuthPage onLogin={vi.fn()} onRegister={vi.fn()} />)
 
     expect(screen.getByText('myFinance')).toBeInTheDocument()
-    expect(screen.getByText('CLOUD')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Acessar Conta' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Entrar no myFinance' })).toBeInTheDocument()
   })

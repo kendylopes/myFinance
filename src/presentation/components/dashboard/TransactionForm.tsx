@@ -1,6 +1,8 @@
 import {
   ArrowDownCircle,
+  ArrowDownRight,
   ArrowUpCircle,
+  ArrowUpRight,
   Calendar,
   Check,
   ChevronDown,
@@ -33,6 +35,8 @@ export const TransactionForm = ({ onAdd }: TransactionFormProps) => {
   const [autoSuggested, setAutoSuggested] = useState<string | null>(null)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [origin, setOrigin] = useState('')
+  const [destination, setDestination] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -138,6 +142,8 @@ export const TransactionForm = ({ onAdd }: TransactionFormProps) => {
       type,
       category: finalCategory,
       date,
+      origin: origin.trim() || undefined,
+      destination: destination.trim() || undefined,
     })
 
     setIsSubmitting(false)
@@ -146,6 +152,8 @@ export const TransactionForm = ({ onAdd }: TransactionFormProps) => {
       soundFX.playSuccess()
       setTitle('')
       setAmount('')
+      setOrigin('')
+      setDestination('')
       setCategory(type === 'expense' ? 'Alimentação' : 'Salário')
       setIsCustomCategory(false)
       setHasManualOverride(false)
@@ -410,7 +418,52 @@ export const TransactionForm = ({ onAdd }: TransactionFormProps) => {
           )}
         </div>
 
-        {/* Linha 5: Botão de Envio com Laser Shimmer */}
+        {/* Linha 5: Origem e Destino do Fluxo Financeiro (De onde vem / Para onde vai) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-white/5">
+          <div>
+            <label
+              htmlFor="tx-origin"
+              className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 mb-1.5"
+            >
+              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+              {type === 'expense' ? 'De onde sai? (Origem)' : 'De onde vem? (Fonte)'}
+            </label>
+            <input
+              id="tx-origin"
+              data-testid="input-origin"
+              type="text"
+              placeholder={
+                type === 'expense' ? 'Ex: Cartão Nubank, Carteira...' : 'Ex: Salário da Empresa...'
+              }
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+              className="w-full glass-input rounded-xl px-3.5 py-2.5 text-sm placeholder:text-zinc-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="tx-destination"
+              className="flex items-center gap-1.5 text-xs font-medium text-zinc-300 mb-1.5"
+            >
+              <ArrowDownRight className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
+              {type === 'expense' ? 'Para onde vai? (Destino)' : 'Conta de entrada (Destino)'}
+            </label>
+            <input
+              id="tx-destination"
+              data-testid="input-destination"
+              type="text"
+              placeholder={
+                type === 'expense' ? 'Ex: Supermercado, Netflix...' : 'Ex: Conta Corrente Itaú...'
+              }
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              className="w-full glass-input rounded-xl px-3.5 py-2.5 text-sm placeholder:text-zinc-500"
+            />
+          </div>
+        </div>
+
+        {/* Linha 6: Botão de Envio com Laser Shimmer */}
         <button
           type="submit"
           disabled={isSubmitting}

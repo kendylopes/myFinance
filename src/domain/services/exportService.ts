@@ -19,17 +19,21 @@ const escapeCsvField = (field: string | number): string => {
  */
 export const generateCsvContent = (transactions: Transaction[]): string => {
   const BOM = '\uFEFF'
-  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor (R$)'].join(';')
+  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Origem', 'Destino', 'Valor (R$)'].join(
+    ';',
+  )
 
   const rows = transactions.map((t) => {
     const formattedDate = formatDate(t.date)
     const title = escapeCsvField(t.title)
     const category = escapeCsvField(t.category || 'Geral')
     const type = t.type === 'income' ? 'Receita' : 'Despesa'
+    const origin = escapeCsvField(t.origin || '')
+    const destination = escapeCsvField(t.destination || '')
     // Formata o número com 2 casas decimais e vírgula como separador decimal
     const amountStr = t.amount.toFixed(2).replace('.', ',')
 
-    return [formattedDate, title, category, type, amountStr].join(';')
+    return [formattedDate, title, category, type, origin, destination, amountStr].join(';')
   })
 
   return BOM + [header, ...rows].join('\r\n')
@@ -53,7 +57,7 @@ export const generatePrintableHtml = (
 
   const rowsHtml =
     transactions.length === 0
-      ? `<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>`
+      ? '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>'
       : transactions
           .map(
             (t, index) => `
@@ -61,6 +65,9 @@ export const generatePrintableHtml = (
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">${formatDate(t.date)}</td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #0f172a;">${t.title}</td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #475569;">${t.category || 'Geral'}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+          ${t.origin || t.destination ? `${t.origin || '-'} → ${t.destination || '-'}` : '-'}
+        </td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px;">
           <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; ${
             t.type === 'income'
@@ -88,98 +95,125 @@ export const generatePrintableHtml = (
   <style>
     @page { size: A4; margin: 15mm; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       color: #0f172a;
-      margin: 0;
-      padding: 20px;
       background: #ffffff;
+      margin: 0;
+      padding: 0;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 2px solid #0f172a;
+      align-items: center;
+      border-bottom: 2px solid #10b981;
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
-    .brand { font-size: 24px; font-weight: 800; color: #0f172a; }
-    .brand span { color: #10b981; }
-    .meta { text-align: right; font-size: 12px; color: #64748b; }
-    .cards {
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .logo span {
+      color: #10b981;
+    }
+    .meta {
+      text-align: right;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .card {
+      padding: 14px;
+      border-radius: 8px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 14px;
     }
-    .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 4px; }
-    .card-value { font-size: 18px; font-weight: 700; }
-    .income { color: #15803d; }
-    .expense { color: #be123c; }
-    .balance { color: #0f172a; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th {
-      background: #0f172a;
-      color: #ffffff;
-      font-size: 12px;
+    .card-title {
+      font-size: 11px;
       font-weight: 600;
-      text-align: left;
-      padding: 10px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 4px;
     }
-    th:last-child { text-align: right; }
+    .card-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .income-val { color: #15803d; }
+    .expense-val { color: #be123c; }
+    .balance-val { color: ${summary.balance >= 0 ? '#047857' : '#b91c1c'}; }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #cbd5e1;
+    }
     .footer {
       margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid #e2e8f0;
+      text-align: center;
       font-size: 11px;
       color: #94a3b8;
-      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 16px;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <div>
-      <div class="brand">my<span>Finance</span></div>
-      <div style="font-size: 13px; color: #475569; margin-top: 4px;">Relatório de Extrato Financeiro</div>
+      <div class="logo">my<span>Finance</span></div>
+      <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Extrato Consolidado • ${periodLabel}</div>
     </div>
     <div class="meta">
-      <div><strong>Período:</strong> ${periodLabel}</div>
       <div><strong>Emissão:</strong> ${issueDate}</div>
+      <div><strong>Total de Registros:</strong> ${transactions.length}</div>
     </div>
   </div>
 
-  <div class="cards">
+  <div class="summary-grid">
     <div class="card">
-      <div class="card-label">Total de Entradas</div>
-      <div class="card-value income">${formatBRL(summary.totalIncome)}</div>
+      <div class="card-title">Total de Receitas</div>
+      <div class="card-value income-val">+ ${formatBRL(summary.totalIncome)}</div>
     </div>
     <div class="card">
-      <div class="card-label">Total de Saídas</div>
-      <div class="card-value expense">${formatBRL(summary.totalExpense)}</div>
+      <div class="card-title">Total de Despesas</div>
+      <div class="card-value expense-val">- ${formatBRL(summary.totalExpense)}</div>
     </div>
     <div class="card">
-      <div class="card-label">Saldo do Período</div>
-      <div class="card-value balance">${formatBRL(summary.balance)}</div>
+      <div class="card-title">Saldo do Período</div>
+      <div class="card-value balance-val">${formatBRL(summary.balance)}</div>
     </div>
   </div>
 
-  <h3 style="font-size: 15px; margin-bottom: 8px; color: #1e293b;">Movimentações do Período (${transactions.length})</h3>
   <table>
     <thead>
       <tr>
-        <th style="border-top-left-radius: 6px;">Data</th>
-        <th>Descrição</th>
-        <th>Categoria</th>
-        <th>Tipo</th>
-        <th style="border-top-right-radius: 6px;">Valor</th>
+        <th style="width: 15%;">Data</th>
+        <th style="width: 25%;">Descrição</th>
+        <th style="width: 15%;">Categoria</th>
+        <th style="width: 20%;">Origem → Destino</th>
+        <th style="width: 10%;">Tipo</th>
+        <th style="width: 15%; text-align: right;">Valor</th>
       </tr>
     </thead>
     <tbody>
@@ -188,7 +222,7 @@ export const generatePrintableHtml = (
   </table>
 
   <div class="footer">
-    Documento gerado automaticamente pelo myFinance • Gestão Financeira Pessoal Inteligente
+    myFinance Cloud — Relatório financeiro de uso pessoal gerado automaticamente.
   </div>
 </body>
 </html>`

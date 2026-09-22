@@ -65,4 +65,30 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     const categoryInput = screen.getByTestId('input-category')
     expect(categoryInput).toHaveValue('Transporte')
   }, 20000)
+
+  it('deve enviar campos de origem e destino quando preenchidos', async () => {
+    const mockOnAdd = vi.fn().mockResolvedValue(true)
+    const user = userEvent.setup()
+
+    render(<TransactionForm onAdd={mockOnAdd} />)
+
+    fireEvent.change(screen.getByTestId('input-title'), { target: { value: 'Compras da Semana' } })
+    fireEvent.change(screen.getByTestId('input-amount'), { target: { value: '250' } })
+    fireEvent.change(screen.getByTestId('input-origin'), { target: { value: 'Cartão Nubank' } })
+    fireEvent.change(screen.getByTestId('input-destination'), {
+      target: { value: 'Supermercado Carrefour' },
+    })
+
+    const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
+    await user.click(submitBtn)
+
+    expect(mockOnAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Compras da Semana',
+        amount: 250,
+        origin: 'Cartão Nubank',
+        destination: 'Supermercado Carrefour',
+      }),
+    )
+  })
 })

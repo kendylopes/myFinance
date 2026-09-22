@@ -32,7 +32,7 @@ describe('exportService (Exportação CSV e HTML Imprimível)', () => {
     it('deve gerar cabeçalho CSV com separador ponto-e-vírgula e UTF-8 BOM', () => {
       const csv = generateCsvContent([])
       expect(csv.startsWith('\uFEFF')).toBe(true)
-      expect(csv).toContain('Data;Descrição;Categoria;Tipo;Valor (R$)')
+      expect(csv).toContain('Data;Descrição;Categoria;Tipo;Origem;Destino;Valor (R$)')
     })
 
     it('deve formatar linhas de dados com valores decimais brasileiros e escape de aspas', () => {
@@ -41,10 +41,10 @@ describe('exportService (Exportação CSV e HTML Imprimível)', () => {
 
       expect(lines).toHaveLength(3) // Cabeçalho + 2 linhas de dados
       // Linha 1: Salário
-      expect(lines[1]).toContain('Trabalho;Receita;4500,00')
+      expect(lines[1]).toContain('Trabalho;Receita;;;4500,00')
       // Linha 2: Título com ; e " escapados
       expect(lines[2]).toContain('"Mercado; Supermercado & ""Padaria"""')
-      expect(lines[2]).toContain('Alimentação;Despesa;325,50')
+      expect(lines[2]).toContain('Alimentação;Despesa;;;325,50')
     })
   })
 

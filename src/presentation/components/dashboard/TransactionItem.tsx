@@ -52,12 +52,28 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
           <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
             {transaction.title}
           </p>
-          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-400 mt-0.5">
             <span className="glass-pill px-2 py-0.5 rounded-lg text-[11px] text-zinc-300">
               {transaction.category}
             </span>
             <span>•</span>
             <span>{formatDate(transaction.date)}</span>
+            {(transaction.origin || transaction.destination) && (
+              <>
+                <span>•</span>
+                <span className="text-[11px] text-zinc-300 flex items-center gap-1 font-mono">
+                  {transaction.origin && (
+                    <span className="text-zinc-400">{transaction.origin}</span>
+                  )}
+                  {transaction.origin && transaction.destination && (
+                    <span className="text-emerald-400/80">→</span>
+                  )}
+                  {transaction.destination && (
+                    <span className="text-zinc-200 font-medium">{transaction.destination}</span>
+                  )}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
