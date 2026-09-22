@@ -1,15 +1,4 @@
-import {
-  CheckCircle2,
-  Cloud,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  PieChart,
-  ShieldCheck,
-  User,
-  Wallet,
-} from 'lucide-react'
+import { CheckCircle2, Eye, EyeOff, Lock, Mail, User, Wallet } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import type { AuthResult } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -114,22 +103,6 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
             <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
               Gestão financeira de alta precisão sincronizada 100% na nuvem
             </p>
-          </div>
-
-          {/* Badges de Benefícios */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[11px] text-zinc-300">
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/5 border border-white/5">
-              <Cloud className="w-3 h-3 text-emerald-400" />
-              PostgreSQL
-            </span>
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/5 border border-white/5">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Segurança RLS
-            </span>
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/5 border border-white/5">
-              <PieChart className="w-3 h-3 text-emerald-400" />
-              Metas & Relatórios
-            </span>
           </div>
         </div>
 
