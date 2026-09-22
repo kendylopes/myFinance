@@ -77,25 +77,25 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **86/86 testes passando** (Vitest em 19 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **93/93 testes passando** (Vitest em 20 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
-  - Geração de extrato CSV com cabeçalho, UTF-8 BOM, separador brasileiro e escape de caracteres (`generateCsvContent`).
-  - Geração de documento de impressão/PDF estruturado com cabeçalho, cards e tabela zebrada (`generatePrintableHtml`).
+  - Geração de extrato CSV com cabeçalho, UTF-8 BOM, separador brasileiro, escape de caracteres e colunas de Origem e Destino (`generateCsvContent`).
+  - Geração de documento de impressão/PDF estruturado com cabeçalho, cards, tabela zebrada e colunas de Origem e Destino (`generatePrintableHtml`).
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
-  - Integridade de gravação e exclusão nos repositórios de transações e orçamento (LocalStorage e Supabase).
+  - Integridade de gravação e exclusão nos repositórios de transações e orçamento 100% em Nuvem (Supabase PostgreSQL).
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
-  - **[NOVO] Persistência em Nuvem (Supabase):** Repositórios desacoplados `SupabaseTransactionRepository` e `SupabaseBudgetRepository` com tipagem estrita e cobertura unitária com mocks.
-  - **[NOVO] Injeção Dinâmica & Fallback:** `repositoryFactory` com detecção automática de credenciais e alternância transparente entre nuvem e armazenamento local.
+  - **[NOVO] 100% em Nuvem com Supabase Auth & RLS:** Aplicação com autenticação individual, dados isolados por usuário no banco e tela de Auth Gate (`AuthPage`) limpa e sem ruídos visuais.
+  - **[NOVO] Rastreamento de Fluxo Financeiro (Origem & Destino):** Campos para especificar "De onde vem / sai" e "Para onde vai" o dinheiro em cada movimentação, visíveis no formulário, lista de transações e exportações CSV/PDF.
   - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
   - **[NOVO] Auto-Classificação Inteligente:** Predição de categorias e tipos em tempo real conforme a digitação da descrição via serviço puro `categoryPredictor.ts`.
   - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
   - **[NOVO] Curva Vetorial de Tendência:** Validação unitária do componente vetorial `BalanceSparkline` com paths Bézier SVG puros.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint` em 55 arquivos).
-- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção em ~2.3s).
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint`).
+- **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção).
 - **Acessibilidade:** Padrão WAI-ARIA estrito, foco visível, contraste calibrado e compatibilidade total com leitores de tela e preferência de movimento reduzido (`prefers-reduced-motion`).
 
 ---
