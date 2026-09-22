@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **98/98 testes passando** (Vitest em 21 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **111/111 testes passando** (Vitest em 24 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
@@ -88,6 +88,8 @@ myFinance/
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
   - Integridade de gravação e exclusão nos repositórios de transações, categorias e orçamento 100% em Nuvem (Supabase PostgreSQL).
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
+  - **[NOVO] 5 Temas de Desenvolvedor (Emerald Matrix, Dracula, Tokyo Night, Catppuccin, One Dark):** Sistema reativo completo com variáveis CSS, prévias reais, efeitos táteis e persistência em `localStorage`.
+  - **[NOVO] Menu Lateral Responsivo (Sidebar):** Navegação fluida para desktop (expandida e compacta) e mobile (drawer deslizante), status do usuário e atalho rápido de temas.
   - **[NOVO] Categorias Personalizadas no Supabase (Entrada & Saída):** Usuários podem criar e salvar na nuvem suas próprias categorias de onde vem o dinheiro (Receitas) e para onde vai (Despesas) diretamente pelo formulário com isolamento total via Row Level Security (RLS).
   - **[NOVO] 100% em Nuvem com Supabase Auth & RLS:** Aplicação com autenticação individual, dados isolados por usuário no banco e tela de Auth Gate (`AuthPage`) limpa e sem ruídos visuais.
   - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
