@@ -20,7 +20,7 @@ O **myFinance** é uma aplicação web moderna de gestão financeira pessoal e p
 - **Ícones:** Lucide React (`lucide-react@^1.47.0`)
 - **Qualidade de Código & Linter:** Biome 2.5 (`@biomejs/biome@2.5.14`) — substitui ESLint e Prettier com checagens em ~60ms
 - **Suíte de Testes:** Vitest 5 (`vitest@^5.0.1`), React Testing Library (`@testing-library/react@^16.3.3`), Jest DOM (`@testing-library/jest-dom@^7.0.1`), JSDOM (`jsdom@^30.1.0`)
-- **Persistência:** `LocalStorageTransactionRepository` implementando contrato `ITransactionRepository` (desacoplamento total para futura integração com Supabase ou REST)
+- **Persistência & Backend:** 100% em Nuvem via **Supabase PostgreSQL** (`@supabase/supabase-js@^2.116.0`) com isolamento estrito por usuário via **Row Level Security (RLS)** e **Supabase Auth**.
 
 ---
 
@@ -138,13 +138,12 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluído com êxito o **Cadastro e Autenticação de Usuários (Supabase Auth)**:
-  - Migração de banco aplicada com vinculação por `user_id` e RLS por usuário.
-  - Implementado `authService.ts` com suporte completo a login, cadastro com metadados de nome, logout e tradução amigável de erros.
-  - Implementado `useAuth.ts` e `AuthModal.tsx` com tabs deslizantes e validação instantânea.
-  - `Header.tsx` exibe avatar do usuário, nome, botão de logout e badge dinâmico de status.
-  - `repositoryFactory.ts` e `useFinance.ts` alternam de forma reativa entre Modo Convidado (LocalStorage) e Nuvem Ativa (Supabase).
-  - Suíte de testes expandida para **98 testes aprovados** (21 arquivos no Vitest), Biome 100% limpo em 65 arquivos e build de produção validado.
-- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** para disponibilizar a aplicação publicamente na internet.
+- **Última Ação:** Concluída a transição para **100% Nuvem (Supabase Only)** & **Remoção de LocalStorage**:
+  - Removidos repositórios locais (`LocalStorageTransactionRepository` e `LocalStorageBudgetRepository`).
+  - Implementado o **Auth Gate** mandatório (`AuthPage.tsx`): o Dashboard agora só é acessível após login ou cadastro.
+  - O banco de dados PostgreSQL no Supabase é a fonte da verdade exclusiva com **Row Level Security (RLS)** por usuário.
+  - `Header.tsx` simplificado com status fixo "Nuvem Ativa" e perfil do usuário.
+  - Suíte de testes atualizada: **92 testes aprovados** (20 arquivos no Vitest), Biome 100% limpo em 63 arquivos e build de produção compilado em 3.48s.
+- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** para publicar a aplicação na web com URL pública HTTPS.
 
 

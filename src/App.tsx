@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { Wallet } from 'lucide-react'
 import { getCurrentYearMonth } from './core/formatters/date'
-import { AuthModal } from './presentation/components/auth/AuthModal'
+import { AuthPage } from './presentation/components/auth/AuthPage'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
@@ -12,8 +12,7 @@ import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
 
 function App() {
-  const { user, login, register, logout } = useAuth()
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const { user, isLoading: isAuthLoading, login, register, logout } = useAuth()
 
   const {
     transactions,
@@ -49,9 +48,32 @@ function App() {
     setSelectedMonth(selectedMonth === 'all' ? getCurrentYearMonth() : 'all')
   }
 
+  // 1. Tela de Carregamento Inicial da Sessão na Nuvem
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#111215] flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4">
+          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/25 rounded-3xl backdrop-blur-md shadow-xl shadow-emerald-500/10 animate-pulse">
+            <Wallet className="w-10 h-10 text-emerald-400" />
+          </div>
+          <div className="flex items-center gap-2.5 text-xs text-zinc-400">
+            <span className="w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+            <span>Sincronizando com a nuvem...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 2. Auth Gate: Usuário não autenticado vê a tela de Login e Cadastro
+  if (!user) {
+    return <AuthPage onLogin={login} onRegister={register} />
+  }
+
+  // 3. Usuário Autenticado: Dashboard Completo conectado ao Supabase
   return (
     <div className="relative min-h-screen bg-[#111215] text-zinc-100 antialiased p-4 md:p-8 selection:bg-emerald-500/30 selection:text-emerald-200 overflow-x-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,255,0.03),rgba(17,18,21,0))]">
-      {/* Background Ambient Glow Orbs para Refração de Cristal Líquido Charcoal */}
+      {/* Background Ambient Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
         <div className="absolute -top-40 -left-40 w-125 h-125 bg-emerald-500/10 rounded-full blur-[140px] animate-liquid-slow" />
         <div className="absolute top-1/4 -right-40 w-137.5 h-137.5 bg-zinc-400/8 rounded-full blur-[150px] animate-liquid-reverse" />
@@ -60,12 +82,11 @@ function App() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-8">
-        {/* CABEÇALHO COM PERFIL DO USUÁRIO E TRIGGER DE AUTENTICAÇÃO */}
+        {/* CABEÇALHO DO USUÁRIO NA NUVEM */}
         <Header
           transactionCount={transactions.length}
           dataSource={dataSource}
           user={user}
-          onOpenAuth={() => setIsAuthModalOpen(true)}
           onLogout={logout}
         />
 
@@ -120,14 +141,6 @@ function App() {
           />
         </div>
       </div>
-
-      {/* MODAL DE LOGIN E CADASTRO */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLogin={login}
-        onRegister={register}
-      />
     </div>
   )
 }

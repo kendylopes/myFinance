@@ -4,7 +4,6 @@ import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/dat
 import {
   createBudgetRepository,
   createTransactionRepository,
-  getActiveDataSource,
 } from '../../data/repositories/repositoryFactory'
 import type {
   BudgetProgress,
@@ -51,7 +50,7 @@ export interface UseFinanceReturn {
   totalPeriodCount: number
   isLoading: boolean
   error: string | null
-  dataSource: 'supabase' | 'localStorage'
+  dataSource: 'supabase'
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   refresh: () => Promise<void>
@@ -62,18 +61,13 @@ export function useFinance(
   customBudgetRepo?: IBudgetRepository,
   user?: AuthUser | null,
 ): UseFinanceReturn {
-  // Se o usuário estiver autenticado, conectamos aos repositórios do Supabase; se não, usamos LocalStorage
-  const isUserAuthenticated = !!user
-
   const activeTransactionRepo = useMemo(() => {
-    if (customTransactionRepo) return customTransactionRepo
-    return createTransactionRepository(!isUserAuthenticated)
-  }, [customTransactionRepo, isUserAuthenticated])
+    return customTransactionRepo || createTransactionRepository()
+  }, [customTransactionRepo])
 
   const activeBudgetRepo = useMemo(() => {
-    if (customBudgetRepo) return customBudgetRepo
-    return createBudgetRepository(!isUserAuthenticated)
-  }, [customBudgetRepo, isUserAuthenticated])
+    return customBudgetRepo || createBudgetRepository()
+  }, [customBudgetRepo])
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
@@ -108,15 +102,17 @@ export function useFinance(
   // Carregamento reativo do orçamento para o mês selecionado
   useEffect(() => {
     let isMounted = true
-    activeBudgetRepo.getBudget(selectedMonth).then((amount) => {
-      if (isMounted) {
-        setBudgetAmount(amount)
-      }
-    })
+    if (user !== undefined) {
+      activeBudgetRepo.getBudget(selectedMonth).then((amount) => {
+        if (isMounted) {
+          setBudgetAmount(amount)
+        }
+      })
+    }
     return () => {
       isMounted = false
     }
-  }, [selectedMonth, activeBudgetRepo])
+  }, [selectedMonth, activeBudgetRepo, user])
 
   // Navegação de Meses
   const goToPreviousMonth = useCallback(() => {
@@ -274,7 +270,7 @@ export function useFinance(
     totalPeriodCount: periodTransactions.length,
     isLoading,
     error,
-    dataSource: getActiveDataSource(isUserAuthenticated),
+    dataSource: 'supabase',
     addTransaction,
     deleteTransaction,
     refresh,

@@ -1,7 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { describe, expect, it, vi } from 'vitest'
-import { DEFAULT_BUDGET_AMOUNT } from '../../data/repositories/LocalStorageBudgetRepository'
-import { SupabaseBudgetRepository } from '../../data/repositories/SupabaseBudgetRepository'
+import {
+  DEFAULT_BUDGET_AMOUNT,
+  SupabaseBudgetRepository,
+} from '../../data/repositories/SupabaseBudgetRepository'
 
 describe('SupabaseBudgetRepository (Metas em Nuvem)', () => {
   it('deve retornar DEFAULT_BUDGET_AMOUNT se o cliente não estiver configurado', async () => {

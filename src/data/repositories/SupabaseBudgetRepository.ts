@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 import { getSupabaseClient } from '../sources/supabaseClient'
-import { DEFAULT_BUDGET_AMOUNT } from './LocalStorageBudgetRepository'
+export const DEFAULT_BUDGET_AMOUNT = 3000
 
 export class SupabaseBudgetRepository implements IBudgetRepository {
   private client: SupabaseClient | null
