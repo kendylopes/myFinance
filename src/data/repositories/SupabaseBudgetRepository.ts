@@ -67,7 +67,7 @@ export class SupabaseBudgetRepository implements IBudgetRepository {
           budget_amount: safeAmount,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'id' },
+        { onConflict: 'user_id, id' },
       )
 
       if (error) {

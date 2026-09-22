@@ -7,19 +7,19 @@ import { SupabaseBudgetRepository } from './SupabaseBudgetRepository'
 import { SupabaseTransactionRepository } from './SupabaseTransactionRepository'
 
 /**
- * Retorna qual fonte de dados está ativa no momento.
+ * Retorna qual fonte de dados está ativa no momento com base no status do Supabase e do usuário.
  */
-export function getActiveDataSource(): 'supabase' | 'localStorage' {
-  return isSupabaseConfigured() ? 'supabase' : 'localStorage'
+export function getActiveDataSource(isUserAuthenticated = false): 'supabase' | 'localStorage' {
+  return isUserAuthenticated && isSupabaseConfigured() ? 'supabase' : 'localStorage'
 }
 
 /**
  * Cria a instância adequada do repositório de transações.
- * Se o Supabase estiver configurado com credenciais válidas, utiliza Supabase;
- * caso contrário, faz fallback seguro e transparente para LocalStorage.
+ * Se forceLocal for true ou o Supabase não estiver configurado, utiliza LocalStorage;
+ * caso contrário, utiliza Supabase em nuvem.
  */
-export function createTransactionRepository(): ITransactionRepository {
-  if (isSupabaseConfigured()) {
+export function createTransactionRepository(forceLocal = false): ITransactionRepository {
+  if (!forceLocal && isSupabaseConfigured()) {
     return new SupabaseTransactionRepository()
   }
   return new LocalStorageTransactionRepository()
@@ -28,8 +28,8 @@ export function createTransactionRepository(): ITransactionRepository {
 /**
  * Cria a instância adequada do repositório de metas orçamentárias.
  */
-export function createBudgetRepository(): IBudgetRepository {
-  if (isSupabaseConfigured()) {
+export function createBudgetRepository(forceLocal = false): IBudgetRepository {
+  if (!forceLocal && isSupabaseConfigured()) {
     return new SupabaseBudgetRepository()
   }
   return new LocalStorageBudgetRepository()

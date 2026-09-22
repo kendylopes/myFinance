@@ -1,13 +1,23 @@
-import { Cloud, Database, Volume2, VolumeX, Wallet } from 'lucide-react'
+import { Cloud, Database, LogOut, User, Volume2, VolumeX, Wallet } from 'lucide-react'
 import { useState } from 'react'
+import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 
 interface HeaderProps {
   transactionCount: number
   dataSource?: 'supabase' | 'localStorage'
+  user?: AuthUser | null
+  onOpenAuth?: () => void
+  onLogout?: () => void
 }
 
-export const Header = ({ transactionCount, dataSource = 'localStorage' }: HeaderProps) => {
+export const Header = ({
+  transactionCount,
+  dataSource = 'localStorage',
+  user = null,
+  onOpenAuth,
+  onLogout,
+}: HeaderProps) => {
   const [soundEnabled, setSoundEnabled] = useState(() => soundFX.isEnabled())
 
   const handleToggleSound = () => {
@@ -15,8 +25,14 @@ export const Header = ({ transactionCount, dataSource = 'localStorage' }: Header
     setSoundEnabled(newState)
   }
 
+  // Primeira letra para o avatar
+  const userInitial = user?.name
+    ? user.name.charAt(0).toUpperCase()
+    : user?.email?.charAt(0).toUpperCase() || 'U'
+
   return (
-    <header className="flex items-center justify-between border-b border-white/8 pb-6">
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/8 pb-6 gap-4">
+      {/* Logotipo e Descrição */}
       <div className="flex items-center gap-3.5">
         <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl backdrop-blur-md shadow-lg shadow-emerald-500/5">
           <Wallet className="w-8 h-8 text-emerald-400" aria-hidden="true" />
@@ -34,33 +50,66 @@ export const Header = ({ transactionCount, dataSource = 'localStorage' }: Header
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* Indicador de Status da Nuvem / Armazenamento */}
+      {/* Controles do Cabeçalho: Status, Auth, Som e Contador */}
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+        {/* Indicador de Nuvem / Local */}
         <div
-          className={`hidden xs:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium backdrop-blur-md transition-all ${
-            dataSource === 'supabase'
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium backdrop-blur-md transition-all ${
+            dataSource === 'supabase' && user
               ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
               : 'bg-white/5 border-white/10 text-zinc-400'
           }`}
           title={
-            dataSource === 'supabase'
-              ? 'Conectado à nuvem (Supabase PostgreSQL ativo)'
-              : 'Modo Local (LocalStorage). Configure o .env para sincronização em nuvem.'
+            dataSource === 'supabase' && user
+              ? `Conectado à nuvem como ${user.email}`
+              : 'Modo Local (LocalStorage). Faça login para sincronizar com a nuvem.'
           }
         >
-          {dataSource === 'supabase' ? (
+          {dataSource === 'supabase' && user ? (
             <>
               <Cloud className="w-3.5 h-3.5 text-emerald-400 animate-pulse" aria-hidden="true" />
-              <span>Nuvem Ativa</span>
+              <span className="hidden xs:inline">Nuvem Ativa</span>
             </>
           ) : (
             <>
               <Database className="w-3.5 h-3.5 text-zinc-400" aria-hidden="true" />
-              <span className="hidden sm:inline">Armazenamento Local</span>
-              <span className="sm:hidden">Local</span>
+              <span className="hidden xs:inline">Modo Local</span>
             </>
           )}
         </div>
+
+        {/* Perfil do Usuário ou Botão de Login / Cadastro */}
+        {user ? (
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-2xl glass-pill border border-emerald-500/20">
+            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-center">
+              {userInitial}
+            </div>
+            <div className="hidden md:block text-left">
+              <span className="text-xs font-medium text-white block leading-tight truncate max-w-[120px]">
+                {user.name || user.email}
+              </span>
+              <span className="text-[10px] text-zinc-400 block leading-tight">Autenticado</span>
+            </div>
+            <button
+              type="button"
+              onClick={onLogout}
+              title="Encerrar sessão"
+              aria-label="Sair da conta"
+              className="p-1.5 text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-white/5"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold backdrop-blur-md transition-all duration-200 cursor-pointer shadow-sm shadow-emerald-500/10 hover:shadow-emerald-500/20"
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>Entrar / Cadastrar</span>
+          </button>
+        )}
 
         {/* Botão de Micro-feedback Háptico/Sonoro */}
         <button
@@ -83,14 +132,13 @@ export const Header = ({ transactionCount, dataSource = 'localStorage' }: Header
           )}
         </button>
 
-        <div className="text-right hidden sm:block">
-          <div className="px-4 py-2 rounded-2xl glass-pill">
-            <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
-              Total de Registros
+        {/* Contador de Registros */}
+        <div className="hidden sm:block">
+          <div className="px-3.5 py-1.5 rounded-2xl glass-pill">
+            <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block leading-tight">
+              Registros
             </span>
-            <span className="text-sm font-semibold text-white">
-              {transactionCount} {transactionCount === 1 ? 'movimentação' : 'movimentações'}
-            </span>
+            <span className="text-xs font-semibold text-white">{transactionCount}</span>
           </div>
         </div>
       </div>

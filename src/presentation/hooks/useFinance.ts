@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { AuthUser } from '../../core/auth/authService'
 import { getAdjacentMonth, getCurrentYearMonth } from '../../core/formatters/date'
 import {
   createBudgetRepository,
@@ -21,10 +22,6 @@ import {
   filterTransactionsByMonth,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
-
-// Instâncias padrão dos repositórios (Nuvem com Supabase ou Fallback Seguro LocalStorage)
-const defaultTransactionRepository = createTransactionRepository()
-const defaultBudgetRepository = createBudgetRepository()
 
 export interface UseFinanceReturn {
   transactions: Transaction[]
@@ -61,9 +58,23 @@ export interface UseFinanceReturn {
 }
 
 export function useFinance(
-  transactionRepo: ITransactionRepository = defaultTransactionRepository,
-  budgetRepo: IBudgetRepository = defaultBudgetRepository,
+  customTransactionRepo?: ITransactionRepository,
+  customBudgetRepo?: IBudgetRepository,
+  user?: AuthUser | null,
 ): UseFinanceReturn {
+  // Se o usuário estiver autenticado, conectamos aos repositórios do Supabase; se não, usamos LocalStorage
+  const isUserAuthenticated = !!user
+
+  const activeTransactionRepo = useMemo(() => {
+    if (customTransactionRepo) return customTransactionRepo
+    return createTransactionRepository(!isUserAuthenticated)
+  }, [customTransactionRepo, isUserAuthenticated])
+
+  const activeBudgetRepo = useMemo(() => {
+    if (customBudgetRepo) return customBudgetRepo
+    return createBudgetRepository(!isUserAuthenticated)
+  }, [customBudgetRepo, isUserAuthenticated])
+
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
   const [budgetAmount, setBudgetAmount] = useState<number>(3000)
@@ -75,12 +86,12 @@ export function useFinance(
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<TransactionFilterType>('all')
 
-  // Carregamento inicial de dados de transações
+  // Carregamento de dados de transações do repositório ativo
   const refresh = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await transactionRepo.getAll()
+      const data = await activeTransactionRepo.getAll()
       setTransactions(data)
     } catch (err) {
       console.error('[useFinance] Falha ao carregar transações:', err)
@@ -88,7 +99,7 @@ export function useFinance(
     } finally {
       setIsLoading(false)
     }
-  }, [transactionRepo])
+  }, [activeTransactionRepo])
 
   useEffect(() => {
     refresh()
@@ -97,7 +108,7 @@ export function useFinance(
   // Carregamento reativo do orçamento para o mês selecionado
   useEffect(() => {
     let isMounted = true
-    budgetRepo.getBudget(selectedMonth).then((amount) => {
+    activeBudgetRepo.getBudget(selectedMonth).then((amount) => {
       if (isMounted) {
         setBudgetAmount(amount)
       }
@@ -105,7 +116,7 @@ export function useFinance(
     return () => {
       isMounted = false
     }
-  }, [selectedMonth, budgetRepo])
+  }, [selectedMonth, activeBudgetRepo])
 
   // Navegação de Meses
   const goToPreviousMonth = useCallback(() => {
@@ -182,7 +193,7 @@ export function useFinance(
 
       try {
         setError(null)
-        await budgetRepo.setBudget(selectedMonth, newAmount)
+        await activeBudgetRepo.setBudget(selectedMonth, newAmount)
         setBudgetAmount(newAmount)
         return true
       } catch (err) {
@@ -191,7 +202,7 @@ export function useFinance(
         return false
       }
     },
-    [selectedMonth, budgetRepo],
+    [selectedMonth, activeBudgetRepo],
   )
 
   // Adicionar transação com validação de domínio prévia
@@ -205,7 +216,7 @@ export function useFinance(
 
       try {
         setError(null)
-        const created = await transactionRepo.create(dto)
+        const created = await activeTransactionRepo.create(dto)
         setTransactions((prev) => [created, ...prev])
         return true
       } catch (err) {
@@ -214,7 +225,7 @@ export function useFinance(
         return false
       }
     },
-    [transactionRepo],
+    [activeTransactionRepo],
   )
 
   // Deletar transação
@@ -222,7 +233,7 @@ export function useFinance(
     async (id: string): Promise<boolean> => {
       try {
         setError(null)
-        const success = await transactionRepo.delete(id)
+        const success = await activeTransactionRepo.delete(id)
         if (success) {
           setTransactions((prev) => prev.filter((item) => item.id !== id))
         }
@@ -233,7 +244,7 @@ export function useFinance(
         return false
       }
     },
-    [transactionRepo],
+    [activeTransactionRepo],
   )
 
   return {
@@ -263,7 +274,7 @@ export function useFinance(
     totalPeriodCount: periodTransactions.length,
     isLoading,
     error,
-    dataSource: getActiveDataSource(),
+    dataSource: getActiveDataSource(isUserAuthenticated),
     addTransaction,
     deleteTransaction,
     refresh,

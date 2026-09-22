@@ -125,20 +125,26 @@ myFinance/
   - Implementação de `SupabaseTransactionRepository` e `SupabaseBudgetRepository` para sincronização remota, persistência em nuvem e suporte multi-dispositivo.
   - Script SQL de automação `supabase/schema.sql` com tabelas, índices e políticas de Row Level Security (RLS).
   - Indicador dinâmico de status no cabeçalho (*"☁️ Nuvem Ativa"* vs *"💾 Armazenamento Local"*).
+- [x] **🔒 Autenticação de Usuários (Supabase Auth):**
+  - Login e Cadastro para dados isolados por usuário via Supabase Auth.
+  - Tabelas `transactions` e `budgets` com `user_id` e políticas RLS `TO authenticated`.
+  - Serviço `authService.ts` e hook `useAuth.ts` integrados ao `Header.tsx` e `App.tsx`.
+  - Modal com padrão Awwwards e glassmorphism `AuthModal.tsx` com alternância instantânea de abas.
+  - Alternância automática e transparente entre Modo Local (convidado) e Nuvem Ativa (usuário autenticado).
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
-- [ ] **🔒 Autenticação de Usuários (Supabase Auth):**
-  - Login e Cadastro para dados isolados por usuário.
 
 ---
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída com êxito a **Integração e Provisionamento do Supabase em Produção**:
-  - Projeto `myfinance` provisionado na organização `devken` (Região `sa-east-1` - São Paulo).
-  - Executada migration inicial com as tabelas `transactions` e `budgets`, índices e políticas RLS.
-  - Arquivo `.env` configurado com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` ativas.
-  - Testes unitários e de integração 100% aprovados (86/86) e build de produção validado.
-- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** ou avançar com a **Autenticação de Usuários (Supabase Auth)**.
+- **Última Ação:** Concluído com êxito o **Cadastro e Autenticação de Usuários (Supabase Auth)**:
+  - Migração de banco aplicada com vinculação por `user_id` e RLS por usuário.
+  - Implementado `authService.ts` com suporte completo a login, cadastro com metadados de nome, logout e tradução amigável de erros.
+  - Implementado `useAuth.ts` e `AuthModal.tsx` com tabs deslizantes e validação instantânea.
+  - `Header.tsx` exibe avatar do usuário, nome, botão de logout e badge dinâmico de status.
+  - `repositoryFactory.ts` e `useFinance.ts` alternam de forma reativa entre Modo Convidado (LocalStorage) e Nuvem Ativa (Supabase).
+  - Suíte de testes expandida para **98 testes aprovados** (21 arquivos no Vitest), Biome 100% limpo em 65 arquivos e build de produção validado.
+- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** para disponibilizar a aplicação publicamente na internet.
 
 

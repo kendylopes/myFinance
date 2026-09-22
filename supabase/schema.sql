@@ -13,6 +13,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 2. Tabela de Transações Financeiras (Receitas e Despesas)
 CREATE TABLE IF NOT EXISTS public.transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
     title TEXT NOT NULL,
     amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
     type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
@@ -21,48 +22,52 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- Índices para buscas rápidas e ordenação por data
+-- Índices para buscas rápidas e ordenação por data e usuário
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON public.transactions (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON public.transactions (date DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON public.transactions (type);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON public.transactions (category);
 
--- 3. Tabela de Metas / Orçamento Mensal
+-- 3. Tabela de Metas / Orçamento Mensal (por Usuário)
 CREATE TABLE IF NOT EXISTS public.budgets (
-    id TEXT PRIMARY KEY DEFAULT 'global',
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    id TEXT NOT NULL DEFAULT 'global',
     budget_amount NUMERIC(12, 2) NOT NULL CHECK (budget_amount >= 0),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    PRIMARY KEY (user_id, id)
 );
 
--- Inserir orçamento padrão de R$ 3.000 se não existir
-INSERT INTO public.budgets (id, budget_amount)
-VALUES ('global', 3000.00)
-ON CONFLICT (id) DO NOTHING;
-
 -- ==============================================================================
--- 🔒 Políticas de Segurança (Row Level Security - RLS)
+-- 🔒 Políticas de Segurança por Usuário (Row Level Security - RLS)
 -- ==============================================================================
 -- Habilitar RLS em ambas as tabelas
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
 
--- Políticas para acesso público/anon (permite leitura, inserção, atualização e exclusão)
-CREATE POLICY "Permitir leitura anonima em transactions"
+-- Transações: cada usuário autenticado manipula apenas os seus dados
+CREATE POLICY "Transacoes do usuario autenticado - SELECT"
     ON public.transactions FOR SELECT
-    USING (true);
+    TO authenticated
+    USING (auth.uid() = user_id);
 
-CREATE POLICY "Permitir insercao anonima em transactions"
+CREATE POLICY "Transacoes do usuario autenticado - INSERT"
     ON public.transactions FOR INSERT
-    WITH CHECK (true);
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Permitir delecao anonima em transactions"
+CREATE POLICY "Transacoes do usuario autenticado - DELETE"
     ON public.transactions FOR DELETE
-    USING (true);
+    TO authenticated
+    USING (auth.uid() = user_id);
 
-CREATE POLICY "Permitir leitura anonima em budgets"
+-- Metas Orçamentárias: cada usuário autenticado manipula apenas as suas metas
+CREATE POLICY "Metas do usuario autenticado - SELECT"
     ON public.budgets FOR SELECT
-    USING (true);
+    TO authenticated
+    USING (auth.uid() = user_id);
 
-CREATE POLICY "Permitir upsert anonimo em budgets"
+CREATE POLICY "Metas do usuario autenticado - ALL"
     ON public.budgets FOR ALL
-    USING (true)
-    WITH CHECK (true);
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);

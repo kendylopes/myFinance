@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { getCurrentYearMonth } from './core/formatters/date'
+import { AuthModal } from './presentation/components/auth/AuthModal'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
@@ -6,9 +8,13 @@ import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
 import { TransactionForm } from './presentation/components/dashboard/TransactionForm'
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
 import { Header } from './presentation/components/layout/Header'
+import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
 
 function App() {
+  const { user, login, register, logout } = useAuth()
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+
   const {
     transactions,
     periodTransactions,
@@ -37,7 +43,7 @@ function App() {
     dataSource,
     addTransaction,
     deleteTransaction,
-  } = useFinance()
+  } = useFinance(undefined, undefined, user)
 
   const handleToggleAllPeriods = () => {
     setSelectedMonth(selectedMonth === 'all' ? getCurrentYearMonth() : 'all')
@@ -54,8 +60,14 @@ function App() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto space-y-8">
-        {/* CABEÇALHO DESACOPLADO */}
-        <Header transactionCount={transactions.length} dataSource={dataSource} />
+        {/* CABEÇALHO COM PERFIL DO USUÁRIO E TRIGGER DE AUTENTICAÇÃO */}
+        <Header
+          transactionCount={transactions.length}
+          dataSource={dataSource}
+          user={user}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
+          onLogout={logout}
+        />
 
         {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
         {error && (
@@ -108,6 +120,14 @@ function App() {
           />
         </div>
       </div>
+
+      {/* MODAL DE LOGIN E CADASTRO */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={login}
+        onRegister={register}
+      />
     </div>
   )
 }

@@ -49,7 +49,7 @@ describe('SupabaseBudgetRepository (Metas em Nuvem)', () => {
         id: '2026-09',
         budget_amount: 5000,
       }),
-      { onConflict: 'id' },
+      { onConflict: 'user_id, id' },
     )
   })
 })

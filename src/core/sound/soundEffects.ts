@@ -44,6 +44,10 @@ class SoundFX {
     return this.enabled
   }
 
+  public playPop(): void {
+    this.playClick()
+  }
+
   /**
    * Micro-clique tátil de vidro/cerâmica (curto, suave e elegante)
    */
