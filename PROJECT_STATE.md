@@ -77,19 +77,19 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **93/93 testes passando** (Vitest em 20 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **98/98 testes passando** (Vitest em 21 suítes):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
-  - Geração de extrato CSV com cabeçalho, UTF-8 BOM, separador brasileiro, escape de caracteres e colunas de Origem e Destino (`generateCsvContent`).
-  - Geração de documento de impressão/PDF estruturado com cabeçalho, cards, tabela zebrada e colunas de Origem e Destino (`generatePrintableHtml`).
+  - Geração de extrato CSV com cabeçalho, UTF-8 BOM, separador brasileiro e escape de caracteres (`generateCsvContent`).
+  - Geração de documento de impressão/PDF estruturado com cabeçalho, cards e tabela zebrada (`generatePrintableHtml`).
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
   - Validações estritas de inputs (valores positivos, descrições obrigatórias).
-  - Integridade de gravação e exclusão nos repositórios de transações e orçamento 100% em Nuvem (Supabase PostgreSQL).
+  - Integridade de gravação e exclusão nos repositórios de transações, categorias e orçamento 100% em Nuvem (Supabase PostgreSQL).
   - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
+  - **[NOVO] Categorias Personalizadas no Supabase (Entrada & Saída):** Usuários podem criar e salvar na nuvem suas próprias categorias de onde vem o dinheiro (Receitas) e para onde vai (Despesas) diretamente pelo formulário com isolamento total via Row Level Security (RLS).
   - **[NOVO] 100% em Nuvem com Supabase Auth & RLS:** Aplicação com autenticação individual, dados isolados por usuário no banco e tela de Auth Gate (`AuthPage`) limpa e sem ruídos visuais.
-  - **[NOVO] Rastreamento de Fluxo Financeiro (Origem & Destino):** Campos para especificar "De onde vem / sai" e "Para onde vai" o dinheiro em cada movimentação, visíveis no formulário, lista de transações e exportações CSV/PDF.
   - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
   - **[NOVO] Auto-Classificação Inteligente:** Predição de categorias e tipos em tempo real conforme a digitação da descrição via serviço puro `categoryPredictor.ts`.
   - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
