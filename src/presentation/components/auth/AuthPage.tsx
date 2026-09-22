@@ -92,13 +92,10 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
             <Wallet className="w-10 h-10 text-emerald-400" aria-hidden="true" />
           </div>
           <div>
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center">
               <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
                 myFinance
               </h1>
-              <span className="px-2.5 py-0.5 text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 rounded-full tracking-wide">
-                CLOUD
-              </span>
             </div>
             <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
               Gestão financeira de alta precisão sincronizada 100% na nuvem
