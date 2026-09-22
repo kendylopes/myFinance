@@ -134,13 +134,11 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída com êxito a **Integração com o Banco de Dados em Nuvem (Supabase)**:
-  - Implementado cliente singleton `supabaseClient.ts` com validação de credenciais.
-  - Implementados `SupabaseTransactionRepository.ts` e `SupabaseBudgetRepository.ts` respeitando estritamente os contratos de domínio `ITransactionRepository` e `IBudgetRepository`.
-  - Implementada a `repositoryFactory.ts` com fallback transparente para LocalStorage quando não houver credenciais.
-  - Criado o script `supabase/schema.sql` com tabelas, índices e políticas RLS.
-  - Adicionado badge de status dinâmico no Header informando o modo de conexão ativo.
-  - Suíte de testes expandida para **86/86 testes aprovados** (19 arquivos no Vitest), Biome 100% limpo em 55 arquivos e build de produção validado em 2.39s.
-- **Próximo Passo Recomendado:** Inserir as credenciais reais no arquivo `.env` (URL e Anon Key do Supabase) e/ou realizar o **Deploy Online no Vercel**.
+- **Última Ação:** Concluída com êxito a **Integração e Provisionamento do Supabase em Produção**:
+  - Projeto `myfinance` provisionado na organização `devken` (Região `sa-east-1` - São Paulo).
+  - Executada migration inicial com as tabelas `transactions` e `budgets`, índices e políticas RLS.
+  - Arquivo `.env` configurado com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` ativas.
+  - Testes unitários e de integração 100% aprovados (86/86) e build de produção validado.
+- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** ou avançar com a **Autenticação de Usuários (Supabase Auth)**.
 
 
