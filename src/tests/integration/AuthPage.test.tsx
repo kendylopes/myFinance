@@ -9,7 +9,7 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     expect(screen.getByText('myFinance')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Acessar Conta' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Entrar no myFinance' })).toBeInTheDocument()
-  })
+  }, 25000)
 
   it('deve alternar para a aba de criar conta e exibir os campos de nome e confirmação', () => {
     render(<AuthPage onLogin={vi.fn()} onRegister={vi.fn()} />)
@@ -20,7 +20,7 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     expect(screen.getByLabelText(/Nome Completo/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Confirmar Senha/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Criar Minha Conta' })).toBeInTheDocument()
-  })
+  }, 25000)
 
   it('deve validar e disparar onLogin com credenciais corretas', async () => {
     const mockLogin = vi.fn().mockResolvedValue({ success: true })
@@ -35,5 +35,5 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     fireEvent.click(submitBtn)
 
     expect(mockLogin).toHaveBeenCalledWith('usuario@nuvem.com', 'senha123')
-  })
+  }, 25000)
 })

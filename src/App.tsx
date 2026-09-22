@@ -150,7 +150,7 @@ export function AppContent() {
 
       {/* Área Principal de Conteúdo */}
       <div className="relative z-10 lg:pl-64 transition-all duration-300">
-        <main className="max-w-5xl mx-auto p-4 sm:p-6 md:p-8 space-y-8">
+        <main className="max-w-[1550px] mx-auto p-4 sm:p-6 md:p-8 space-y-6">
           {/* CABEÇALHO DO USUÁRIO NA NUVEM */}
           <Header
             transactionCount={transactions.length}
@@ -180,47 +180,55 @@ export function AppContent() {
             onToggleAllPeriods={handleToggleAllPeriods}
           />
 
-          {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
-          <div id="section-summary">
-            <SummaryCards summary={summary} />
-          </div>
+          {/* DIVISÃO DA TELA: COLUNA PRINCIPAL (ESQUERDA) + COLUNA LATERAL (DIREITA) */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+            {/* COLUNA PRINCIPAL (8/12 no desktop): CARDS DE RESUMO, GRÁFICO E LISTA */}
+            <div className="xl:col-span-8 space-y-6">
+              {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
+              <div id="section-summary">
+                <SummaryCards summary={summary} />
+              </div>
 
-          {/* BARRA DE META E ORÇAMENTO MENSAL */}
-          <div id="section-budget">
-            <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
-          </div>
+              {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
+              <ExpenseCategoryChart transactions={periodTransactions} />
 
-          {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-          <ExpenseCategoryChart transactions={periodTransactions} />
+              {/* LISTA E HISTÓRICO DE LANÇAMENTOS DO PERÍODO */}
+              <div id="section-transactions">
+                <TransactionList
+                  transactions={filteredTransactions}
+                  isLoading={isLoading}
+                  onDelete={deleteTransaction}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={setSelectedCategory}
+                  selectedType={selectedType}
+                  onTypeChange={setSelectedType}
+                  categories={availableCategories}
+                  totalFilteredCount={totalFilteredCount}
+                  totalPeriodCount={totalPeriodCount}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={clearFilters}
+                  exportSummary={summary}
+                  selectedMonth={selectedMonth}
+                />
+              </div>
+            </div>
 
-          {/* ÁREA PRINCIPAL: FORMULÁRIO (ESQUERDA) + LISTA DO PERÍODO (DIREITA) */}
-          <div
-            id="section-transactions"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start scroll-mt-6"
-          >
-            <TransactionForm
-              onAdd={addTransaction}
-              categories={categories}
-              onAddCategory={addCategory}
-            />
-            <TransactionList
-              transactions={filteredTransactions}
-              isLoading={isLoading}
-              onDelete={deleteTransaction}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              selectedType={selectedType}
-              onTypeChange={setSelectedType}
-              categories={availableCategories}
-              totalFilteredCount={totalFilteredCount}
-              totalPeriodCount={totalPeriodCount}
-              hasActiveFilters={hasActiveFilters}
-              onClearFilters={clearFilters}
-              exportSummary={summary}
-              selectedMonth={selectedMonth}
-            />
+            {/* COLUNA LATERAL DIREITA (4/12 no desktop): META/ORÇAMENTO E NOVO LANÇAMENTO */}
+            <div className="xl:col-span-4 space-y-6">
+              {/* BARRA DE META E ORÇAMENTO MENSAL */}
+              <div id="section-budget">
+                <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
+              </div>
+
+              {/* FORMULÁRIO DE CADASTRO DE TRANSAÇÕES */}
+              <TransactionForm
+                onAdd={addTransaction}
+                categories={categories}
+                onAddCategory={addCategory}
+              />
+            </div>
           </div>
         </main>
       </div>

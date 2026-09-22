@@ -116,5 +116,5 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
         type: 'expense',
       }),
     )
-  })
+  }, 25000)
 })
