@@ -35,7 +35,7 @@ describe('<ExpenseCategoryChart /> (Gráfico de Distribuição por Categoria)', 
     render(<ExpenseCategoryChart transactions={mockTransactions} />)
 
     expect(screen.getByTestId('expense-category-chart')).toBeInTheDocument()
-    expect(screen.getByText('Distribuição de Despesas')).toBeInTheDocument()
+    expect(screen.getByText('Despesas por Categorias')).toBeInTheDocument()
     expect(screen.getByTestId('cat-row-Moradia')).toBeInTheDocument()
     expect(screen.getByTestId('cat-row-Alimentação')).toBeInTheDocument()
     expect(screen.getByText('70%')).toBeInTheDocument()

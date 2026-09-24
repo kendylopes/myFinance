@@ -1,16 +1,26 @@
-import { Wallet } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight, Layers, Plus, Rocket, Wallet } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CurrencyProvider } from './core/currency/currencyContext'
 import { getCurrentYearMonth } from './core/formatters/date'
+import { DEMO_BUDGET_AMOUNT, getDemoTransactions } from './core/onboarding/demoData'
+import { soundFX } from './core/sound/soundEffects'
 import { ThemeProvider, useTheme } from './core/theme/themeContext'
+import type { Transaction } from './domain/models/transaction'
 import { AuthPage } from './presentation/components/auth/AuthPage'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
+import { CategoryAnalysisGrid } from './presentation/components/dashboard/CategoryAnalysisGrid'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
+import { FinancialFlowChart } from './presentation/components/dashboard/FinancialFlowChart'
+import { FinancialInsights } from './presentation/components/dashboard/FinancialInsights'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
 import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
-import { TransactionForm } from './presentation/components/dashboard/TransactionForm'
+import { TransactionItem } from './presentation/components/dashboard/TransactionItem'
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
+import { TransactionModal } from './presentation/components/dashboard/TransactionModal'
 import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
+import { OnboardingModal } from './presentation/components/onboarding/OnboardingModal'
+import { SettingsModal } from './presentation/components/settings/SettingsModal'
 import { ThemeSelectorModal } from './presentation/components/theme/ThemeSelectorModal'
 import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
@@ -22,6 +32,16 @@ export function AppContent() {
   const [activeSection, setActiveSection] = useState('dashboard')
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024
+    }
+    return false
+  })
 
   const {
     transactions,
@@ -50,13 +70,79 @@ export function AppContent() {
     totalPeriodCount,
     isLoading,
     error,
-    dataSource,
     addTransaction,
+    editTransaction,
     deleteTransaction,
   } = useFinance(undefined, undefined, user)
 
+  // Disparo automático de boas-vindas no primeiro acesso com 0 transações
+  useEffect(() => {
+    if (!user || isLoading) return
+    try {
+      const storageKey = `myfinance_onboarding_dismissed_${user.id}`
+      const isDismissed = localStorage.getItem(storageKey)
+      if (!isDismissed && transactions.length === 0) {
+        setIsOnboardingOpen(true)
+      }
+    } catch {
+      // Ignora erro de acesso a localStorage
+    }
+  }, [user, isLoading, transactions.length])
+
+  const handleDismissOnboarding = () => {
+    setIsOnboardingOpen(false)
+    if (user) {
+      try {
+        localStorage.setItem(`myfinance_onboarding_dismissed_${user.id}`, 'true')
+      } catch {
+        // Ignora
+      }
+    }
+  }
+
+  const handleInjectDemoData = async () => {
+    const demoList = getDemoTransactions()
+    for (const item of demoList) {
+      await addTransaction(item)
+    }
+    await updateBudget(DEMO_BUDGET_AMOUNT)
+    handleDismissOnboarding()
+  }
+
+  const handleCompleteZeroSetup = async (initialBalance: number, budgetAmount: number) => {
+    if (initialBalance > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      await addTransaction({
+        title: 'Saldo Inicial',
+        amount: initialBalance,
+        type: 'income',
+        category: 'Trabalho',
+        date: today,
+      })
+    }
+    if (budgetAmount > 0) {
+      await updateBudget(budgetAmount)
+    }
+    handleDismissOnboarding()
+  }
+
   const handleToggleAllPeriods = () => {
     setSelectedMonth(selectedMonth === 'all' ? getCurrentYearMonth() : 'all')
+  }
+
+  const handleOpenNewTransaction = () => {
+    setEditingTransaction(null)
+    setIsTxModalOpen(true)
+  }
+
+  const handleOpenEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx)
+    setIsTxModalOpen(true)
+  }
+
+  const handleCloseTxModal = () => {
+    setIsTxModalOpen(false)
+    setEditingTransaction(null)
   }
 
   const handleSelectSection = (section: string) => {
@@ -144,21 +230,26 @@ export function AppContent() {
         activeSection={activeSection}
         onSelectSection={handleSelectSection}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
-      {/* Área Principal de Conteúdo */}
-      <div className="relative z-10 lg:pl-64 transition-all duration-300">
-        <main className="max-w-[1550px] mx-auto p-4 sm:p-6 md:p-8 space-y-6">
-          {/* CABEÇALHO DO USUÁRIO NA NUVEM */}
+      {/* Área Principal de Conteúdo - Se adapta ao tamanho da tela e à sidebar expandida */}
+      <div
+        className={`relative z-10 ${
+          isSidebarCollapsed ? 'pl-14 sm:pl-16' : 'pl-48 sm:pl-52'
+        } transition-all duration-300 min-w-0`}
+      >
+        <main className="max-w-[1550px] mx-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-6 min-w-0">
+          {/* CABEÇALHO DA TELA ATIVA */}
           <Header
-            transactionCount={transactions.length}
-            dataSource={dataSource}
+            activeSection={activeSection}
             user={user}
             onLogout={logout}
-            onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
-            onOpenThemeModal={() => setIsThemeModalOpen(true)}
+            onOpenNewTransaction={handleOpenNewTransaction}
           />
 
           {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
@@ -180,61 +271,204 @@ export function AppContent() {
             onToggleAllPeriods={handleToggleAllPeriods}
           />
 
-          {/* DIVISÃO DA TELA: COLUNA PRINCIPAL (ESQUERDA) + COLUNA LATERAL (DIREITA) */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-            {/* COLUNA PRINCIPAL (8/12 no desktop): CARDS DE RESUMO, GRÁFICO E LISTA */}
-            <div className="xl:col-span-8 space-y-6">
+          {/* 1. TELA: DASHBOARD (Apenas Informações Principais: Resumo Financeiro, Gráfico de Categorias e Transações Recentes) */}
+          {activeSection === 'dashboard' && (
+            <div className="space-y-6">
               {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
               <div id="section-summary">
                 <SummaryCards summary={summary} />
               </div>
 
-              {/* GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-              <ExpenseCategoryChart transactions={periodTransactions} />
-
-              {/* LISTA E HISTÓRICO DE LANÇAMENTOS DO PERÍODO */}
-              <div id="section-transactions">
-                <TransactionList
-                  transactions={filteredTransactions}
-                  isLoading={isLoading}
-                  onDelete={deleteTransaction}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                  selectedType={selectedType}
-                  onTypeChange={setSelectedType}
-                  categories={availableCategories}
-                  totalFilteredCount={totalFilteredCount}
-                  totalPeriodCount={totalPeriodCount}
-                  hasActiveFilters={hasActiveFilters}
-                  onClearFilters={clearFilters}
-                  exportSummary={summary}
+              {/* INSIGHTS FINANCEIROS INTELIGENTES */}
+              <div id="section-insights">
+                <FinancialInsights
+                  transactions={periodTransactions}
+                  summary={summary}
                   selectedMonth={selectedMonth}
                 />
               </div>
-            </div>
 
-            {/* COLUNA LATERAL DIREITA (4/12 no desktop): META/ORÇAMENTO E NOVO LANÇAMENTO */}
-            <div className="xl:col-span-4 space-y-6">
-              {/* BARRA DE META E ORÇAMENTO MENSAL */}
-              <div id="section-budget">
+              {/* GRÁFICO DE FLUXO FINANCEIRO SEMESTRAL (ENTRADAS VS SAÍDAS VS SALDO) */}
+              <div id="section-flow-chart">
+                <FinancialFlowChart transactions={transactions} selectedMonth={selectedMonth} />
+              </div>
+
+              {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                {/* 1. GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
+                <div className="min-w-0">
+                  <ExpenseCategoryChart transactions={periodTransactions} />
+                </div>
+
+                {/* 2. CARD DE TRANSAÇÕES RECENTES */}
+                <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0">
+                  <div className="flex items-center justify-between border-b border-white/8 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+                      <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm">
+                        Transações Recentes
+                      </h2>
+                      <span className="text-xs text-zinc-400">
+                        ({periodTransactions.length} no período)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundFX.playClick()
+                        handleSelectSection('transactions')
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <span>Ver todos</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {periodTransactions.length === 0 ? (
+                    <div className="text-center py-10 text-zinc-400">
+                      <p className="text-sm">Nenhuma movimentação neste período.</p>
+                      <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playClick()
+                            handleOpenNewTransaction()
+                          }}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105"
+                          style={{
+                            backgroundColor: `${currentTheme.primaryColor}20`,
+                            borderColor: `${currentTheme.primaryColor}40`,
+                            color: currentTheme.primaryColor,
+                          }}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Adicionar Transação</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playClick()
+                            setIsOnboardingOpen(true)
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                        >
+                          <Rocket className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Guia de Início</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {periodTransactions.slice(0, 5).map((tx) => (
+                        <TransactionItem
+                          key={tx.id}
+                          transaction={tx}
+                          onDelete={deleteTransaction}
+                          onEdit={handleOpenEditTransaction}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. TELA: TRANSAÇÕES (Histórico Limpo em Largura Total com Busca, Filtros e Exportação) */}
+          {activeSection === 'transactions' && (
+            <div className="space-y-6 min-w-0" id="section-transactions">
+              <TransactionList
+                transactions={filteredTransactions}
+                isLoading={isLoading}
+                onDelete={deleteTransaction}
+                onEdit={handleOpenEditTransaction}
+                onOpenNewTransaction={handleOpenNewTransaction}
+                onOpenOnboarding={() => setIsOnboardingOpen(true)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                selectedType={selectedType}
+                onTypeChange={setSelectedType}
+                categories={availableCategories}
+                totalFilteredCount={totalFilteredCount}
+                totalPeriodCount={totalPeriodCount}
+                hasActiveFilters={hasActiveFilters}
+                onClearFilters={clearFilters}
+                exportSummary={summary}
+                selectedMonth={selectedMonth}
+              />
+            </div>
+          )}
+
+          {/* 3. TELA: PLANEJAMENTO (Metas, Teto Mensal e Comparativos) */}
+          {activeSection === 'budget' && (
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+              <div className="xl:col-span-7 space-y-6 min-w-0">
                 <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
               </div>
 
-              {/* FORMULÁRIO DE CADASTRO DE TRANSAÇÕES */}
-              <TransactionForm
-                onAdd={addTransaction}
-                categories={categories}
-                onAddCategory={addCategory}
-              />
+              <div className="xl:col-span-5 space-y-6 min-w-0">
+                <SummaryCards summary={summary} />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* 4. TELA: CATEGORIAS (Distribuição de Gastos e Origens) */}
+          {activeSection === 'categories' && (
+            <div className="space-y-6 min-w-0">
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                <div className="xl:col-span-8 space-y-6 min-w-0">
+                  <ExpenseCategoryChart transactions={periodTransactions} />
+                </div>
+
+                <div className="xl:col-span-4 space-y-6 min-w-0">
+                  <SummaryCards summary={summary} />
+                </div>
+              </div>
+
+              {/* GRID ANALÍTICO COMPLETO POR CATEGORIAS */}
+              <div className="glass-card p-5 sm:p-6 rounded-3xl shadow-xl">
+                <CategoryAnalysisGrid
+                  transactions={periodTransactions}
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat)
+                    handleSelectSection('transactions')
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
       {/* Modal Seletor dos 5 Temas Dev */}
       <ThemeSelectorModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
+
+      {/* Modal de Configurações do Sistema (Moeda Local, Tema Dark e Branco Normal) */}
+      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+
+      {/* Modal de Boas-Vindas Inteligente (Onboarding) */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={handleDismissOnboarding}
+        onInjectDemoData={handleInjectDemoData}
+        onCompleteZeroSetup={handleCompleteZeroSetup}
+        userName={user?.name}
+      />
+
+      {/* Modal de Nova Transação / Editar Transação (Receita / Despesa) */}
+      <TransactionModal
+        isOpen={isTxModalOpen}
+        onClose={handleCloseTxModal}
+        onAdd={addTransaction}
+        onEdit={editTransaction}
+        transactionToEdit={editingTransaction}
+        categories={categories}
+        onAddCategory={addCategory}
+      />
     </div>
   )
 }
@@ -242,7 +476,9 @@ export function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <CurrencyProvider>
+        <AppContent />
+      </CurrencyProvider>
     </ThemeProvider>
   )
 }

@@ -17,6 +17,11 @@ export interface ITransactionRepository {
   delete(id: string): Promise<boolean>
 
   /**
+   * Atualiza uma transação existente pelo identificador único.
+   */
+  update(id: string, data: Partial<CreateTransactionDTO>): Promise<Transaction>
+
+  /**
    * Remove todas as transações (útil para testes ou reset de dados).
    */
   clear(): Promise<void>

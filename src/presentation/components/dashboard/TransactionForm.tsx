@@ -5,11 +5,14 @@ import {
   Check,
   ChevronDown,
   FolderPlus,
+  Pencil,
   PlusCircle,
   Sparkles,
   Tag,
+  X,
 } from 'lucide-react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
 import {
   type Category,
@@ -18,38 +21,85 @@ import {
   DEFAULT_INCOME_CATEGORIES,
   getCategoryIcon,
 } from '../../../domain/models/categories'
-import type { CreateTransactionDTO, TransactionType } from '../../../domain/models/transaction'
+import type {
+  CreateTransactionDTO,
+  Transaction,
+  TransactionType,
+} from '../../../domain/models/transaction'
 import { predictCategoryFromDescription } from '../../../domain/services/categoryPredictor'
 import { useSpotlight } from '../../hooks/useSpotlight'
 
 interface TransactionFormProps {
   onAdd: (dto: CreateTransactionDTO) => Promise<boolean>
+  onEdit?: (id: string, dto: Partial<CreateTransactionDTO>) => Promise<boolean>
+  transactionToEdit?: Transaction | null
   categories?: Category[]
   onAddCategory?: (dto: CreateCategoryDTO) => Promise<Category | null>
+  initialType?: TransactionType
+  onSuccess?: () => void
+  onCancel?: () => void
+  isModal?: boolean
 }
 
 export const TransactionForm = ({
   onAdd,
+  onEdit,
+  transactionToEdit,
   categories = [],
   onAddCategory,
+  initialType,
+  onSuccess,
+  onCancel,
+  isModal = false,
 }: TransactionFormProps) => {
-  const [title, setTitle] = useState('')
-  const [amount, setAmount] = useState('')
-  const [type, setType] = useState<TransactionType>('expense')
-  const [category, setCategory] = useState('Alimentação')
+  const { currentCurrency } = useCurrency()
+  const [title, setTitle] = useState(transactionToEdit?.title || '')
+  const [amount, setAmount] = useState(transactionToEdit ? String(transactionToEdit.amount) : '')
+  const [type, setType] = useState<TransactionType>(
+    transactionToEdit?.type || initialType || 'expense',
+  )
+  const [category, setCategory] = useState(
+    transactionToEdit?.category || (initialType === 'income' ? 'Salário' : 'Alimentação'),
+  )
   const [isCustomCategory, setIsCustomCategory] = useState(false)
-  const [hasManualOverride, setHasManualOverride] = useState(false)
+  const [hasManualOverride, setHasManualOverride] = useState(Boolean(transactionToEdit))
   const [autoSuggested, setAutoSuggested] = useState<string | null>(null)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [isSavingCategory, setIsSavingCategory] = useState(false)
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(
+    transactionToEdit?.date || new Date().toISOString().split('T')[0],
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
   const formRef = useSpotlight<HTMLElement>()
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Reage à alteração de transactionToEdit
+  useEffect(() => {
+    if (transactionToEdit) {
+      setTitle(transactionToEdit.title)
+      setAmount(String(transactionToEdit.amount))
+      setType(transactionToEdit.type)
+      setCategory(transactionToEdit.category)
+      setDate(transactionToEdit.date)
+      setHasManualOverride(true)
+      setIsCustomCategory(false)
+      setAutoSuggested(null)
+    }
+  }, [transactionToEdit])
+
+  // Reage à alteração de initialType (ao reabrir modal ou alternar botões)
+  useEffect(() => {
+    if (!transactionToEdit && initialType) {
+      setType(initialType)
+      if (!hasManualOverride) {
+        setCategory(initialType === 'income' ? 'Salário' : 'Alimentação')
+      }
+    }
+  }, [initialType, hasManualOverride, transactionToEdit])
 
   // Lista de categorias filtrada pelo tipo ativo (Receita ou Despesa)
   const currentCategoryList = (() => {
@@ -193,26 +243,40 @@ export const TransactionForm = ({
 
     setIsSubmitting(true)
 
-    const success = await onAdd({
-      title: title.trim(),
-      amount: parsedAmount,
-      type,
-      category: finalCategory,
-      date,
-    })
+    let success = false
+    if (transactionToEdit && onEdit) {
+      success = await onEdit(transactionToEdit.id, {
+        title: title.trim(),
+        amount: parsedAmount,
+        type,
+        category: finalCategory,
+        date,
+      })
+    } else {
+      success = await onAdd({
+        title: title.trim(),
+        amount: parsedAmount,
+        type,
+        category: finalCategory,
+        date,
+      })
+    }
 
     setIsSubmitting(false)
 
     if (success) {
       soundFX.playSuccess()
-      setTitle('')
-      setAmount('')
-      setCategory(type === 'expense' ? 'Alimentação' : 'Salário')
-      setIsCustomCategory(false)
-      setHasManualOverride(false)
-      setAutoSuggested(null)
+      if (!transactionToEdit) {
+        setTitle('')
+        setAmount('')
+        setCategory(type === 'expense' ? 'Alimentação' : 'Salário')
+        setIsCustomCategory(false)
+        setHasManualOverride(false)
+        setAutoSuggested(null)
+      }
       setIsDropdownOpen(false)
       setFormError(null)
+      onSuccess?.()
     }
   }
 
@@ -220,19 +284,39 @@ export const TransactionForm = ({
     <section
       ref={formRef}
       aria-labelledby="form-title"
-      className="glass-card spotlight-card p-6 rounded-3xl space-y-5 relative z-20 overflow-visible"
+      className={`${
+        isModal ? 'glass-card border border-white/20 shadow-2xl shadow-black/60' : 'glass-card'
+      } spotlight-card p-6 rounded-3xl space-y-5 relative z-20 overflow-visible`}
     >
       <div className="flex items-center justify-between">
         <div>
           <h2 id="form-title" className="text-lg font-bold text-white tracking-tight">
-            Nova Movimentação
+            {transactionToEdit ? 'Editar Transação' : 'Nova Transação'}
           </h2>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Adicione uma receita ou despesa à sua conta
+            {transactionToEdit
+              ? 'Atualize os dados desta transação financeira'
+              : 'Adicione uma receita ou despesa à sua conta'}
           </p>
         </div>
-        <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-          <PlusCircle className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+        <div className="flex items-center gap-2">
+          <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+            {transactionToEdit ? (
+              <Pencil className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+            ) : (
+              <PlusCircle className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+            )}
+          </div>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              aria-label="Fechar formulário"
+              className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -307,7 +391,7 @@ export const TransactionForm = ({
           {/* Valor */}
           <div>
             <label htmlFor="tx-amount" className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Valor (R$)
+              Valor ({currentCurrency.symbol})
             </label>
             <input
               id="tx-amount"
@@ -564,9 +648,19 @@ export const TransactionForm = ({
             aria-hidden="true"
             className="absolute inset-0 w-24 bg-linear-to-r from-transparent via-white/35 to-transparent animate-shimmer-sweep pointer-events-none"
           />
-          <PlusCircle className="w-5 h-5 relative z-10" aria-hidden="true" />
+          {transactionToEdit ? (
+            <Pencil className="w-5 h-5 relative z-10" aria-hidden="true" />
+          ) : (
+            <PlusCircle className="w-5 h-5 relative z-10" aria-hidden="true" />
+          )}
           <span className="relative z-10">
-            {isSubmitting ? 'Registrando...' : 'Registrar Movimentação'}
+            {isSubmitting
+              ? transactionToEdit
+                ? 'Salvando alterações...'
+                : 'Registrando...'
+              : transactionToEdit
+                ? 'Salvar Alterações'
+                : 'Registrar Transação'}
           </span>
         </button>
       </form>

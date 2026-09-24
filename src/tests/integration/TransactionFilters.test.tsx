@@ -2,22 +2,19 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { TransactionFilters } from '../../presentation/components/dashboard/TransactionFilters'
 
-describe('<TransactionFilters /> (Filtros por Categoria & Busca Textual)', () => {
+describe('<TransactionFilters /> (Filtros e Busca por Descrição ou Categoria)', () => {
   const defaultProps = {
     searchQuery: '',
     onSearchChange: vi.fn(),
-    selectedCategory: 'all',
-    onCategoryChange: vi.fn(),
     selectedType: 'all' as const,
     onTypeChange: vi.fn(),
-    categories: ['Alimentação', 'Moradia', 'Transporte', 'Lazer'],
     totalFilteredCount: 5,
     totalPeriodCount: 10,
     hasActiveFilters: false,
     onClearFilters: vi.fn(),
   }
 
-  it('deve renderizar o input de busca, seletor de tipos e chips de categoria', () => {
+  it('deve renderizar o input de busca amplo e o seletor de tipo', () => {
     render(<TransactionFilters {...defaultProps} />)
 
     expect(screen.getByTestId('transaction-filters')).toBeInTheDocument()
@@ -25,9 +22,6 @@ describe('<TransactionFilters /> (Filtros por Categoria & Busca Textual)', () =>
     expect(screen.getByRole('button', { name: 'Todos' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Entradas' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Saídas' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Todas' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Alimentação' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Moradia' })).toBeInTheDocument()
   })
 
   it('deve disparar onSearchChange ao digitar no campo de busca', () => {
@@ -66,17 +60,6 @@ describe('<TransactionFilters /> (Filtros por Categoria & Busca Textual)', () =>
 
     fireEvent.click(screen.getByRole('button', { name: 'Saídas' }))
     expect(onTypeChange).toHaveBeenCalledWith('expense')
-  })
-
-  it('deve disparar onCategoryChange ao clicar em um chip de categoria', () => {
-    const onCategoryChange = vi.fn()
-    render(<TransactionFilters {...defaultProps} onCategoryChange={onCategoryChange} />)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Moradia' }))
-    expect(onCategoryChange).toHaveBeenCalledWith('Moradia')
-
-    fireEvent.click(screen.getByRole('button', { name: 'Todas' }))
-    expect(onCategoryChange).toHaveBeenCalledWith('all')
   })
 
   it('deve exibir contagem e botão de limpar filtros quando hasActiveFilters for true', () => {

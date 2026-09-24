@@ -95,6 +95,41 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
     }
   }
 
+  async update(id: string, data: Partial<CreateTransactionDTO>): Promise<Transaction> {
+    const client = this.getClient()
+    const payload: Record<string, unknown> = {}
+    if (data.title !== undefined) payload.title = data.title.trim()
+    if (data.amount !== undefined) payload.amount = Number(data.amount)
+    if (data.type !== undefined) payload.type = data.type
+    if (data.category !== undefined) payload.category = data.category.trim()
+    if (data.date !== undefined) payload.date = data.date
+
+    const { data: updatedRow, error } = await client
+      .from('transactions')
+      .update(payload)
+      .eq('id', id)
+      .select('*')
+      .maybeSingle()
+
+    if (error) {
+      console.error('[SupabaseTransactionRepository] Erro ao atualizar transação:', error.message)
+      throw new Error(error.message)
+    }
+
+    if (!updatedRow) {
+      throw new Error('Transação não encontrada ou sem permissão para modificação.')
+    }
+
+    return {
+      id: String(updatedRow.id),
+      title: String(updatedRow.title),
+      amount: Number(updatedRow.amount),
+      type: updatedRow.type as 'income' | 'expense',
+      category: String(updatedRow.category),
+      date: String(updatedRow.date),
+    }
+  }
+
   async clear(): Promise<void> {
     try {
       const client = this.getClient()

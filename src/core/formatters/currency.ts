@@ -1,13 +1,17 @@
+import { type CurrencyCode, formatCurrencyValue } from '../currency/currencyContext'
+
 /**
- * Formata um valor numérico para o padrão de moeda do Real Brasileiro (R$ 0,00).
+ * Formata um valor numérico para o padrão de moeda local selecionada nas configurações.
+ * Por padrão, formata em BRL (R$ 0,00) com fallback seguro.
  */
-export const formatCurrency = (value: number): string => {
-  if (Number.isNaN(value)) return 'R$ 0,00'
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value)
+export const formatCurrency = (value: number, currencyCode?: CurrencyCode): string => {
+  return formatCurrencyValue(value, currencyCode)
 }
 
-export const formatBRL = formatCurrency
-export const formatCurrencyBRL = formatCurrency
+export const formatBRL = (value: number): string => {
+  return formatCurrencyValue(value)
+}
+
+export const formatCurrencyBRL = (value: number): string => {
+  return formatCurrencyValue(value)
+}

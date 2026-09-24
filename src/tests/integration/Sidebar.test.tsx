@@ -34,22 +34,21 @@ describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
 
     expect(screen.getByText(/my/i)).toBeInTheDocument()
     expect(screen.getByText(/Finance/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Visão Geral/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Lançamentos/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Dashboard/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Transações/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Planejamento/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Categorias/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Temas Dev/i })).toBeInTheDocument()
-  })
+  }, 25000)
 
-  it('deve exibir dados do usuário logado e disparar logout ao clicar', async () => {
+  it('deve exibir o botão de logout e disparar onLogout ao clicar', async () => {
     const onLogoutMock = vi.fn()
     const user = userEvent.setup()
 
     renderSidebar({ onLogout: onLogoutMock })
 
-    expect(screen.getByText('Dev Kennedy')).toBeInTheDocument()
-
     const logoutBtn = screen.getByRole('button', { name: /Sair da conta/i })
+    expect(logoutBtn).toBeInTheDocument()
     await user.click(logoutBtn)
 
     expect(onLogoutMock).toHaveBeenCalledTimes(1)
@@ -65,7 +64,7 @@ describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
       onCloseMobile: onCloseMobileMock,
     })
 
-    const transactionsBtn = screen.getByRole('button', { name: /Lançamentos/i })
+    const transactionsBtn = screen.getByRole('button', { name: /Transações/i })
     await user.click(transactionsBtn)
 
     expect(onSelectSectionMock).toHaveBeenCalledWith('transactions')

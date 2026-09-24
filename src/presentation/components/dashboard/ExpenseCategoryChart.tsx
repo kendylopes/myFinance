@@ -45,7 +45,7 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
         <div className="flex items-center gap-2">
           <PieChart className="w-5 h-5 text-emerald-400" aria-hidden="true" />
           <h2 id="chart-title" className="text-lg font-semibold text-white drop-shadow-sm">
-            Distribuição de Despesas
+            Despesas por Categorias
           </h2>
         </div>
         {categoryExpenses.length > 0 && (

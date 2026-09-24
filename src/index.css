@@ -99,6 +99,134 @@
   --glow-orb-2: rgba(152, 195, 121, 0.14);
 }
 
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.94);
+  --bg-card-hover: #ffffff;
+  --bg-input: #ffffff;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(5, 150, 105, 0.5);
+  --color-primary: #059669;
+  --color-primary-rgb: 5, 150, 105;
+  --color-primary-hover: #10b981;
+  --color-primary-glow: rgba(5, 150, 105, 0.15);
+  --color-accent: #2563eb;
+  --color-income: #059669;
+  --color-expense: #e11d48;
+  --glow-orb-1: rgba(5, 150, 105, 0.04);
+  --glow-orb-2: rgba(37, 99, 235, 0.03);
+}
+
+/* Overrides de Alto Contraste para o Tema Branco Normal */
+[data-theme="light"] {
+  color: #1e293b;
+}
+
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-zinc-100 {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .text-zinc-200 {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .text-zinc-300 {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .text-zinc-400 {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .text-zinc-500 {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .glass-card {
+  background: var(--bg-card);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .glass-card-interactive:hover {
+  background: #ffffff;
+  border-color: var(--color-primary);
+  box-shadow:
+    0 15px 35px -5px rgba(0, 0, 0, 0.08),
+    0 0 20px var(--color-primary-glow);
+}
+
+[data-theme="light"] .glass-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .glass-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .border-white\/15,
+[data-theme="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .bg-white\/4,
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/8,
+[data-theme="light"] .bg-white\/10,
+[data-theme="light"] .bg-white\/15 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover,
+[data-theme="light"] .hover\:bg-white\/8:hover,
+[data-theme="light"] .hover\:bg-white\/10:hover,
+[data-theme="light"] .hover\:bg-white\/15:hover {
+  background-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+[data-theme="light"] .bg-zinc-900,
+[data-theme="light"] .bg-zinc-900\/80 {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Mantém texto branco onde o botão/badge tem fundo vibrante escuro/colorido */
+[data-theme="light"] .bg-emerald-500,
+[data-theme="light"] .bg-emerald-600,
+[data-theme="light"] .bg-rose-500,
+[data-theme="light"] .bg-rose-600 {
+  color: #ffffff !important;
+}
+[data-theme="light"] .bg-emerald-500 *,
+[data-theme="light"] .bg-emerald-600 *,
+[data-theme="light"] .bg-rose-500 *,
+[data-theme="light"] .bg-rose-600 * {
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 @keyframes liquid-drift-1 {
   0%,
   100% {

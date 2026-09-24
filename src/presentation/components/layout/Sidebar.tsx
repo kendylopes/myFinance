@@ -1,15 +1,14 @@
 import {
   ChevronLeft,
   ChevronRight,
-  Cloud,
   FolderTree,
   LayoutDashboard,
   LogOut,
   Palette,
   Receipt,
+  Settings,
   Target,
   Wallet,
-  X,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { AuthUser } from '../../../core/auth/authService'
@@ -22,32 +21,40 @@ export interface SidebarProps {
   activeSection: string
   onSelectSection: (section: string) => void
   onOpenThemeModal: () => void
-  isMobileOpen: boolean
+  onOpenSettingsModal?: () => void
+  isMobileOpen?: boolean
   onCloseMobile: () => void
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 export function Sidebar({
-  user,
+  user: _user,
   onLogout,
   activeSection,
   onSelectSection,
   onOpenThemeModal,
-  isMobileOpen,
+  onOpenSettingsModal,
+  isMobileOpen: _isMobileOpen,
   onCloseMobile,
+  isCollapsed: controlledCollapsed,
+  onToggleCollapse: controlledToggle,
 }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [internalCollapsed, setInternalCollapsed] = useState(false)
+  const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed
+
   const { currentTheme } = useTheme()
 
   const navItems = [
     {
       id: 'dashboard',
-      label: 'Visão Geral',
+      label: 'Dashboard',
       icon: LayoutDashboard,
       description: 'Métricas e Gráficos',
     },
     {
       id: 'transactions',
-      label: 'Lançamentos',
+      label: 'Transações',
       icon: Receipt,
       description: 'Entradas e Saídas',
     },
@@ -65,10 +72,6 @@ export function Sidebar({
     },
   ]
 
-  const userInitial = user?.name
-    ? user.name.charAt(0).toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() || 'U'
-
   const handleNavClick = (id: string) => {
     soundFX.playClick()
     onSelectSection(id)
@@ -77,98 +80,89 @@ export function Sidebar({
 
   const handleToggleCollapse = () => {
     soundFX.playClick()
-    setIsCollapsed(!isCollapsed)
+    if (controlledToggle) {
+      controlledToggle()
+    } else {
+      setInternalCollapsed(!internalCollapsed)
+    }
   }
 
   return (
     <>
-      {/* Backdrop para Mobile Drawer */}
-      {isMobileOpen && (
-        <div
-          role="presentation"
-          aria-hidden="true"
-          onClick={onCloseMobile}
-          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"
-        />
-      )}
-
-      {/* Container Principal da Sidebar */}
+      {/* Container Principal da Sidebar - Sempre visível, largura adaptável sem backdrop obstrutivo */}
       <aside
         aria-label="Menu Lateral de Navegação"
         className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-white/10 transition-all duration-300 ease-in-out ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } ${isCollapsed ? 'w-20' : 'w-64'}`}
+          isCollapsed ? 'w-14 sm:w-16' : 'w-48 sm:w-52'
+        }`}
         style={{
           backgroundColor: 'var(--bg-sidebar)',
           backdropFilter: 'blur(20px)',
         }}
       >
-        {/* Cabeçalho da Sidebar / Logo */}
-        <div className="p-4 sm:p-5 flex items-center justify-between border-b border-white/10">
-          <div className="flex items-center gap-3 overflow-hidden">
+        {/* Cabeçalho da Sidebar / Apenas Ícone Principal do App e Nome do App */}
+        {isCollapsed ? (
+          <div className="p-2.5 sm:p-3 flex flex-col items-center gap-2 border-b border-white/10">
             <div
-              className="p-2.5 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg"
+              className="w-8 h-8 rounded-xl border flex items-center justify-center shadow-md"
               style={{
                 backgroundColor: `${currentTheme.primaryColor}20`,
                 borderColor: `${currentTheme.primaryColor}40`,
                 color: currentTheme.primaryColor,
               }}
+              title="myFinance"
             >
-              <Wallet className="w-5 h-5" aria-hidden="true" />
+              <Wallet className="w-4 h-4" aria-hidden="true" />
             </div>
-
-            {!isCollapsed && (
-              <div className="overflow-hidden">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-base text-white tracking-tight leading-none">
-                    my<span style={{ color: currentTheme.primaryColor }}>Finance</span>
-                  </span>
-                  <span
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider"
-                    style={{
-                      backgroundColor: `${currentTheme.primaryColor}25`,
-                      color: currentTheme.primaryColor,
-                    }}
-                  >
-                    DEV
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-400 block mt-1 truncate">
-                  {currentTheme.name}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Botão fechar (Mobile) ou recolher (Desktop) */}
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onCloseMobile}
-              aria-label="Fechar menu lateral"
-              className="lg:hidden p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
             <button
               type="button"
               onClick={handleToggleCollapse}
-              aria-label={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-              title={isCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-              className="hidden lg:flex p-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 cursor-pointer transition-colors"
+              aria-label="Expandir menu lateral"
+              title="Expandir menu lateral"
+              className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
             >
-              {isCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronLeft className="w-4 h-4" />
-              )}
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
+        ) : (
+          <div className="p-3 sm:p-3.5 flex items-center justify-between border-b border-white/10">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div
+                className="w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 shadow-md"
+                style={{
+                  backgroundColor: `${currentTheme.primaryColor}20`,
+                  borderColor: `${currentTheme.primaryColor}40`,
+                  color: currentTheme.primaryColor,
+                }}
+              >
+                <Wallet className="w-4 h-4" aria-hidden="true" />
+              </div>
+
+              <div className="overflow-hidden">
+                <span className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-none">
+                  my<span style={{ color: currentTheme.primaryColor }}>Finance</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Botão para recolher a sidebar em qualquer tamanho de tela */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleToggleCollapse}
+                aria-label="Recolher menu lateral"
+                title="Recolher menu lateral"
+                className="flex p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Links de Navegação */}
-        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 p-2.5 space-y-1 overflow-y-auto custom-scrollbar">
           <div className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -179,8 +173,12 @@ export function Sidebar({
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer group ${
+                  title={item.label}
+                  className={`flex items-center transition-all cursor-pointer group ${
+                    isCollapsed
+                      ? 'w-8 h-8 mx-auto justify-center rounded-xl'
+                      : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
+                  } ${
                     isActive
                       ? 'text-white border shadow-md'
                       : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent'
@@ -192,7 +190,7 @@ export function Sidebar({
                   }}
                 >
                   <Icon
-                    className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110"
+                    className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"
                     style={{
                       color: isActive ? currentTheme.primaryColor : undefined,
                     }}
@@ -212,9 +210,9 @@ export function Sidebar({
           </div>
 
           {/* Divisor */}
-          <div className="pt-3 my-2 border-t border-white/10" />
+          <div className="pt-2 my-1.5 border-t border-white/10" />
 
-          {/* Botão de Temas Dev */}
+          {/* Botão de Temas Dev (Padronizado com os demais itens de navegação) */}
           <button
             type="button"
             onClick={() => {
@@ -222,90 +220,102 @@ export function Sidebar({
               onOpenThemeModal()
               onCloseMobile()
             }}
-            title={isCollapsed ? 'Temas de Desenvolvedor' : undefined}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/8 border border-white/10 transition-all cursor-pointer group relative overflow-hidden"
+            title="Temas Dev"
+            aria-label="Temas Dev"
+            className={`flex items-center text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent transition-all cursor-pointer group ${
+              isCollapsed
+                ? 'w-8 h-8 mx-auto justify-center rounded-xl'
+                : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
+            }`}
           >
-            <div
-              className="p-1 rounded-lg shrink-0"
-              style={{
-                backgroundColor: `${currentTheme.primaryColor}25`,
-                color: currentTheme.primaryColor,
-              }}
-            >
-              <Palette className="w-3.5 h-3.5" aria-hidden="true" />
-            </div>
-
+            <Palette
+              className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"
+              style={{ color: currentTheme.primaryColor }}
+              aria-hidden="true"
+            />
             {!isCollapsed && (
-              <div className="flex-1 text-left truncate flex items-center justify-between">
-                <div>
-                  <span className="block truncate text-white">Temas Dev</span>
-                  <span className="text-[10px] text-zinc-400 block truncate">5 paletas de IDE</span>
-                </div>
-                <span
-                  className="w-2.5 h-2.5 rounded-full ring-2 ring-black/50 shrink-0"
-                  style={{ backgroundColor: currentTheme.primaryColor }}
-                />
+              <div className="text-left overflow-hidden flex-1">
+                <span className="block truncate text-zinc-300 group-hover:text-white">
+                  Temas Dev
+                </span>
+                <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                  5 paletas de IDE
+                </span>
               </div>
             )}
           </button>
         </nav>
 
-        {/* Rodapé da Sidebar / Perfil do Desenvolvedor */}
-        <div className="p-3 border-t border-white/10 space-y-2">
-          {/* Card de Nuvem */}
-          {!isCollapsed && (
-            <div className="px-3 py-2 rounded-xl bg-white/4 border border-white/8 flex items-center gap-2 text-[11px] text-zinc-300">
-              <Cloud
-                className="w-3.5 h-3.5 animate-pulse shrink-0"
-                style={{ color: currentTheme.primaryColor }}
-              />
-              <span className="truncate">Supabase PostgreSQL</span>
-            </div>
-          )}
-
-          {/* Perfil & Logout */}
-          <div
-            className={`flex items-center ${
-              isCollapsed ? 'justify-center' : 'justify-between'
-            } p-2 rounded-2xl bg-white/5 border border-white/8`}
+        {/* Rodapé da Sidebar / Configurações & Perfil */}
+        <div className="p-2 border-t border-white/10 space-y-1">
+          {/* Botão de Configurações no lugar do antigo indicador de nuvem */}
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              if (onOpenSettingsModal) {
+                onOpenSettingsModal()
+              } else {
+                onOpenThemeModal()
+              }
+              onCloseMobile()
+            }}
+            title="Configurações"
+            aria-label="Configurações"
+            className={`flex items-center text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent transition-all cursor-pointer group ${
+              isCollapsed
+                ? 'w-8 h-8 mx-auto justify-center rounded-xl'
+                : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
+            }`}
           >
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div
-                className="w-7 h-7 rounded-xl font-bold text-xs flex items-center justify-center shrink-0 border"
-                style={{
-                  backgroundColor: `${currentTheme.primaryColor}25`,
-                  borderColor: `${currentTheme.primaryColor}50`,
-                  color: currentTheme.primaryColor,
-                }}
-              >
-                {userInitial}
+            <Settings
+              className="w-4 h-4 shrink-0 transition-transform group-hover:rotate-45"
+              aria-hidden="true"
+            />
+            {!isCollapsed && (
+              <div className="text-left overflow-hidden flex-1">
+                <span className="block truncate text-zinc-300 group-hover:text-white">
+                  Configurações
+                </span>
+                <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                  Preferências do App
+                </span>
               </div>
+            )}
+          </button>
 
-              {!isCollapsed && user && (
-                <div className="overflow-hidden text-left">
-                  <span className="text-xs font-semibold text-white block truncate max-w-30">
-                    {user.name || user.email}
+          {/* Botão de Logout */}
+          {onLogout && (
+            <button
+              type="button"
+              onClick={() => {
+                soundFX.playClick()
+                onLogout()
+              }}
+              title="Sair da conta"
+              aria-label="Sair da conta"
+              className={`flex items-center text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent transition-all cursor-pointer group ${
+                isCollapsed
+                  ? 'w-8 h-8 mx-auto justify-center rounded-xl'
+                  : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
+              }`}
+            >
+              <LogOut
+                className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"
+                aria-hidden="true"
+              />
+              {!isCollapsed && (
+                <div className="text-left overflow-hidden flex-1">
+                  <span className="block truncate text-zinc-300 group-hover:text-rose-300">
+                    Sair da conta
                   </span>
-                  <span className="text-[10px] text-zinc-400 block truncate">Online</span>
+                  <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                    Encerrar sessão
+                  </span>
                 </div>
               )}
-            </div>
-
-            {onLogout && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundFX.playClick()
-                  onLogout()
-                }}
-                title="Sair da conta"
-                aria-label="Sair da conta"
-                className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer shrink-0"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+            </button>
+          )}
         </div>
       </aside>
     </>

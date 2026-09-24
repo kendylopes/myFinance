@@ -19,7 +19,7 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     fireEvent.change(amountInput, { target: { value: '75.50' } })
 
     // Clica para enviar
-    const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
+    const submitBtn = screen.getByRole('button', { name: /Registrar Transação/i })
     await user.click(submitBtn)
 
     // Verifica se onAdd foi acionado com os dados corretos
@@ -42,7 +42,7 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     const amountInput = screen.getByTestId('input-amount')
     await user.type(amountInput, '100')
 
-    const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
+    const submitBtn = screen.getByRole('button', { name: /Registrar Transação/i })
     await user.click(submitBtn)
 
     expect(screen.getByRole('alert')).toHaveTextContent(/informe uma descrição/i)
@@ -105,7 +105,7 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
     fireEvent.change(screen.getByTestId('input-title'), { target: { value: 'Vacina do cachorro' } })
     fireEvent.change(screen.getByTestId('input-amount'), { target: { value: '120' } })
 
-    const submitBtn = screen.getByRole('button', { name: /Registrar Movimentação/i })
+    const submitBtn = screen.getByRole('button', { name: /Registrar Transação/i })
     await user.click(submitBtn)
 
     expect(mockOnAdd).toHaveBeenCalledWith(
@@ -117,4 +117,43 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
       }),
     )
   }, 25000)
+
+  it('deve pré-preencher os campos e acionar onEdit ao editar uma transação existente', async () => {
+    const mockOnAdd = vi.fn()
+    const mockOnEdit = vi.fn().mockResolvedValue(true)
+    const user = userEvent.setup()
+
+    const existingTx = {
+      id: 'tx-99',
+      title: 'Academia Mensal',
+      amount: 150,
+      type: 'expense' as const,
+      category: 'Saúde',
+      date: '2026-09-15',
+    }
+
+    render(<TransactionForm onAdd={mockOnAdd} onEdit={mockOnEdit} transactionToEdit={existingTx} />)
+
+    // Verifica pré-preenchimento
+    expect(screen.getByText('Editar Transação')).toBeInTheDocument()
+    expect(screen.getByTestId('input-title')).toHaveValue('Academia Mensal')
+    expect(screen.getByTestId('input-amount')).toHaveValue('150')
+
+    // Altera o valor
+    fireEvent.change(screen.getByTestId('input-amount'), { target: { value: '180' } })
+
+    // Clica no botão de Salvar Alterações
+    const submitBtn = screen.getByRole('button', { name: /Salvar Alterações/i })
+    await user.click(submitBtn)
+
+    expect(mockOnEdit).toHaveBeenCalledTimes(1)
+    expect(mockOnEdit).toHaveBeenCalledWith('tx-99', {
+      title: 'Academia Mensal',
+      amount: 180,
+      type: 'expense',
+      category: 'Saúde',
+      date: '2026-09-15',
+    })
+    expect(mockOnAdd).not.toHaveBeenCalled()
+  })
 })

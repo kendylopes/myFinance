@@ -54,4 +54,18 @@ describe('<TransactionItem />', () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1)
     expect(mockOnDelete).toHaveBeenCalledWith('tx-1')
   })
+
+  it('deve acionar onEdit com o objeto da transação ao clicar no botão de edição', async () => {
+    const mockOnDelete = vi.fn()
+    const mockOnEdit = vi.fn()
+    const user = userEvent.setup()
+    render(<TransactionItem transaction={expenseTx} onDelete={mockOnDelete} onEdit={mockOnEdit} />)
+
+    const editBtn = screen.getByTestId('edit-btn-tx-1')
+    expect(editBtn).toBeInTheDocument()
+    await user.click(editBtn)
+
+    expect(mockOnEdit).toHaveBeenCalledTimes(1)
+    expect(mockOnEdit).toHaveBeenCalledWith(expenseTx)
+  })
 })

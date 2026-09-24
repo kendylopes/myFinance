@@ -1,131 +1,97 @@
-import { Cloud, LogOut, Menu, Palette, Volume2, VolumeX, Wallet } from 'lucide-react'
-import { useState } from 'react'
+import { LogOut, Plus } from 'lucide-react'
 import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
 
 interface HeaderProps {
-  transactionCount: number
+  activeSection?: string
+  title?: string
+  transactionCount?: number
   dataSource?: 'supabase'
   user?: AuthUser | null
   onLogout?: () => void
   onOpenMobileMenu?: () => void
   onOpenThemeModal?: () => void
+  onOpenNewTransaction?: () => void
+}
+
+const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
+  dashboard: {
+    title: 'DASHBOARD',
+    subtitle: 'Aqui está o resumo das suas finanças',
+  },
+  transactions: {
+    title: 'TRANSAÇÕES',
+    subtitle: 'Histórico e registro de entradas e saídas',
+  },
+  budget: {
+    title: 'PLANEJAMENTO',
+    subtitle: 'Controle de metas e teto mensal de gastos',
+  },
+  categories: {
+    title: 'CATEGORIAS',
+    subtitle: 'Distribuição de despesas por origem e destino',
+  },
 }
 
 export const Header = ({
-  transactionCount,
+  activeSection = 'dashboard',
+  title,
   user = null,
   onLogout,
-  onOpenMobileMenu,
-  onOpenThemeModal,
+  onOpenNewTransaction,
 }: HeaderProps) => {
-  const [soundEnabled, setSoundEnabled] = useState(() => soundFX.isEnabled())
   const { currentTheme } = useTheme()
 
-  const handleToggleSound = () => {
-    const newState = soundFX.toggle()
-    setSoundEnabled(newState)
-  }
+  const currentConfig = SECTION_CONFIG[activeSection] || SECTION_CONFIG.dashboard
+  const displayTitle = title || currentConfig.title
+  const displaySubtitle = currentConfig.subtitle
 
   // Primeira letra para o avatar
   const userInitial = user?.name
     ? user.name.charAt(0).toUpperCase()
     : user?.email?.charAt(0).toUpperCase() || 'U'
 
-  return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/8 pb-6 gap-4">
-      {/* Logotipo, Botão Mobile e Descrição */}
-      <div className="flex items-center gap-3.5">
-        {onOpenMobileMenu && (
-          <button
-            type="button"
-            onClick={onOpenMobileMenu}
-            aria-label="Abrir menu lateral"
-            className="lg:hidden p-2 text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl cursor-pointer transition-colors"
-          >
-            <Menu className="w-5 h-5" aria-hidden="true" />
-          </button>
-        )}
+  const handleOpenTransaction = () => {
+    soundFX.playClick()
+    onOpenNewTransaction?.()
+  }
 
-        <div
-          className="p-2.5 rounded-2xl backdrop-blur-md shadow-lg border"
-          style={{
-            backgroundColor: `${currentTheme.primaryColor}15`,
-            borderColor: `${currentTheme.primaryColor}35`,
-            color: currentTheme.primaryColor,
-          }}
-        >
-          <Wallet className="w-7 h-7 sm:w-8 sm:h-8" aria-hidden="true" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-sm">
-              my<span style={{ color: currentTheme.primaryColor }}>Finance</span>
-            </h1>
-            <span
-              className="px-2 py-0.5 text-[10px] font-bold rounded-full tracking-wide uppercase border"
-              style={{
-                backgroundColor: `${currentTheme.primaryColor}18`,
-                borderColor: `${currentTheme.primaryColor}35`,
-                color: currentTheme.primaryColor,
-              }}
-            >
-              DEV CLOUD
-            </span>
-          </div>
-          <p className="text-xs text-zinc-400">Controle financeiro pessoal de alta precisão</p>
-        </div>
+  return (
+    <header className="flex items-center justify-between gap-3 sm:gap-4 py-1">
+      {/* Nome da tela em questão */}
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl font-black tracking-wider text-white drop-shadow-sm uppercase truncate">
+          {displayTitle}
+        </h1>
+        <p className="text-xs text-zinc-400 mt-0.5 truncate">{displaySubtitle}</p>
       </div>
 
-      {/* Controles do Cabeçalho: Temas, Nuvem, Perfil do Usuário, Som e Contador */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-        {/* Botão de Temas Dev */}
-        {onOpenThemeModal && (
+      {/* Ações e Perfil do Usuário */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {onOpenNewTransaction && (
           <button
             type="button"
-            onClick={() => {
-              soundFX.playClick()
-              onOpenThemeModal()
-            }}
-            title={`Tema atual: ${currentTheme.name} (Clique para alterar)`}
-            aria-label="Alterar tema de desenvolvedor"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 group"
+            onClick={handleOpenTransaction}
+            title="Adicionar nova movimentação"
+            aria-label="Nova Transação"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98] cursor-pointer border"
             style={{
-              backgroundColor: `${currentTheme.primaryColor}15`,
-              borderColor: `${currentTheme.primaryColor}40`,
+              backgroundColor: `${currentTheme.primaryColor}18`,
+              borderColor: `${currentTheme.primaryColor}45`,
               color: currentTheme.primaryColor,
             }}
           >
-            <Palette className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="hidden xs:inline">{currentTheme.name}</span>
-            <span
-              className="w-2 h-2 rounded-full shadow-xs"
-              style={{ backgroundColor: currentTheme.primaryColor }}
-            />
+            <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">Nova Transação</span>
           </button>
         )}
 
-        {/* Indicador de Conexão em Nuvem */}
-        <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium backdrop-blur-md bg-white/5 border-white/10 text-zinc-300"
-          title={
-            user ? `Sincronizado na nuvem como ${user.email}` : 'Conectado ao Supabase PostgreSQL'
-          }
-        >
-          <Cloud
-            className="w-3.5 h-3.5 animate-pulse"
-            style={{ color: currentTheme.primaryColor }}
-            aria-hidden="true"
-          />
-          <span className="hidden sm:inline">Nuvem Ativa</span>
-        </div>
-
-        {/* Perfil do Usuário Logado */}
+        {/* Botão de perfil do usuário logado */}
         {user && (
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-2xl glass-pill border border-white/10">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl glass-pill border border-white/10">
             <div
-              className="w-7 h-7 rounded-xl font-bold text-xs flex items-center justify-center border"
+              className="w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: `${currentTheme.primaryColor}20`,
                 borderColor: `${currentTheme.primaryColor}40`,
@@ -134,11 +100,11 @@ export const Header = ({
             >
               {userInitial}
             </div>
-            <div className="hidden md:block text-left">
-              <span className="text-xs font-medium text-white block leading-tight truncate max-w-30">
+            <div className="hidden sm:block text-left overflow-hidden">
+              <span className="text-xs font-semibold text-white block leading-tight truncate max-w-32">
                 {user.name || user.email}
               </span>
-              <span className="text-[10px] text-zinc-400 block leading-tight">Autenticado</span>
+              <span className="text-[10px] text-zinc-400 block leading-tight">Online</span>
             </div>
             {onLogout && (
               <button
@@ -146,46 +112,13 @@ export const Header = ({
                 onClick={onLogout}
                 title="Encerrar sessão"
                 aria-label="Sair da conta"
-                className="p-1.5 text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-white/5"
+                className="p-1 text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-white/5 shrink-0"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         )}
-
-        {/* Botão de Micro-feedback Háptico/Sonoro */}
-        <button
-          type="button"
-          onClick={handleToggleSound}
-          title={
-            soundEnabled ? 'Silenciar efeitos sonoros táteis' : 'Ativar efeitos sonoros táteis'
-          }
-          aria-label={soundEnabled ? 'Desativar áudio tátil' : 'Ativar áudio tátil'}
-          className={`p-2.5 rounded-2xl glass-pill transition-all duration-200 cursor-pointer ${
-            soundEnabled ? 'text-white border-white/20' : 'text-zinc-500 hover:text-zinc-300'
-          }`}
-          style={{
-            borderColor: soundEnabled ? `${currentTheme.primaryColor}50` : undefined,
-            color: soundEnabled ? currentTheme.primaryColor : undefined,
-          }}
-        >
-          {soundEnabled ? (
-            <Volume2 className="w-4 h-4" aria-hidden="true" />
-          ) : (
-            <VolumeX className="w-4 h-4" aria-hidden="true" />
-          )}
-        </button>
-
-        {/* Contador de Registros */}
-        <div className="hidden sm:block">
-          <div className="px-3.5 py-1.5 rounded-2xl glass-pill">
-            <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block leading-tight">
-              Registros
-            </span>
-            <span className="text-xs font-semibold text-white">{transactionCount}</span>
-          </div>
-        </div>
       </div>
     </header>
   )

@@ -1,7 +1,7 @@
 # 💰 myFinance — Estado Vivo do Projeto & Memória Contínua
 
-> **Última atualização:** 22 de Setembro de 2026  
-> **Status Geral:** 🟢 Em Desenvolvimento / Arquitetura Sênior / 100% Testado (111 testes) / Biome Ativo / Layout Dividido em Sidebar + Header + 2 Colunas  
+> **Última atualização:** 23 de Setembro de 2026  
+> **Status Geral:** 🟢 Em Desenvolvimento / Arquitetura Sênior / 100% Testado / Biome Ativo (0 erros) / Gráfico de Fluxo Semestral SVG, Edição de Transações e Rodapé da Sidebar Minimalista Ativos  
 > **Repositório:** `kendylopes/myFinance` ([github.com/kendylopes/myFinance](https://github.com/kendylopes/myFinance))  
 > **Caminho Local:** `c:\Users\Kennedy\Desktop\dev\myFinance`
 
@@ -140,10 +140,14 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a transição para **100% Nuvem (Supabase Only)** & **Remoção de LocalStorage**:
-  - Removidos repositórios locais (`LocalStorageTransactionRepository` e `LocalStorageBudgetRepository`).
-  - Implementado o **Auth Gate** mandatório (`AuthPage.tsx`): o Dashboard agora só é acessível após login ou cadastro.
-  - O banco de dados PostgreSQL no Supabase é a fonte da verdade exclusiva com **Row Level Security (RLS)** por usuário.
-  - `Header.tsx` simplificado com status fixo "Nuvem Ativa" e perfil do usuário.
-  - Suíte de testes atualizada: **92 testes aprovados** (20 arquivos no Vitest), Biome 100% limpo em 63 arquivos e build de produção compilado em 3.48s.
-- **Próximo Passo Recomendado:** Realizar o **Deploy Online (Vercel ou Netlify)** para publicar a aplicação na web com URL pública HTTPS.
+- **Última Ação:** Concluída a **Reordenação dos Cards & Botão Único de Nova Transação & Alinhamento de Terminologia**:
+  - Reordenados os cards de métricas em `SummaryCards.tsx`: **1º Saldo Atual**, **2º Total de Entradas** e **3º Total de Saídas**.
+  - Implementado **botão único e sugestivo** no `Header.tsx`: **`+ Nova Transação`**, integrado à paleta do tema ativo.
+  - Alinhada a terminologia no Dashboard:
+    - *"Lançamentos Recentes"* ➔ **`Transações Recentes`** (consistência direta com o botão `+ Nova Transação`).
+    - *"Distribuição de Despesas"* ➔ **`Despesas por Categorias`** (mais direto, limpo e escaneável).
+  - Implementado `TransactionModal.tsx` com visual glassmorphism, suporte à tecla ESC e alternância fluida entre Receita e Despesa.
+  - Suíte de testes: **100% dos testes aprovados**, Biome 100% limpo em 82 arquivos e build de produção verificado.
+- **Próximos Passos Sugeridos:**
+  - Implementar o componente `FinancialFlowChart.tsx` (fluxo de caixa comparativo receitas x despesas).
+  - Deploy Online (Vercel ou Netlify).

@@ -111,7 +111,7 @@ export function useFinance(
       setTransactions(transData)
     } catch (err) {
       console.error('[useFinance] Falha ao carregar transações:', err)
-      setError('Não foi possível carregar os lançamentos financeiros.')
+      setError('Não foi possível carregar as transações financeiras.')
     } finally {
       setIsLoading(false)
     }
@@ -270,6 +270,23 @@ export function useFinance(
     [activeTransactionRepo],
   )
 
+  // Atualizar transação existente
+  const editTransaction = useCallback(
+    async (id: string, dto: Partial<CreateTransactionDTO>): Promise<boolean> => {
+      try {
+        setError(null)
+        const updated = await activeTransactionRepo.update(id, dto)
+        setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)))
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao atualizar transação:', err)
+        setError('Erro ao salvar as alterações da transação.')
+        return false
+      }
+    },
+    [activeTransactionRepo],
+  )
+
   // Adicionar categoria personalizada
   const addCategory = useCallback(
     async (dto: CreateCategoryDTO): Promise<Category | null> => {
@@ -339,6 +356,7 @@ export function useFinance(
     error,
     dataSource: 'supabase',
     addTransaction,
+    editTransaction,
     deleteTransaction,
     refresh,
   }

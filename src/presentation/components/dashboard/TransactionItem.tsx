@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -8,9 +8,10 @@ import type { Transaction } from '../../../domain/models/transaction'
 interface TransactionItemProps {
   transaction: Transaction
   onDelete: (id: string) => void
+  onEdit?: (transaction: Transaction) => void
 }
 
-export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps) => {
+export const TransactionItem = ({ transaction, onDelete, onEdit }: TransactionItemProps) => {
   const isIncome = transaction.type === 'income'
   const CategoryIcon = getCategoryIcon(transaction.category)
 
@@ -70,6 +71,22 @@ export const TransactionItem = ({ transaction, onDelete }: TransactionItemProps)
         >
           {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
         </span>
+
+        {onEdit && (
+          <button
+            type="button"
+            data-testid={`edit-btn-${transaction.id}`}
+            onClick={() => {
+              soundFX.playClick()
+              onEdit(transaction)
+            }}
+            aria-label={`Editar transação ${transaction.title}`}
+            title="Editar transação"
+            className="p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <Pencil className="w-4 h-4" aria-hidden="true" />
+          </button>
+        )}
 
         <button
           type="button"
