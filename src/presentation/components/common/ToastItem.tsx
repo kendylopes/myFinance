@@ -97,7 +97,7 @@ export function ToastItem({ toast, onDismiss }: ToastItemProps) {
       aria-live="polite"
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
-      className={`pointer-events-auto relative overflow-hidden rounded-xl border p-4 shadow-xl backdrop-blur-md transition-all duration-200 bg-[var(--color-surface,rgba(15,16,19,0.92))] text-[var(--color-text,#f4f4f5)] ${
+      className={`pointer-events-auto relative overflow-hidden rounded-xl border p-4 shadow-xl backdrop-blur-md transition-all duration-200 bg-(--color-surface,rgba(15,16,19,0.92)) text-(--color-text,#f4f4f5) ${
         config.borderColor
       } ${
         isClosing
@@ -120,7 +120,7 @@ export function ToastItem({ toast, onDismiss }: ToastItemProps) {
         <div className="flex-1 min-w-0 pr-1">
           <h4 className="text-sm font-semibold tracking-tight text-white">{toast.title}</h4>
           {toast.description && (
-            <p className="mt-1 text-xs text-[var(--color-text-muted,#a1a1aa)] leading-relaxed">
+            <p className="mt-1 text-xs text-(--color-text-muted,#a1a1aa) leading-relaxed">
               {toast.description}
             </p>
           )}
