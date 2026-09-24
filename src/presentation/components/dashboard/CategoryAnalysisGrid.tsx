@@ -187,8 +187,8 @@ export function CategoryAnalysisGrid({
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       item.type === 'expense'
-                        ? 'bg-gradient-to-r from-rose-500 to-amber-500'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                        ? 'bg-linear-to-r from-rose-500 to-amber-500'
+                        : 'bg-linear-to-r from-emerald-500 to-teal-400'
                     }`}
                     style={{ width: `${Math.min(100, Math.max(4, item.percent))}%` }}
                   />
