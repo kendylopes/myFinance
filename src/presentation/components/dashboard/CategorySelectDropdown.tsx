@@ -1,6 +1,7 @@
 import { Check, ChevronDown, FolderPlus, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import {
   type Category,
   type CreateCategoryDTO,
@@ -31,6 +32,7 @@ export function CategorySelectDropdown({
   onEnableCustom,
   autoSuggested,
 }: CategorySelectDropdownProps) {
+  const toast = useToast()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -109,6 +111,10 @@ export function CategorySelectDropdown({
         })
       }
       soundFX.playSuccess()
+      toast.success(
+        'Categoria criada!',
+        `A categoria "${trimmed}" já está disponível para suas movimentações.`,
+      )
       onSelectCategory(trimmed)
       setNewCategoryName('')
       setIsCreatingNewCategory(false)

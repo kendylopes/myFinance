@@ -5,8 +5,10 @@ import { getCurrentYearMonth } from './core/formatters/date'
 import { DEMO_BUDGET_AMOUNT, getDemoTransactions } from './core/onboarding/demoData'
 import { soundFX } from './core/sound/soundEffects'
 import { ThemeProvider, useTheme } from './core/theme/themeContext'
+import { ToastProvider, useToast } from './core/toast/toastContext'
 import type { Transaction } from './domain/models/transaction'
 import { AuthPage } from './presentation/components/auth/AuthPage'
+import { ToastContainer } from './presentation/components/common/ToastContainer'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { CategoryAnalysisGrid } from './presentation/components/dashboard/CategoryAnalysisGrid'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
@@ -44,8 +46,14 @@ const ThemeSelectorModal = lazy(() =>
 )
 
 export function AppContent() {
+  const toast = useToast()
   const { user, isLoading: isAuthLoading, login, register, logout } = useAuth()
   const { currentTheme } = useTheme()
+
+  const handleLogout = async () => {
+    await logout()
+    toast.info('Sessão encerrada', 'Você saiu da sua conta myFinance.')
+  }
 
   const [activeSection, setActiveSection] = useState('dashboard')
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
@@ -244,7 +252,7 @@ export function AppContent() {
       {/* Menu Lateral (Sidebar) */}
       <Sidebar
         user={user}
-        onLogout={logout}
+        onLogout={handleLogout}
         activeSection={activeSection}
         onSelectSection={handleSelectSection}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
@@ -500,6 +508,8 @@ export function AppContent() {
           />
         )}
       </Suspense>
+
+      <ToastContainer />
     </div>
   )
 }
@@ -508,7 +518,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <CurrencyProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </CurrencyProvider>
     </ThemeProvider>
   )

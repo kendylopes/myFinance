@@ -2,6 +2,7 @@ import { Check, Sparkles, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { type ThemeId, useTheme } from '../../../core/theme/themeContext'
+import { useToast } from '../../../core/toast/toastContext'
 
 interface ThemeSelectorModalProps {
   isOpen: boolean
@@ -9,6 +10,7 @@ interface ThemeSelectorModalProps {
 }
 
 export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps) {
+  const toast = useToast()
   const { currentTheme, setTheme, availableThemes } = useTheme()
 
   useEffect(() => {
@@ -26,6 +28,10 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
   const handleSelectTheme = (id: ThemeId) => {
     soundFX.playClick()
     setTheme(id)
+    const selected = availableThemes.find((t) => t.id === id)
+    if (selected) {
+      toast.info('Tema Aplicado', `Visual alternado para ${selected.name}.`)
+    }
   }
 
   return (

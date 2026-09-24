@@ -2,6 +2,7 @@ import { ArrowDownCircle, ArrowUpCircle, Calendar, Pencil, PlusCircle, X } from 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import type { Category, CreateCategoryDTO } from '../../../domain/models/categories'
 import type {
   CreateTransactionDTO,
@@ -35,6 +36,7 @@ export const TransactionForm = ({
   onCancel,
   isModal = false,
 }: TransactionFormProps) => {
+  const toast = useToast()
   const { currentCurrency } = useCurrency()
   const [title, setTitle] = useState(transactionToEdit?.title || '')
   const [amount, setAmount] = useState(transactionToEdit ? String(transactionToEdit.amount) : '')
@@ -164,7 +166,10 @@ export const TransactionForm = ({
 
     if (success) {
       soundFX.playSuccess()
-      if (!transactionToEdit) {
+      if (transactionToEdit) {
+        toast.success('Transação atualizada!', `"${title.trim()}" foi atualizada com sucesso.`)
+      } else {
+        toast.success('Transação registrada!', `"${title.trim()}" adicionada às suas finanças.`)
         setTitle('')
         setAmount('')
         setCategory(type === 'expense' ? 'Alimentação' : 'Salário')

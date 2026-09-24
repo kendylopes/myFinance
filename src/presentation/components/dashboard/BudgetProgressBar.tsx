@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatBRL } from '../../../core/formatters/currency'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import type { BudgetProgress } from '../../../domain/models/transaction'
 import { useSpotlight } from '../../hooks/useSpotlight'
 
@@ -10,6 +11,7 @@ export interface BudgetProgressBarProps {
 }
 
 export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBarProps) {
+  const toast = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState(progress.budgetAmount.toString())
   const [isSaving, setIsSaving] = useState(false)
@@ -37,6 +39,7 @@ export function BudgetProgressBar({ progress, onUpdateBudget }: BudgetProgressBa
     setIsSaving(false)
     if (success) {
       soundFX.playSuccess()
+      toast.success('Orçamento Atualizado', `Novo teto mensal definido para ${formatBRL(numeric)}.`)
       setIsEditing(false)
     }
   }

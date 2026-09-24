@@ -2,6 +2,7 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
 
@@ -12,12 +13,14 @@ interface TransactionItemProps {
 }
 
 export const TransactionItem = ({ transaction, onDelete, onEdit }: TransactionItemProps) => {
+  const toast = useToast()
   const isIncome = transaction.type === 'income'
   const CategoryIcon = getCategoryIcon(transaction.category)
 
   const handleDelete = () => {
     soundFX.playClick()
     onDelete(transaction.id)
+    toast.info('Transação excluída', `"${transaction.title}" foi removida.`)
   }
 
   return (

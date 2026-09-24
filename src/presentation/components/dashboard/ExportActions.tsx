@@ -1,5 +1,6 @@
 import { formatMonthYear } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import { downloadBlob, openPrintWindow } from '../../../core/utils/download'
 import type { FinanceSummary, Transaction } from '../../../domain/models/transaction'
 import { generateCsvContent, generatePrintableHtml } from '../../../domain/services/exportService'
@@ -11,6 +12,7 @@ export interface ExportActionsProps {
 }
 
 export function ExportActions({ transactions, summary, selectedMonth }: ExportActionsProps) {
+  const toast = useToast()
   const hasTransactions = transactions.length > 0
 
   const handleExportCsv = () => {
@@ -20,6 +22,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
     const monthSuffix = selectedMonth === 'all' ? 'todos_periodos' : selectedMonth
     const filename = `extrato_myfinance_${monthSuffix}.csv`
     downloadBlob(csv, filename, 'text/csv;charset=utf-8;')
+    toast.success('Relatório CSV Baixado', `Arquivo ${filename} gerado com sucesso.`)
   }
 
   const handleExportPdf = () => {
@@ -28,6 +31,7 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
     const periodLabel = formatMonthYear(selectedMonth)
     const html = generatePrintableHtml(transactions, summary, periodLabel)
     openPrintWindow(html)
+    toast.info('Visualização de Impressão', 'Janela de impressão e exportação aberta.')
   }
 
   return (

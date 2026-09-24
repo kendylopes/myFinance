@@ -2,6 +2,7 @@ import { CheckCircle2, Eye, EyeOff, Lock, Mail, User, Wallet } from 'lucide-reac
 import { type FormEvent, useState } from 'react'
 import type { AuthResult } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 
 interface AuthPageProps {
   onLogin: (email: string, pass: string) => Promise<AuthResult>
@@ -11,6 +12,7 @@ interface AuthPageProps {
 type AuthMode = 'login' | 'register'
 
 export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
+  const toast = useToast()
   const [mode, setMode] = useState<AuthMode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -56,18 +58,22 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
         const result = await onLogin(cleanEmail, password)
         if (result.success) {
           soundFX.playSuccess()
+          toast.success('Bem-vindo de volta!', 'Login realizado com sucesso.')
         } else {
           setErrorMessage(result.error || 'Erro ao realizar login.')
+          toast.error('Falha no login', result.error || 'Verifique seus dados de acesso.')
         }
       } else {
         const result = await onRegister(cleanEmail, password, name)
         if (result.success) {
           soundFX.playSuccess()
+          toast.success('Conta criada!', 'Bem-vindo ao myFinance!')
           if (result.requiresEmailConfirmation) {
             setSuccessMessage(result.message || 'Conta criada! Verifique seu e-mail para ativar.')
           }
         } else {
           setErrorMessage(result.error || 'Erro ao realizar cadastro.')
+          toast.error('Falha no cadastro', result.error || 'Não foi possível criar a conta.')
         }
       }
     } finally {
