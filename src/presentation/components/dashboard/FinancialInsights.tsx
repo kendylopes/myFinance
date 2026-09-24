@@ -37,10 +37,18 @@ export function FinancialInsights({ transactions, summary }: FinancialInsightsPr
     }
 
     const topCategoryPercent =
-      summary.totalExpenses > 0 ? Math.round((topCategoryAmount / summary.totalExpenses) * 100) : 0
+      summary.totalExpense > 0 ? Math.round((topCategoryAmount / summary.totalExpense) * 100) : 0
 
     // 2. Média de gasto diário estimado (considerando 30 dias de referência)
-    const dailyAverageExpense = summary.totalExpenses > 0 ? summary.totalExpenses / 30 : 0
+    const dailyAverageExpense = summary.totalExpense > 0 ? summary.totalExpense / 30 : 0
+
+    const savingsRate =
+      summary.totalIncome > 0
+        ? Math.max(
+            0,
+            Math.round(((summary.totalIncome - summary.totalExpense) / summary.totalIncome) * 100),
+          )
+        : 0
 
     return {
       topCategory,
@@ -50,9 +58,9 @@ export function FinancialInsights({ transactions, summary }: FinancialInsightsPr
       expenseCount,
       incomeCount,
       totalCount: transactions.length,
-      savingsRate: summary.savingsRate,
-      isDeficit: summary.totalExpenses > summary.totalIncome && summary.totalIncome > 0,
-      deficitAmount: summary.totalExpenses - summary.totalIncome,
+      savingsRate,
+      isDeficit: summary.totalExpense > summary.totalIncome && summary.totalIncome > 0,
+      deficitAmount: summary.totalExpense - summary.totalIncome,
     }
   }, [transactions, summary])
 

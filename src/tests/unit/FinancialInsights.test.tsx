@@ -33,16 +33,15 @@ describe('<FinancialInsights />', () => {
 
   const mockSummary: FinanceSummary = {
     totalIncome: 2000,
-    totalExpenses: 500,
-    currentBalance: 1500,
-    savingsRate: 75,
+    totalExpense: 500,
+    balance: 1500,
   }
 
   it('deve renderizar empty state se não houver transações', () => {
     render(
       <FinancialInsights
         transactions={[]}
-        summary={{ totalIncome: 0, totalExpenses: 0, currentBalance: 0, savingsRate: 0 }}
+        summary={{ totalIncome: 0, totalExpense: 0, balance: 0 }}
       />,
     )
     expect(screen.getByText('Insights Inteligentes')).toBeInTheDocument()

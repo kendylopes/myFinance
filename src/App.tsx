@@ -1,5 +1,5 @@
 import { ArrowRight, Layers, Plus, Rocket, Wallet } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { CurrencyProvider } from './core/currency/currencyContext'
 import { getCurrentYearMonth } from './core/formatters/date'
 import { DEMO_BUDGET_AMOUNT, getDemoTransactions } from './core/onboarding/demoData'
@@ -16,14 +16,32 @@ import { MonthSelector } from './presentation/components/dashboard/MonthSelector
 import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
 import { TransactionItem } from './presentation/components/dashboard/TransactionItem'
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
-import { TransactionModal } from './presentation/components/dashboard/TransactionModal'
 import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
-import { OnboardingModal } from './presentation/components/onboarding/OnboardingModal'
-import { SettingsModal } from './presentation/components/settings/SettingsModal'
-import { ThemeSelectorModal } from './presentation/components/theme/ThemeSelectorModal'
 import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
+
+// Lazy Loading dos modais para code-splitting e performance otimizada
+const TransactionModal = lazy(() =>
+  import('./presentation/components/dashboard/TransactionModal').then((m) => ({
+    default: m.TransactionModal,
+  })),
+)
+const OnboardingModal = lazy(() =>
+  import('./presentation/components/onboarding/OnboardingModal').then((m) => ({
+    default: m.OnboardingModal,
+  })),
+)
+const SettingsModal = lazy(() =>
+  import('./presentation/components/settings/SettingsModal').then((m) => ({
+    default: m.SettingsModal,
+  })),
+)
+const ThemeSelectorModal = lazy(() =>
+  import('./presentation/components/theme/ThemeSelectorModal').then((m) => ({
+    default: m.ThemeSelectorModal,
+  })),
+)
 
 export function AppContent() {
   const { user, isLoading: isAuthLoading, login, register, logout } = useAuth()
@@ -444,31 +462,44 @@ export function AppContent() {
         </main>
       </div>
 
-      {/* Modal Seletor dos 5 Temas Dev */}
-      <ThemeSelectorModal isOpen={isThemeModalOpen} onClose={() => setIsThemeModalOpen(false)} />
+      {/* Modais Carregados Sob Demanda via Code Splitting */}
+      <Suspense fallback={null}>
+        {isThemeModalOpen && (
+          <ThemeSelectorModal
+            isOpen={isThemeModalOpen}
+            onClose={() => setIsThemeModalOpen(false)}
+          />
+        )}
 
-      {/* Modal de Configurações do Sistema (Moeda Local, Tema Dark e Branco Normal) */}
-      <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+        {isSettingsModalOpen && (
+          <SettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+          />
+        )}
 
-      {/* Modal de Boas-Vindas Inteligente (Onboarding) */}
-      <OnboardingModal
-        isOpen={isOnboardingOpen}
-        onClose={handleDismissOnboarding}
-        onInjectDemoData={handleInjectDemoData}
-        onCompleteZeroSetup={handleCompleteZeroSetup}
-        userName={user?.name}
-      />
+        {isOnboardingOpen && (
+          <OnboardingModal
+            isOpen={isOnboardingOpen}
+            onClose={handleDismissOnboarding}
+            onInjectDemoData={handleInjectDemoData}
+            onCompleteZeroSetup={handleCompleteZeroSetup}
+            userName={user?.name}
+          />
+        )}
 
-      {/* Modal de Nova Transação / Editar Transação (Receita / Despesa) */}
-      <TransactionModal
-        isOpen={isTxModalOpen}
-        onClose={handleCloseTxModal}
-        onAdd={addTransaction}
-        onEdit={editTransaction}
-        transactionToEdit={editingTransaction}
-        categories={categories}
-        onAddCategory={addCategory}
-      />
+        {isTxModalOpen && (
+          <TransactionModal
+            isOpen={isTxModalOpen}
+            onClose={handleCloseTxModal}
+            onAdd={addTransaction}
+            onEdit={editTransaction}
+            transactionToEdit={editingTransaction}
+            categories={categories}
+            onAddCategory={addCategory}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }

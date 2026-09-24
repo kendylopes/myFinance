@@ -7,6 +7,7 @@ import type {
   Transaction,
   TransactionFilterOptions,
 } from '../models/transaction'
+import { createTransactionSchema } from '../schemas/transactionSchema'
 
 const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
   Alimentação: '#f59e0b',
@@ -126,27 +127,15 @@ export const calculateExpensesByCategory = (
 }
 
 /**
- * Valida se os dados para criar uma nova transação são válidos.
+ * Valida os dados de entrada de uma transação via schema Zod com mensagens em português.
  */
 export const validateTransactionData = (
   data: CreateTransactionDTO,
 ): { isValid: boolean; error?: string } => {
-  if (!data.title || data.title.trim().length === 0) {
-    return { isValid: false, error: 'A descrição é obrigatória.' }
+  const result = createTransactionSchema.safeParse(data)
+  if (!result.success) {
+    return { isValid: false, error: result.error.issues[0]?.message || 'Dados inválidos.' }
   }
-
-  if (Number.isNaN(data.amount) || data.amount <= 0) {
-    return { isValid: false, error: 'O valor deve ser um número positivo maior que zero.' }
-  }
-
-  if (data.type !== 'income' && data.type !== 'expense') {
-    return { isValid: false, error: 'O tipo da transação deve ser receita ou despesa.' }
-  }
-
-  if (!data.date || !/^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
-    return { isValid: false, error: 'A data informada é inválida (use o formato AAAA-MM-DD).' }
-  }
-
   return { isValid: true }
 }
 

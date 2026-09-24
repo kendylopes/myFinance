@@ -58,6 +58,7 @@ export interface UseFinanceReturn {
   error: string | null
   dataSource: 'supabase'
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
+  editTransaction: (id: string, dto: Partial<CreateTransactionDTO>) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   refresh: () => Promise<void>
 }

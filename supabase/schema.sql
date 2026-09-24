@@ -75,6 +75,12 @@ CREATE POLICY "Transacoes do usuario autenticado - DELETE"
     TO authenticated
     USING (auth.uid() = user_id);
 
+CREATE POLICY "Transacoes do usuario autenticado - UPDATE"
+    ON public.transactions FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
 -- Categorias: cada usuário autenticado manipula apenas as suas categorias personalizadas
 CREATE POLICY "Categorias do usuario autenticado - ALL"
     ON public.categories FOR ALL
