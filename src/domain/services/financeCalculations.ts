@@ -60,17 +60,29 @@ export const calculateBalance = (totalIncome: number, totalExpense: number): num
 }
 
 /**
+ * Calcula a taxa de poupança (percentual da receita que foi economizado).
+ */
+export const calculateSavingsRate = (totalIncome: number, totalExpense: number): number => {
+  if (totalIncome <= 0) return 0
+  const saved = totalIncome - totalExpense
+  if (saved <= 0) return 0
+  return Math.round((saved / totalIncome) * 100)
+}
+
+/**
  * Retorna o resumo consolidado com Entradas, Saídas e Saldo Líquido.
  */
 export const calculateSummary = (transactions: Transaction[]): FinanceSummary => {
   const totalIncome = calculateTotalIncome(transactions)
   const totalExpense = calculateTotalExpense(transactions)
   const balance = calculateBalance(totalIncome, totalExpense)
+  const savingsRate = calculateSavingsRate(totalIncome, totalExpense)
 
   return {
     totalIncome,
     totalExpense,
     balance,
+    savingsRate,
   }
 }
 

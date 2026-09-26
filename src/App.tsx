@@ -20,6 +20,7 @@ import { TransactionItem } from './presentation/components/dashboard/Transaction
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
 import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
+import { ReportsView } from './presentation/components/reports/ReportsView'
 import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
 
@@ -399,6 +400,13 @@ export function AppContent() {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 2. TELA: RELATÓRIOS (Inteligência Semanal, Mensal, Anual e Customizada) */}
+          {activeSection === 'reports' && (
+            <div className="space-y-6 min-w-0" id="section-reports">
+              <ReportsView transactions={transactions} categories={categories} />
             </div>
           )}
 

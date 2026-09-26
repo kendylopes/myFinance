@@ -33,6 +33,7 @@ export interface FinanceSummary {
   totalIncome: number
   totalExpense: number
   balance: number
+  savingsRate?: number
 }
 
 export interface CategoryExpenseSummary {

@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   ChevronLeft,
   ChevronRight,
   FolderTree,
@@ -51,6 +52,12 @@ export function Sidebar({
       label: 'Dashboard',
       icon: LayoutDashboard,
       description: 'Métricas e Gráficos',
+    },
+    {
+      id: 'reports',
+      label: 'Relatórios',
+      icon: BarChart3,
+      description: 'Semana, Mês & Ano',
     },
     {
       id: 'transactions',
