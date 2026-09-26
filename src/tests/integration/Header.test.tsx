@@ -13,6 +13,16 @@ describe('<Header /> (Componente de Cabeçalho)', () => {
     expect(screen.getByText('DASHBOARD')).toBeInTheDocument()
   })
 
+  it('deve renderizar o título RELATÓRIOS quando activeSection for reports', () => {
+    render(
+      <ThemeProvider>
+        <Header activeSection="reports" />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText('RELATÓRIOS')).toBeInTheDocument()
+    expect(screen.getByText(/Análise detalhada por semana, mês, ano/i)).toBeInTheDocument()
+  })
+
   it('deve renderizar o botão único de Nova Transação e chamar onOpenNewTransaction ao clicar', () => {
     const onOpenNewTransaction = vi.fn()
 

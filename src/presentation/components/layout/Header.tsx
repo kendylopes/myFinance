@@ -20,6 +20,10 @@ const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
     title: 'DASHBOARD',
     subtitle: 'Aqui está o resumo das suas finanças',
   },
+  reports: {
+    title: 'RELATÓRIOS',
+    subtitle: 'Análise detalhada por semana, mês, ano e períodos personalizados',
+  },
   transactions: {
     title: 'TRANSAÇÕES',
     subtitle: 'Histórico e registro de entradas e saídas',
