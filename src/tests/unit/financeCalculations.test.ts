@@ -74,6 +74,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       totalIncome: 3750,
       totalExpense: 650,
       balance: 3100,
+      savingsRate: 83,
     })
   })
 
@@ -83,6 +84,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       totalIncome: 0,
       totalExpense: 0,
       balance: 0,
+      savingsRate: 0,
     })
   })
 

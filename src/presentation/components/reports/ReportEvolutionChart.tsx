@@ -82,7 +82,7 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
                   key={'date' in item ? item.date : item.yearMonth}
                   onPointerEnter={() => setHoveredIndex(index)}
                   onPointerLeave={() => setHoveredIndex(null)}
-                  className="flex-1 min-w-[32px] sm:min-w-[42px] h-full flex flex-col justify-end items-center group relative cursor-pointer"
+                  className="flex-1 min-w-8 sm:min-w-10.5 h-full flex flex-col justify-end items-center group relative cursor-pointer"
                 >
                   {/* Tooltip flutuante no hover */}
                   {isHovered && (
@@ -102,12 +102,12 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
                   <div className="w-full flex items-end justify-center gap-1 h-full px-0.5">
                     {/* Barra Receita */}
                     <div
-                      className="w-1/2 max-w-[14px] bg-emerald-500/80 hover:bg-emerald-400 rounded-t-md transition-all duration-300 shadow-xs"
+                      className="w-1/2 max-w-3.5 bg-emerald-500/80 hover:bg-emerald-400 rounded-t-md transition-all duration-300 shadow-xs"
                       style={{ height: incomeHeight }}
                     />
                     {/* Barra Despesa */}
                     <div
-                      className="w-1/2 max-w-[14px] bg-rose-500/80 hover:bg-rose-400 rounded-t-md transition-all duration-300 shadow-xs"
+                      className="w-1/2 max-w-3.5 bg-rose-500/80 hover:bg-rose-400 rounded-t-md transition-all duration-300 shadow-xs"
                       style={{ height: expenseHeight }}
                     />
                   </div>
