@@ -58,8 +58,10 @@ export interface UseFinanceReturn {
   error: string | null
   dataSource: 'supabase'
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
+  duplicateTransaction: (id: string) => Promise<boolean>
   editTransaction: (id: string, dto: Partial<CreateTransactionDTO>) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
+  deleteMultipleTransactions: (ids: string[]) => Promise<boolean>
   refresh: () => Promise<void>
 }
 
@@ -271,6 +273,46 @@ export function useFinance(
     [activeTransactionRepo],
   )
 
+  // Excluir múltiplas transações (Exclusão em Massa)
+  const deleteMultipleTransactions = useCallback(
+    async (ids: string[]): Promise<boolean> => {
+      if (ids.length === 0) return true
+      try {
+        setError(null)
+        await Promise.all(ids.map((id) => activeTransactionRepo.delete(id)))
+        setTransactions((prev) => prev.filter((item) => !ids.includes(item.id)))
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao excluir transações em massa:', err)
+        setError('Erro ao excluir as movimentações selecionadas.')
+        return false
+      }
+    },
+    [activeTransactionRepo],
+  )
+
+  // Duplicar transação existente com 1 clique
+  const duplicateTransaction = useCallback(
+    async (id: string): Promise<boolean> => {
+      const target = transactions.find((item) => item.id === id)
+      if (!target) {
+        setError('Transação não encontrada para duplicação.')
+        return false
+      }
+
+      const dto: CreateTransactionDTO = {
+        title: target.title,
+        amount: target.amount,
+        type: target.type,
+        category: target.category,
+        date: target.date,
+      }
+
+      return addTransaction(dto)
+    },
+    [transactions, addTransaction],
+  )
+
   // Atualizar transação existente
   const editTransaction = useCallback(
     async (id: string, dto: Partial<CreateTransactionDTO>): Promise<boolean> => {
@@ -357,8 +399,10 @@ export function useFinance(
     error,
     dataSource: 'supabase',
     addTransaction,
+    duplicateTransaction,
     editTransaction,
     deleteTransaction,
+    deleteMultipleTransactions,
     refresh,
   }
 }

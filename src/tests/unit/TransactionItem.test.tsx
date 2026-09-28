@@ -68,4 +68,56 @@ describe('<TransactionItem />', () => {
     expect(mockOnEdit).toHaveBeenCalledTimes(1)
     expect(mockOnEdit).toHaveBeenCalledWith(expenseTx)
   })
+
+  it('deve acionar onDuplicate com a transação ao clicar no botão de duplicação', async () => {
+    const mockOnDelete = vi.fn()
+    const mockOnDuplicate = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <TransactionItem
+        transaction={expenseTx}
+        onDelete={mockOnDelete}
+        onDuplicate={mockOnDuplicate}
+      />,
+    )
+
+    const dupBtn = screen.getByTestId('duplicate-btn-tx-1')
+    expect(dupBtn).toBeInTheDocument()
+    await user.click(dupBtn)
+
+    expect(mockOnDuplicate).toHaveBeenCalledTimes(1)
+    expect(mockOnDuplicate).toHaveBeenCalledWith(expenseTx)
+  })
+
+  it('deve renderizar o checkbox de seleção e acionar onToggleSelect', async () => {
+    const mockOnDelete = vi.fn()
+    const mockOnToggleSelect = vi.fn()
+    const user = userEvent.setup()
+    const { rerender } = render(
+      <TransactionItem
+        transaction={expenseTx}
+        onDelete={mockOnDelete}
+        isSelected={false}
+        onToggleSelect={mockOnToggleSelect}
+      />,
+    )
+
+    const checkbox = screen.getByTestId('checkbox-select-tx-1') as HTMLInputElement
+    expect(checkbox).toBeInTheDocument()
+    expect(checkbox.checked).toBe(false)
+
+    await user.click(checkbox)
+    expect(mockOnToggleSelect).toHaveBeenCalledTimes(1)
+    expect(mockOnToggleSelect).toHaveBeenCalledWith('tx-1')
+
+    rerender(
+      <TransactionItem
+        transaction={expenseTx}
+        onDelete={mockOnDelete}
+        isSelected={true}
+        onToggleSelect={mockOnToggleSelect}
+      />,
+    )
+    expect(checkbox.checked).toBe(true)
+  })
 })

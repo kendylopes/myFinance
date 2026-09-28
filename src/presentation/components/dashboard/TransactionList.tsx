@@ -1,6 +1,8 @@
-import { ChevronLeft, ChevronRight, Layers, Plus, Rocket } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Layers, Plus, Rocket, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { formatCurrency } from '../../../core/formatters/currency'
 import { soundFX } from '../../../core/sound/soundEffects'
+import { useToast } from '../../../core/toast/toastContext'
 import type {
   FinanceSummary,
   Transaction,
@@ -17,6 +19,8 @@ export interface TransactionListProps {
   isLoading: boolean
   onDelete: (id: string) => void
   onEdit?: (transaction: Transaction) => void
+  onDuplicate?: (id: string) => void
+  onDeleteMultiple?: (ids: string[]) => Promise<boolean>
   onOpenNewTransaction?: () => void
   onOpenOnboarding?: () => void
   // Props de filtro opcionais
@@ -41,6 +45,8 @@ export const TransactionList = ({
   isLoading,
   onDelete,
   onEdit,
+  onDuplicate,
+  onDeleteMultiple,
   onOpenNewTransaction,
   onOpenOnboarding,
   searchQuery,
@@ -57,9 +63,18 @@ export const TransactionList = ({
   exportSummary,
   selectedMonth,
 }: TransactionListProps) => {
+  const toast = useToast()
   const showFilters = Boolean(onSearchChange && onCategoryChange && onTypeChange)
   const [sortBy, setSortBy] = useState<TransactionSortOption>('date_desc')
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false)
+  const [showConfirmBulkModal, setShowConfirmBulkModal] = useState(false)
+
+  // Limpar IDs selecionados que não existem mais na lista
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => transactions.some((t) => t.id === id)))
+  }, [transactions])
 
   // Resetar para a primeira página caso os filtros, busca ou lista mudem
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset intencional ao alterar filtros ou lista
@@ -104,6 +119,60 @@ export const TransactionList = ({
     }
   }
 
+  // Lógica de seleção individual e em massa
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    )
+  }
+
+  const isAllPageSelected =
+    paginatedTransactions.length > 0 &&
+    paginatedTransactions.every((tx) => selectedIds.includes(tx.id))
+
+  const handleToggleSelectAllPage = () => {
+    soundFX.playClick()
+    if (isAllPageSelected) {
+      const pageIds = new Set(paginatedTransactions.map((tx) => tx.id))
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.has(id)))
+    } else {
+      const pageIds = paginatedTransactions.map((tx) => tx.id)
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pageIds])))
+    }
+  }
+
+  const handleClearSelection = () => {
+    soundFX.playClick()
+    setSelectedIds([])
+  }
+
+  const handleConfirmDeleteMultiple = async () => {
+    if (!onDeleteMultiple || selectedIds.length === 0) return
+    setIsDeletingBulk(true)
+    const count = selectedIds.length
+    const success = await onDeleteMultiple(selectedIds)
+    setIsDeletingBulk(false)
+    if (success) {
+      soundFX.playSuccess()
+      toast.info(
+        'Transações excluídas',
+        `${count} ${count === 1 ? 'movimentação foi removida' : 'movimentações foram removidas'}.`,
+      )
+      setSelectedIds([])
+      setShowConfirmBulkModal(false)
+    }
+  }
+
+  const selectedTransactions = useMemo(() => {
+    return transactions.filter((tx) => selectedIds.includes(tx.id))
+  }, [transactions, selectedIds])
+
+  const selectedNetTotal = useMemo(() => {
+    return selectedTransactions.reduce((acc, tx) => {
+      return tx.type === 'income' ? acc + tx.amount : acc - tx.amount
+    }, 0)
+  }, [selectedTransactions])
+
   return (
     <section
       aria-labelledby="list-title"
@@ -147,6 +216,57 @@ export const TransactionList = ({
           sortBy={sortBy}
           onSortChange={setSortBy}
         />
+      )}
+
+      {/* BARRA DE AÇÕES EM MASSA (QUANDO HOUVER ITENS SELECIONADOS) */}
+      {selectedIds.length > 0 && (
+        <div
+          data-testid="bulk-action-bar"
+          className="p-3.5 sm:p-4 rounded-2xl glass-card border border-emerald-500/30 bg-emerald-950/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-emerald-950/20 animate-fadeIn"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <div>
+              <p className="text-sm font-bold text-white">
+                {selectedIds.length}{' '}
+                {selectedIds.length === 1 ? 'transação selecionada' : 'transações selecionadas'}
+              </p>
+              <p className="text-xs text-zinc-400">
+                Impacto líquido no período:{' '}
+                <strong className={selectedNetTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                  {selectedNetTotal >= 0 ? '+' : ''}
+                  {formatCurrency(selectedNetTotal)}
+                </strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleClearSelection}
+              className="px-3 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/25 transition cursor-pointer"
+            >
+              Desmarcar todas
+            </button>
+
+            {onDeleteMultiple && (
+              <button
+                type="button"
+                data-testid="bulk-delete-btn"
+                onClick={() => {
+                  soundFX.playClick()
+                  setShowConfirmBulkModal(true)
+                }}
+                disabled={isDeletingBulk}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:border-rose-500/60 transition cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Excluir {selectedIds.length}</span>
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {isLoading ? (
@@ -211,6 +331,27 @@ export const TransactionList = ({
         </div>
       ) : (
         <>
+          {/* SELETOR EM MASSA DA PÁGINA */}
+          {onDeleteMultiple && (
+            <div className="flex items-center justify-between px-1 text-xs text-zinc-400">
+              <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-200 transition-colors select-none">
+                <input
+                  type="checkbox"
+                  checked={isAllPageSelected}
+                  onChange={handleToggleSelectAllPage}
+                  data-testid="select-all-page-checkbox"
+                  className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 transition cursor-pointer accent-emerald-500"
+                />
+                <span>Selecionar todos desta página ({paginatedTransactions.length})</span>
+              </label>
+              {selectedIds.length > 0 && (
+                <span className="text-[11px] text-emerald-400 font-medium">
+                  {selectedIds.length} marcado(s)
+                </span>
+              )}
+            </div>
+          )}
+
           <div data-testid="transaction-list" className="space-y-2.5">
             {paginatedTransactions.map((item) => (
               <TransactionItem
@@ -218,6 +359,9 @@ export const TransactionList = ({
                 transaction={item}
                 onDelete={onDelete}
                 onEdit={onEdit}
+                onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
+                isSelected={selectedIds.includes(item.id)}
+                onToggleSelect={onDeleteMultiple ? handleToggleSelect : undefined}
               />
             ))}
           </div>
@@ -261,6 +405,53 @@ export const TransactionList = ({
             </div>
           )}
         </>
+      )}
+
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO EM MASSA */}
+      {showConfirmBulkModal && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fadeIn"
+        >
+          <div className="glass-card max-w-md w-full p-6 rounded-3xl border border-rose-500/30 bg-zinc-900/95 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/20">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Excluir Transações Selecionadas</h3>
+                <p className="text-xs text-zinc-400">Esta ação não poderá ser desfeita.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-zinc-300">
+              Você tem certeza que deseja remover permanentemente{' '}
+              <strong className="text-white">{selectedIds.length}</strong>{' '}
+              {selectedIds.length === 1 ? 'movimentação' : 'movimentações'}?
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingBulk}
+                onClick={() => setShowConfirmBulkModal(false)}
+                className="px-4 py-2 rounded-xl border border-white/10 glass-pill text-xs font-semibold text-zinc-300 hover:text-white cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                data-testid="confirm-bulk-delete-btn"
+                disabled={isDeletingBulk}
+                onClick={handleConfirmDeleteMultiple}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/40 cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingBulk ? 'Excluindo...' : `Sim, excluir ${selectedIds.length}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   )

@@ -98,9 +98,19 @@ export function AppContent() {
     isLoading,
     error,
     addTransaction,
+    duplicateTransaction,
     editTransaction,
     deleteTransaction,
+    deleteMultipleTransactions,
   } = useFinance(undefined, undefined, user)
+
+  const handleDuplicateTransaction = async (id: string) => {
+    const success = await duplicateTransaction(id)
+    if (success) {
+      soundFX.playSuccess()
+      toast.success('Transação Duplicada', 'Movimentação clonada com sucesso!')
+    }
+  }
 
   // Disparo automático de boas-vindas no primeiro acesso com 0 transações
   useEffect(() => {
@@ -394,6 +404,7 @@ export function AppContent() {
                           transaction={tx}
                           onDelete={deleteTransaction}
                           onEdit={handleOpenEditTransaction}
+                          onDuplicate={() => handleDuplicateTransaction(tx.id)}
                         />
                       ))}
                     </div>
@@ -418,6 +429,8 @@ export function AppContent() {
                 isLoading={isLoading}
                 onDelete={deleteTransaction}
                 onEdit={handleOpenEditTransaction}
+                onDuplicate={handleDuplicateTransaction}
+                onDeleteMultiple={deleteMultipleTransactions}
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
                 searchQuery={searchQuery}

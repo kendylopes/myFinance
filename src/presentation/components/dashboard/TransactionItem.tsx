@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react'
+import { Copy, Pencil, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -10,9 +10,19 @@ interface TransactionItemProps {
   transaction: Transaction
   onDelete: (id: string) => void
   onEdit?: (transaction: Transaction) => void
+  onDuplicate?: (transaction: Transaction) => void
+  isSelected?: boolean
+  onToggleSelect?: (id: string) => void
 }
 
-export const TransactionItem = ({ transaction, onDelete, onEdit }: TransactionItemProps) => {
+export const TransactionItem = ({
+  transaction,
+  onDelete,
+  onEdit,
+  onDuplicate,
+  isSelected,
+  onToggleSelect,
+}: TransactionItemProps) => {
   const toast = useToast()
   const isIncome = transaction.type === 'income'
   const CategoryIcon = getCategoryIcon(transaction.category)
@@ -23,12 +33,29 @@ export const TransactionItem = ({ transaction, onDelete, onEdit }: TransactionIt
     toast.info('Transação excluída', `"${transaction.title}" foi removida.`)
   }
 
+  const handleDuplicate = () => {
+    soundFX.playClick()
+    onDuplicate?.(transaction)
+  }
+
   return (
     <div
       data-testid={`transaction-item-${transaction.id}`}
-      className="flex items-center justify-between p-4 glass-pill rounded-2xl hover:border-white/20 hover:bg-white/6 transition-all group shadow-sm"
+      className={`flex items-center justify-between p-4 glass-pill rounded-2xl hover:border-white/20 hover:bg-white/6 transition-all group shadow-sm ${
+        isSelected ? 'border-emerald-500/40 bg-emerald-500/5 ring-1 ring-emerald-500/20' : ''
+      }`}
     >
       <div className="flex items-center gap-3.5">
+        {onToggleSelect && (
+          <input
+            type="checkbox"
+            checked={Boolean(isSelected)}
+            onChange={() => onToggleSelect(transaction.id)}
+            aria-label={`Selecionar ${transaction.title}`}
+            data-testid={`checkbox-select-${transaction.id}`}
+            className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 transition cursor-pointer accent-emerald-500 shrink-0"
+          />
+        )}
         <div className="relative">
           <div
             className={`p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-transform group-hover:scale-105 ${
@@ -66,14 +93,27 @@ export const TransactionItem = ({ transaction, onDelete, onEdit }: TransactionIt
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         <span
-          className={`font-bold text-sm sm:text-base ${
+          className={`font-bold text-sm sm:text-base mr-1 sm:mr-2 ${
             isIncome ? 'text-emerald-400' : 'text-rose-400'
           }`}
         >
           {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
         </span>
+
+        {onDuplicate && (
+          <button
+            type="button"
+            data-testid={`duplicate-btn-${transaction.id}`}
+            onClick={handleDuplicate}
+            aria-label={`Duplicar transação ${transaction.title}`}
+            title="Duplicar transação"
+            className="p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <Copy className="w-4 h-4" aria-hidden="true" />
+          </button>
+        )}
 
         {onEdit && (
           <button

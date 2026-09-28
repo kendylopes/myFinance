@@ -133,6 +133,9 @@ myFinance/
   - Serviço `authService.ts` e hook `useAuth.ts` integrados ao `Header.tsx` e `App.tsx`.
   - Modal com padrão Awwwards e glassmorphism `AuthModal.tsx` com alternância instantânea de abas.
   - Alternância automática e transparente entre Modo Local (convidado) e Nuvem Ativa (usuário autenticado).
+- [x] **⚡ Ações Rápidas no Extrato (Duplicação & Exclusão em Massa):**
+  - **Duplicar com 1 Clique:** Botão de ação direta em cada item do extrato e na lista de recentes do Dashboard para clonar movimentações com feedback sonoro e toast imediato.
+  - **Exclusão em Massa (Bulk Delete):** Checkboxes individuais e seletor global da página, barra flutuante de ações em lote com totalizador de impacto financeiro líquido e modal seguro de confirmação.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -140,14 +143,21 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a **Reordenação dos Cards & Botão Único de Nova Transação & Alinhamento de Terminologia**:
-  - Reordenados os cards de métricas em `SummaryCards.tsx`: **1º Saldo Atual**, **2º Total de Entradas** e **3º Total de Saídas**.
-  - Implementado **botão único e sugestivo** no `Header.tsx`: **`+ Nova Transação`**, integrado à paleta do tema ativo.
-  - Alinhada a terminologia no Dashboard:
-    - *"Lançamentos Recentes"* ➔ **`Transações Recentes`** (consistência direta com o botão `+ Nova Transação`).
-    - *"Distribuição de Despesas"* ➔ **`Despesas por Categorias`** (mais direto, limpo e escaneável).
-  - Implementado `TransactionModal.tsx` com visual glassmorphism, suporte à tecla ESC e alternância fluida entre Receita e Despesa.
-  - Suíte de testes: **100% dos testes aprovados**, Biome 100% limpo em 82 arquivos e build de produção verificado.
+- **Última Ação:** Concluída a implementação de **Ações Rápidas no Extrato (CRUD Estendido)**:
+  - **Duplicação de Transações com 1 Clique:**
+    - Adicionado método `duplicateTransaction(id)` em [`useFinance.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts).
+    - Ícone de cópia com micro-interação, efeitos sonoros (`soundFX`) e notificação Toast contextual em [`TransactionItem.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionItem.tsx).
+    - Disponível tanto no extrato completo ([`TransactionList.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionList.tsx)) quanto nas transações recentes do Dashboard ([`App.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/App.tsx)).
+  - **Seleção & Exclusão em Massa (Bulk Delete):**
+    - Checkbox elegante por transação e seletor *"Selecionar todos da página"*.
+    - Barra inteligente de ações em massa (`bulk-action-bar`) com contagem em tempo real e cálculo do **impacto líquido no saldo**.
+    - Modal de confirmação (`alertdialog`) para prevenção de exclusões acidentais.
+    - Método `deleteMultipleTransactions(ids)` no hook central e integração em nuvem via Supabase.
+  - **Qualidade & Validação:**
+    - Testes unitários dedicados em [`useFinance.test.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/unit/useFinance.test.ts) e [`TransactionItem.test.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/unit/TransactionItem.test.tsx).
+    - Testes de integração em [`TransactionList.test.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/integration/TransactionList.test.tsx).
+    - **100% dos testes aprovados**, Biome com 0 erros e build de produção verificado com sucesso.
 - **Próximos Passos Sugeridos:**
-  - Implementar o componente `FinancialFlowChart.tsx` (fluxo de caixa comparativo receitas x despesas).
-  - Deploy Online (Vercel ou Netlify).
+  - Status da transação (pago vs pendente / agendado).
+  - Transações recorrentes / parcelamentos.
+  - Deploy Online na Vercel ou Netlify.
