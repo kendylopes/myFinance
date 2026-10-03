@@ -120,4 +120,76 @@ describe('<TransactionItem />', () => {
     )
     expect(checkbox.checked).toBe(true)
   })
+
+  it('deve renderizar o badge de parcela quando o título contiver (X/Y)', () => {
+    const installmentTx: Transaction = {
+      id: 'tx-inst',
+      title: 'Notebook Gamer (2/10)',
+      amount: 450,
+      type: 'expense',
+      category: 'Serviços',
+      date: '2026-09-20',
+      recurrence: 'installment',
+    }
+
+    render(<TransactionItem transaction={installmentTx} onDelete={vi.fn()} />)
+
+    expect(screen.getByText('Notebook Gamer')).toBeInTheDocument()
+    const badge = screen.getByTestId('installment-badge-tx-inst')
+    expect(badge).toBeInTheDocument()
+    expect(badge).toHaveTextContent('2/10')
+  })
+
+  it('deve renderizar o badge de recorrência quando recurrence for recurring', () => {
+    const recurringTx: Transaction = {
+      id: 'tx-rec',
+      title: 'Netflix',
+      amount: 55.9,
+      type: 'expense',
+      category: 'Lazer',
+      date: '2026-09-20',
+      recurrence: 'recurring',
+    }
+
+    render(<TransactionItem transaction={recurringTx} onDelete={vi.fn()} />)
+
+    expect(screen.getByText('Netflix')).toBeInTheDocument()
+    const badge = screen.getByTestId('recurring-badge-tx-rec')
+    expect(badge).toBeInTheDocument()
+    expect(badge).toHaveTextContent(/recorrente/i)
+  })
+
+  it('deve renderizar o badge de status e acionar onToggleStatus ao clicar', async () => {
+    const mockOnToggleStatus = vi.fn()
+    const user = userEvent.setup()
+
+    render(
+      <TransactionItem
+        transaction={expenseTx}
+        onDelete={vi.fn()}
+        onToggleStatus={mockOnToggleStatus}
+      />,
+    )
+
+    const statusBtn = screen.getByTestId('status-toggle-tx-1')
+    expect(statusBtn).toBeInTheDocument()
+    expect(statusBtn).toHaveTextContent('Pago')
+
+    await user.click(statusBtn)
+    expect(mockOnToggleStatus).toHaveBeenCalledTimes(1)
+    expect(mockOnToggleStatus).toHaveBeenCalledWith('tx-1')
+  })
+
+  it('deve renderizar status pendente para despesa pendente', () => {
+    const pendingTx: Transaction = {
+      ...expenseTx,
+      id: 'tx-pending',
+      date: '2099-01-01', // data futura
+      status: 'pending',
+    }
+
+    render(<TransactionItem transaction={pendingTx} onDelete={vi.fn()} />)
+    const statusBtn = screen.getByTestId('status-toggle-tx-pending')
+    expect(statusBtn).toHaveTextContent('Pendente')
+  })
 })

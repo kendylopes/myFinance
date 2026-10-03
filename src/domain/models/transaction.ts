@@ -12,6 +12,10 @@ export type TransactionCategory =
   | 'Geral'
   | string
 
+export type RecurrenceType = 'single' | 'installment' | 'recurring'
+
+export type PaymentStatus = 'paid' | 'pending'
+
 export interface Transaction {
   id: string
   title: string
@@ -19,6 +23,12 @@ export interface Transaction {
   type: TransactionType
   category: TransactionCategory
   date: string
+  status?: PaymentStatus
+  recurrence?: RecurrenceType
+  installmentsCount?: number
+  installmentCurrent?: number
+  isTotalAmount?: boolean
+  groupId?: string
 }
 
 export interface CreateTransactionDTO {
@@ -27,12 +37,23 @@ export interface CreateTransactionDTO {
   type: TransactionType
   category: string
   date: string
+  status?: PaymentStatus
+  recurrence?: RecurrenceType
+  installmentsCount?: number
+  installmentCurrent?: number
+  isTotalAmount?: boolean
+  groupId?: string
 }
 
 export interface FinanceSummary {
   totalIncome: number
   totalExpense: number
   balance: number
+  paidIncome?: number
+  pendingIncome?: number
+  paidExpense?: number
+  pendingExpense?: number
+  liquidBalance?: number
   savingsRate?: number
 }
 
@@ -55,9 +76,11 @@ export interface BudgetProgress {
 }
 
 export type TransactionFilterType = 'all' | 'income' | 'expense'
+export type TransactionStatusFilter = 'all' | 'paid' | 'pending'
 
 export interface TransactionFilterOptions {
   searchQuery?: string
   category?: string
   type?: TransactionFilterType
+  status?: TransactionStatusFilter
 }

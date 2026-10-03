@@ -7,6 +7,7 @@ import type {
   FinanceSummary,
   Transaction,
   TransactionFilterType,
+  TransactionStatusFilter,
 } from '../../../domain/models/transaction'
 import { ExportActions } from './ExportActions'
 import { TransactionFilters, type TransactionSortOption } from './TransactionFilters'
@@ -20,6 +21,7 @@ export interface TransactionListProps {
   onDelete: (id: string) => void
   onEdit?: (transaction: Transaction) => void
   onDuplicate?: (id: string) => void
+  onToggleStatus?: (id: string) => void
   onDeleteMultiple?: (ids: string[]) => Promise<boolean>
   onOpenNewTransaction?: () => void
   onOpenOnboarding?: () => void
@@ -30,6 +32,8 @@ export interface TransactionListProps {
   onCategoryChange?: (category: string) => void
   selectedType?: TransactionFilterType
   onTypeChange?: (type: TransactionFilterType) => void
+  selectedStatus?: TransactionStatusFilter
+  onStatusChange?: (status: TransactionStatusFilter) => void
   categories?: string[]
   totalFilteredCount?: number
   totalPeriodCount?: number
@@ -46,6 +50,7 @@ export const TransactionList = ({
   onDelete,
   onEdit,
   onDuplicate,
+  onToggleStatus,
   onDeleteMultiple,
   onOpenNewTransaction,
   onOpenOnboarding,
@@ -55,6 +60,8 @@ export const TransactionList = ({
   onCategoryChange,
   selectedType,
   onTypeChange,
+  selectedStatus,
+  onStatusChange,
   categories,
   totalFilteredCount,
   totalPeriodCount,
@@ -80,7 +87,7 @@ export const TransactionList = ({
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset intencional ao alterar filtros ou lista
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedCategory, selectedType, transactions.length])
+  }, [searchQuery, selectedCategory, selectedType, selectedStatus, transactions.length])
 
   // 1. Ordenação das transações
   const sortedTransactions = useMemo(() => {
@@ -208,6 +215,8 @@ export const TransactionList = ({
           onCategoryChange={onCategoryChange}
           selectedType={selectedType || 'all'}
           onTypeChange={onTypeChange}
+          selectedStatus={selectedStatus || 'all'}
+          onStatusChange={onStatusChange}
           categories={categories || []}
           totalFilteredCount={totalFilteredCount ?? transactions.length}
           totalPeriodCount={totalPeriodCount ?? transactions.length}
@@ -360,6 +369,7 @@ export const TransactionList = ({
                 onDelete={onDelete}
                 onEdit={onEdit}
                 onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
+                onToggleStatus={onToggleStatus}
                 isSelected={selectedIds.includes(item.id)}
                 onToggleSelect={onDeleteMultiple ? handleToggleSelect : undefined}
               />

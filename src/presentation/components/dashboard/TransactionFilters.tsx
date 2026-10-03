@@ -1,6 +1,9 @@
-import { ArrowUpDown, Search, X } from 'lucide-react'
+import { ArrowUpDown, CheckCircle2, Clock, Search, X } from 'lucide-react'
 import { soundFX } from '../../../core/sound/soundEffects'
-import type { TransactionFilterType } from '../../../domain/models/transaction'
+import type {
+  TransactionFilterType,
+  TransactionStatusFilter,
+} from '../../../domain/models/transaction'
 
 export type TransactionSortOption = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'
 
@@ -11,6 +14,8 @@ export interface TransactionFiltersProps {
   onCategoryChange?: (category: string) => void
   selectedType: TransactionFilterType
   onTypeChange: (type: TransactionFilterType) => void
+  selectedStatus?: TransactionStatusFilter
+  onStatusChange?: (status: TransactionStatusFilter) => void
   categories?: string[]
   totalFilteredCount: number
   totalPeriodCount: number
@@ -25,6 +30,8 @@ export function TransactionFilters({
   onSearchChange,
   selectedType,
   onTypeChange,
+  selectedStatus = 'all',
+  onStatusChange,
   totalFilteredCount,
   totalPeriodCount,
   hasActiveFilters,
@@ -117,6 +124,59 @@ export function TransactionFilters({
               Saídas
             </button>
           </div>
+
+          {/* SELETOR DE STATUS (TODAS, PAGAS, PENDENTES) */}
+          {onStatusChange && (
+            <div className="flex glass-pill p-1 rounded-2xl shadow-sm border border-white/10">
+              <button
+                type="button"
+                data-testid="status-filter-all"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('all')
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  selectedStatus === 'all'
+                    ? 'bg-white/15 text-white shadow-sm border border-white/15 font-semibold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                data-testid="status-filter-paid"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('paid')
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  selectedStatus === 'paid'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-emerald-400'
+                }`}
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Pagas / Recebidas</span>
+              </button>
+              <button
+                type="button"
+                data-testid="status-filter-pending"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('pending')
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  selectedStatus === 'pending'
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm font-semibold'
+                    : 'text-zinc-400 hover:text-amber-400'
+                }`}
+              >
+                <Clock className="w-3 h-3" />
+                <span>Pendentes</span>
+              </button>
+            </div>
+          )}
 
           {/* SELETOR DE ORDENAÇÃO */}
           {onSortChange && (

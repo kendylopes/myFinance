@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { addMonthsToDate } from '../../core/formatters/date'
 import type { Transaction } from '../../domain/models/transaction'
 import {
   calculateBalance,
@@ -9,6 +10,11 @@ import {
   calculateTotalIncome,
   filterTransactions,
   filterTransactionsByMonth,
+  generateRecurrenceTransactions,
+  isOverdue,
+  parseInstallment,
+  splitInstallmentAmounts,
+  togglePaymentStatus,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
 
@@ -21,6 +27,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       type: 'income',
       category: 'Trabalho',
       date: '2026-09-01',
+      status: 'paid',
     },
     {
       id: '2',
@@ -29,6 +36,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       type: 'expense',
       category: 'Alimentação',
       date: '2026-09-02',
+      status: 'paid',
     },
     {
       id: '3',
@@ -37,6 +45,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       type: 'income',
       category: 'Serviços',
       date: '2026-09-05',
+      status: 'pending',
     },
     {
       id: '4',
@@ -45,6 +54,7 @@ describe('financeCalculations (Regras de Domínio)', () => {
       type: 'expense',
       category: 'Moradia',
       date: '2026-09-06',
+      status: 'pending',
     },
   ]
 
@@ -68,12 +78,17 @@ describe('financeCalculations (Regras de Domínio)', () => {
     expect(balance).toBe(-500)
   })
 
-  it('deve retornar resumo completo correto através de calculateSummary', () => {
+  it('deve retornar resumo completo com desdobramento de status através de calculateSummary', () => {
     const summary = calculateSummary(mockTransactions)
     expect(summary).toEqual({
       totalIncome: 3750,
       totalExpense: 650,
       balance: 3100,
+      paidIncome: 3000,
+      pendingIncome: 750,
+      paidExpense: 500,
+      pendingExpense: 150,
+      liquidBalance: 2500, // 3000 - 500
       savingsRate: 83,
     })
   })
@@ -84,6 +99,11 @@ describe('financeCalculations (Regras de Domínio)', () => {
       totalIncome: 0,
       totalExpense: 0,
       balance: 0,
+      paidIncome: 0,
+      pendingIncome: 0,
+      paidExpense: 0,
+      pendingExpense: 0,
+      liquidBalance: 0,
       savingsRate: 0,
     })
   })
@@ -390,6 +410,200 @@ describe('financeCalculations (Regras de Domínio)', () => {
         type: 'income',
       })
       expect(noMatch).toHaveLength(0)
+    })
+  })
+
+  describe('addMonthsToDate (Manipulação Segura de Datas)', () => {
+    it('deve avançar meses corretamente em uma data comum', () => {
+      expect(addMonthsToDate('2026-05-15', 1)).toBe('2026-06-15')
+      expect(addMonthsToDate('2026-05-15', 0)).toBe('2026-05-15')
+    })
+
+    it('deve realizar virada de ano corretamente', () => {
+      expect(addMonthsToDate('2026-11-20', 2)).toBe('2027-01-20')
+      expect(addMonthsToDate('2026-12-10', 3)).toBe('2027-03-10')
+    })
+
+    it('deve realizar clamp seguro para meses com menos dias (ex: 31 de janeiro para 28 de fevereiro)', () => {
+      expect(addMonthsToDate('2026-01-31', 1)).toBe('2026-02-28')
+      expect(addMonthsToDate('2026-08-31', 1)).toBe('2026-09-30')
+    })
+  })
+
+  describe('splitInstallmentAmounts (Divisão de Parcelas)', () => {
+    it('deve dividir valores exatos sem sobras', () => {
+      expect(splitInstallmentAmounts(300, 3)).toEqual([100, 100, 100])
+      expect(splitInstallmentAmounts(50, 1)).toEqual([50])
+    })
+
+    it('deve ajustar a diferença de centavos na primeira parcela para somar exatamente o total', () => {
+      const parts = splitInstallmentAmounts(100, 3)
+      expect(parts).toEqual([33.34, 33.33, 33.33])
+      const sum = parts.reduce((a, b) => a + b, 0)
+      expect(Number(sum.toFixed(2))).toBe(100)
+    })
+  })
+
+  describe('parseInstallment (Extração de Metadados de Título)', () => {
+    it('deve extrair dados de títulos no formato (X/Y)', () => {
+      const parsed = parseInstallment('Notebook Dell (1/10)')
+      expect(parsed).toEqual({
+        baseTitle: 'Notebook Dell',
+        current: 1,
+        total: 10,
+      })
+    })
+
+    it('deve retornar null para títulos normais ou com formatos inválidos', () => {
+      expect(parseInstallment('Notebook Dell')).toBeNull()
+      expect(parseInstallment('Compras (a/b)')).toBeNull()
+      expect(parseInstallment('Teste (5/2)')).toBeNull()
+    })
+  })
+
+  describe('generateRecurrenceTransactions (Geração em Lote)', () => {
+    it('deve retornar a mesma transação se recurrence for single', () => {
+      const dto = {
+        title: 'Café',
+        amount: 10,
+        type: 'expense' as const,
+        category: 'Alimentação',
+        date: '2026-09-10',
+        recurrence: 'single' as const,
+      }
+      const result = generateRecurrenceTransactions(dto)
+      expect(result).toHaveLength(1)
+      expect(result[0].title).toBe('Café')
+    })
+
+    it('deve gerar N parcelas com numeração (X/Y) e datas subsequentes', () => {
+      const dto = {
+        title: 'Smartphone',
+        amount: 3000,
+        type: 'expense' as const,
+        category: 'Eletrônicos',
+        date: '2026-09-15',
+        recurrence: 'installment' as const,
+        installmentsCount: 3,
+        isTotalAmount: true,
+      }
+      const result = generateRecurrenceTransactions(dto)
+      expect(result).toHaveLength(3)
+
+      expect(result[0].title).toBe('Smartphone (1/3)')
+      expect(result[0].amount).toBe(1000)
+      expect(result[0].date).toBe('2026-09-15')
+      expect(result[0].installmentCurrent).toBe(1)
+
+      expect(result[1].title).toBe('Smartphone (2/3)')
+      expect(result[1].amount).toBe(1000)
+      expect(result[1].date).toBe('2026-10-15')
+      expect(result[1].installmentCurrent).toBe(2)
+
+      expect(result[2].title).toBe('Smartphone (3/3)')
+      expect(result[2].amount).toBe(1000)
+      expect(result[2].date).toBe('2026-11-15')
+      expect(result[2].installmentCurrent).toBe(3)
+    })
+
+    it('deve gerar transações recorrentes com mesmo valor nos próximos meses', () => {
+      const dto = {
+        title: 'Plano de Saúde',
+        amount: 450,
+        type: 'expense' as const,
+        category: 'Saúde',
+        date: '2026-09-01',
+        recurrence: 'recurring' as const,
+        installmentsCount: 4,
+      }
+      const result = generateRecurrenceTransactions(dto)
+      expect(result).toHaveLength(4)
+      expect(result[0].date).toBe('2026-09-01')
+      expect(result[1].date).toBe('2026-10-01')
+      expect(result[2].date).toBe('2026-11-01')
+      expect(result[3].date).toBe('2026-12-01')
+      expect(result.every((tx) => tx.amount === 450)).toBe(true)
+      expect(result.every((tx) => tx.recurrence === 'recurring')).toBe(true)
+    })
+
+    it('deve definir a primeira parcela/mês com o status fornecido e as futuras como pending', () => {
+      const dto = {
+        title: 'Notebook',
+        amount: 2000,
+        type: 'expense' as const,
+        category: 'Trabalho',
+        date: '2026-09-01',
+        status: 'paid' as const,
+        recurrence: 'installment' as const,
+        installmentsCount: 2,
+        isTotalAmount: true,
+      }
+      const result = generateRecurrenceTransactions(dto)
+      expect(result[0].status).toBe('paid')
+      expect(result[1].status).toBe('pending')
+    })
+  })
+
+  describe('togglePaymentStatus', () => {
+    it('deve alternar status de paid para pending e vice-versa', () => {
+      expect(togglePaymentStatus('paid')).toBe('pending')
+      expect(togglePaymentStatus('pending')).toBe('paid')
+      expect(togglePaymentStatus(undefined)).toBe('pending')
+    })
+  })
+
+  describe('isOverdue', () => {
+    it('deve retornar false para transações já pagas', () => {
+      const tx: Transaction = {
+        id: '1',
+        title: 'Luz',
+        amount: 100,
+        type: 'expense',
+        category: 'Moradia',
+        date: '2026-01-01',
+        status: 'paid',
+      }
+      expect(isOverdue(tx, '2026-10-01')).toBe(false)
+    })
+
+    it('deve retornar true para transação pendente com data anterior à data de referência', () => {
+      const tx: Transaction = {
+        id: '2',
+        title: 'Boleto Vencido',
+        amount: 150,
+        type: 'expense',
+        category: 'Serviços',
+        date: '2026-09-15',
+        status: 'pending',
+      }
+      expect(isOverdue(tx, '2026-10-01')).toBe(true)
+    })
+
+    it('deve retornar false para transação pendente com data futura', () => {
+      const tx: Transaction = {
+        id: '3',
+        title: 'Boleto Futuro',
+        amount: 150,
+        type: 'expense',
+        category: 'Serviços',
+        date: '2026-10-15',
+        status: 'pending',
+      }
+      expect(isOverdue(tx, '2026-10-01')).toBe(false)
+    })
+  })
+
+  describe('filterTransactions com status', () => {
+    it('deve filtrar transações por status paid', () => {
+      const result = filterTransactions(mockTransactions, { status: 'paid' })
+      expect(result).toHaveLength(2)
+      expect(result.every((tx) => (tx.status || 'paid') === 'paid')).toBe(true)
+    })
+
+    it('deve filtrar transações por status pending', () => {
+      const result = filterTransactions(mockTransactions, { status: 'pending' })
+      expect(result).toHaveLength(2)
+      expect(result.every((tx) => tx.status === 'pending')).toBe(true)
     })
   })
 })

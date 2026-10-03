@@ -23,6 +23,12 @@ export const createTransactionSchema = z.object({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'A data informada é inválida (use o formato AAAA-MM-DD).'),
+  status: z.enum(['paid', 'pending'] as const).optional(),
+  recurrence: z.enum(['single', 'installment', 'recurring'] as const).optional(),
+  installmentsCount: z.number().int().min(1).max(72).optional(),
+  installmentCurrent: z.number().int().min(1).max(72).optional(),
+  isTotalAmount: z.boolean().optional(),
+  groupId: z.string().optional(),
 })
 
 export type ValidatedTransactionInput = z.infer<typeof createTransactionSchema>

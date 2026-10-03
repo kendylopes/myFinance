@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
     category TEXT NOT NULL,
     date DATE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'pending')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
@@ -27,6 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON public.transactions (user
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON public.transactions (date DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON public.transactions (type);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON public.transactions (category);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON public.transactions (status);
 
 -- 3. Tabela de Categorias Personalizadas (Entrada e Saída)
 CREATE TABLE IF NOT EXISTS public.categories (

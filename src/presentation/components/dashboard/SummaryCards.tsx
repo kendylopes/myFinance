@@ -1,4 +1,12 @@
-import { ArrowDownCircle, ArrowUpCircle, DollarSign, TrendingDown, TrendingUp } from 'lucide-react'
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Clock,
+  DollarSign,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react'
+import { formatCurrency } from '../../../core/formatters/currency'
 import type { FinanceSummary } from '../../../domain/models/transaction'
 import { useSpotlight } from '../../hooks/useSpotlight'
 import { AnimatedCurrency } from '../common/AnimatedCurrency'
@@ -9,7 +17,16 @@ interface SummaryCardsProps {
 }
 
 export const SummaryCards = ({ summary }: SummaryCardsProps) => {
-  const { totalIncome, totalExpense, balance } = summary
+  const {
+    totalIncome,
+    totalExpense,
+    balance,
+    paidIncome,
+    pendingIncome,
+    paidExpense,
+    pendingExpense,
+    liquidBalance,
+  } = summary
   const isPositive = balance >= 0
 
   const incomeRef = useSpotlight<HTMLDivElement>()
@@ -74,6 +91,18 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
             />
           </div>
         </div>
+        {liquidBalance !== undefined && liquidBalance !== balance && (
+          <div className="mt-3 pt-2.5 border-t border-white/8 flex items-center justify-between text-[11px] text-zinc-400 relative z-10">
+            <span>Saldo Realizado (pago):</span>
+            <span
+              className={`font-semibold ${
+                liquidBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              }`}
+            >
+              {formatCurrency(liquidBalance)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Card 2: Total de Entradas (Segundo) */}
@@ -99,9 +128,16 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
         <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight relative z-10">
           <AnimatedCurrency value={totalIncome} />
         </div>
-        <div className="flex items-center gap-1.5 mt-3 text-xs text-emerald-400 relative z-10">
-          <TrendingUp className="w-4 h-4" aria-hidden="true" />
-          <span>Receitas acumuladas</span>
+        <div className="flex items-center justify-between mt-3 text-xs relative z-10">
+          <div className="flex items-center gap-1.5 text-emerald-400">
+            <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Recebido: {formatCurrency(paidIncome || 0)}</span>
+          </div>
+          {(pendingIncome ?? 0) > 0 && (
+            <span className="text-[11px] text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md font-medium">
+              A receber: {formatCurrency(pendingIncome || 0)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -128,9 +164,17 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
         <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight relative z-10">
           <AnimatedCurrency value={totalExpense} />
         </div>
-        <div className="flex items-center gap-1.5 mt-3 text-xs text-rose-400 relative z-10">
-          <TrendingDown className="w-4 h-4" aria-hidden="true" />
-          <span>Despesas acumuladas</span>
+        <div className="flex items-center justify-between mt-3 text-xs relative z-10">
+          <div className="flex items-center gap-1.5 text-rose-400">
+            <TrendingDown className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Pago: {formatCurrency(paidExpense || 0)}</span>
+          </div>
+          {(pendingExpense ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium">
+              <Clock className="w-2.5 h-2.5" />
+              <span>A pagar: {formatCurrency(pendingExpense || 0)}</span>
+            </span>
+          )}
         </div>
       </div>
     </section>

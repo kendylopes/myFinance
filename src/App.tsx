@@ -91,6 +91,8 @@ export function AppContent() {
     setSelectedCategory,
     selectedType,
     setSelectedType,
+    selectedStatus,
+    setSelectedStatus,
     clearFilters,
     hasActiveFilters,
     totalFilteredCount,
@@ -100,6 +102,7 @@ export function AppContent() {
     addTransaction,
     duplicateTransaction,
     editTransaction,
+    toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
   } = useFinance(undefined, undefined, user)
@@ -405,6 +408,7 @@ export function AppContent() {
                           onDelete={deleteTransaction}
                           onEdit={handleOpenEditTransaction}
                           onDuplicate={() => handleDuplicateTransaction(tx.id)}
+                          onToggleStatus={toggleTransactionStatus}
                         />
                       ))}
                     </div>
@@ -430,6 +434,7 @@ export function AppContent() {
                 onDelete={deleteTransaction}
                 onEdit={handleOpenEditTransaction}
                 onDuplicate={handleDuplicateTransaction}
+                onToggleStatus={toggleTransactionStatus}
                 onDeleteMultiple={deleteMultipleTransactions}
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
@@ -439,6 +444,8 @@ export function AppContent() {
                 onCategoryChange={setSelectedCategory}
                 selectedType={selectedType}
                 onTypeChange={setSelectedType}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
                 categories={availableCategories}
                 totalFilteredCount={totalFilteredCount}
                 totalPeriodCount={totalPeriodCount}

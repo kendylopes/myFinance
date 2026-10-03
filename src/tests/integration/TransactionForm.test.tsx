@@ -153,6 +153,7 @@ describe('<TransactionForm /> (Interação do Usuário & Formulário)', () => {
       type: 'expense',
       category: 'Saúde',
       date: '2026-09-15',
+      status: 'paid',
     })
     expect(mockOnAdd).not.toHaveBeenCalled()
   })

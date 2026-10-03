@@ -47,6 +47,7 @@ describe('SupabaseTransactionRepository (Persistência em Nuvem)', () => {
       type: 'income',
       category: 'Freelance / Bico',
       date: '2026-09-20',
+      status: 'paid',
     })
   })
 

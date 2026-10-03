@@ -1,11 +1,24 @@
-import { ArrowDownCircle, ArrowUpCircle, Calendar, Pencil, PlusCircle, X } from 'lucide-react'
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Pencil,
+  PlusCircle,
+  Repeat,
+  X,
+} from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
+import { formatCurrency } from '../../../core/formatters/currency'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
 import type { Category, CreateCategoryDTO } from '../../../domain/models/categories'
 import type {
   CreateTransactionDTO,
+  PaymentStatus,
+  RecurrenceType,
   Transaction,
   TransactionType,
 } from '../../../domain/models/transaction'
@@ -52,6 +65,11 @@ export const TransactionForm = ({
   const [date, setDate] = useState(
     transactionToEdit?.date || new Date().toISOString().split('T')[0],
   )
+  const [status, setStatus] = useState<PaymentStatus>(transactionToEdit?.status || 'paid')
+  const [recurrence, setRecurrence] = useState<RecurrenceType>('single')
+  const [installmentsCount, setInstallmentsCount] = useState<number>(3)
+  const [isTotalAmount, setIsTotalAmount] = useState<boolean>(true)
+  const [recurringMonths, setRecurringMonths] = useState<number>(12)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -65,6 +83,7 @@ export const TransactionForm = ({
       setType(transactionToEdit.type)
       setCategory(transactionToEdit.category)
       setDate(transactionToEdit.date)
+      setStatus(transactionToEdit.status || 'paid')
       setHasManualOverride(true)
       setIsCustomCategory(false)
       setAutoSuggested(null)
@@ -151,6 +170,7 @@ export const TransactionForm = ({
         type,
         category: finalCategory,
         date,
+        status,
       })
     } else {
       success = await onAdd({
@@ -159,6 +179,15 @@ export const TransactionForm = ({
         type,
         category: finalCategory,
         date,
+        status,
+        recurrence,
+        installmentsCount:
+          recurrence === 'installment'
+            ? installmentsCount
+            : recurrence === 'recurring'
+              ? recurringMonths
+              : undefined,
+        isTotalAmount: recurrence === 'installment' ? isTotalAmount : undefined,
       })
     }
 
@@ -169,10 +198,27 @@ export const TransactionForm = ({
       if (transactionToEdit) {
         toast.success('Transação atualizada!', `"${title.trim()}" foi atualizada com sucesso.`)
       } else {
-        toast.success('Transação registrada!', `"${title.trim()}" adicionada às suas finanças.`)
+        if (recurrence === 'installment') {
+          toast.success(
+            'Parcelamento criado!',
+            `"${title.trim()}" registrado em ${installmentsCount} parcelas.`,
+          )
+        } else if (recurrence === 'recurring') {
+          toast.success(
+            'Recorrência agendada!',
+            `"${title.trim()}" registrado para os próximos ${recurringMonths} meses.`,
+          )
+        } else {
+          toast.success('Transação registrada!', `"${title.trim()}" adicionada às suas finanças.`)
+        }
         setTitle('')
         setAmount('')
         setCategory(type === 'expense' ? 'Alimentação' : 'Salário')
+        setStatus('paid')
+        setRecurrence('single')
+        setInstallmentsCount(3)
+        setIsTotalAmount(true)
+        setRecurringMonths(12)
         setIsCustomCategory(false)
         setHasManualOverride(false)
         setAutoSuggested(null)
@@ -329,6 +375,48 @@ export const TransactionForm = ({
           </div>
         </div>
 
+        {/* Linha 3.5: Situação do Lançamento (Pago/Recebido vs Pendente) */}
+        <div>
+          <span className="block text-xs font-medium text-zinc-300 mb-2">
+            Situação da Movimentação
+          </span>
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/5 border border-white/8 text-xs font-semibold">
+            <button
+              type="button"
+              data-testid="status-btn-paid"
+              onClick={() => {
+                soundFX.playClick()
+                setStatus('paid')
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all cursor-pointer ${
+                status === 'paid'
+                  ? 'bg-emerald-500 text-zinc-950 font-bold shadow-xs'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{type === 'expense' ? 'Pago' : 'Recebido'}</span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="status-btn-pending"
+              onClick={() => {
+                soundFX.playClick()
+                setStatus('pending')
+              }}
+              className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl transition-all cursor-pointer ${
+                status === 'pending'
+                  ? 'bg-amber-500 text-zinc-950 font-bold shadow-xs'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{type === 'expense' ? 'Pendente (A Pagar)' : 'Pendente (A Receber)'}</span>
+            </button>
+          </div>
+        </div>
+
         {/* Linha 4: Categoria com Dropdown Personalizável Modularizado */}
         <div className="relative z-40">
           <CategorySelectDropdown
@@ -369,7 +457,206 @@ export const TransactionForm = ({
           )}
         </div>
 
-        {/* Linha 5: Botão de Envio com Laser Shimmer */}
+        {/* Linha 5: Frequência & Parcelamento (Apenas na criação) */}
+        {!transactionToEdit && (
+          <div className="space-y-3 p-3.5 rounded-2xl glass-pill border border-white/10 bg-white/3">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
+                <Repeat className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+                Frequência / Repetição
+              </span>
+              <span className="text-[11px] text-zinc-400 font-medium">
+                {recurrence === 'single'
+                  ? 'Lançamento único'
+                  : recurrence === 'installment'
+                    ? `${installmentsCount} parcelas mensais`
+                    : `Repetir por ${recurringMonths} meses`}
+              </span>
+            </div>
+
+            {/* Segmented control: Única, Parcelada, Fixa */}
+            <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-white/5 border border-white/8 text-xs font-semibold">
+              <button
+                type="button"
+                data-testid="recurrence-btn-single"
+                onClick={() => {
+                  soundFX.playClick()
+                  setRecurrence('single')
+                }}
+                className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
+                  recurrence === 'single'
+                    ? 'bg-emerald-500 text-zinc-950 font-bold shadow-xs'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Única
+              </button>
+              <button
+                type="button"
+                data-testid="recurrence-btn-installment"
+                onClick={() => {
+                  soundFX.playClick()
+                  setRecurrence('installment')
+                }}
+                className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
+                  recurrence === 'installment'
+                    ? 'bg-emerald-500 text-zinc-950 font-bold shadow-xs'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Parcelada
+              </button>
+              <button
+                type="button"
+                data-testid="recurrence-btn-recurring"
+                onClick={() => {
+                  soundFX.playClick()
+                  setRecurrence('recurring')
+                }}
+                className={`py-1.5 px-2 rounded-lg transition-all cursor-pointer ${
+                  recurrence === 'recurring'
+                    ? 'bg-emerald-500 text-zinc-950 font-bold shadow-xs'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Fixa / Mensal
+              </button>
+            </div>
+
+            {/* Opções específicas para Parcelada */}
+            {recurrence === 'installment' && (
+              <div className="space-y-2.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label
+                      htmlFor="tx-installments-count"
+                      className="block text-[11px] font-medium text-zinc-400 mb-1"
+                    >
+                      Número de Parcelas
+                    </label>
+                    <select
+                      id="tx-installments-count"
+                      data-testid="select-installments-count"
+                      value={installmentsCount}
+                      onChange={(e) => setInstallmentsCount(Number(e.target.value))}
+                      className="w-full glass-input rounded-xl px-3 py-2 text-xs text-white cursor-pointer"
+                    >
+                      {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24, 36].map((n) => (
+                        <option key={n} value={n} className="bg-zinc-900 text-white">
+                          {n}x parcelas
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="block text-[11px] font-medium text-zinc-400 mb-1">
+                      O valor digitado é:
+                    </span>
+                    <div className="grid grid-cols-2 gap-1 p-0.5 rounded-xl bg-white/5 border border-white/8 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => setIsTotalAmount(true)}
+                        className={`py-1.5 px-1 rounded-lg transition-all cursor-pointer ${
+                          isTotalAmount
+                            ? 'bg-white/15 text-emerald-300 font-bold'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        Valor Total
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsTotalAmount(false)}
+                        className={`py-1.5 px-1 rounded-lg transition-all cursor-pointer ${
+                          !isTotalAmount
+                            ? 'bg-white/15 text-emerald-300 font-bold'
+                            : 'text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        Por Parcela
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pré-visualização do parcelamento */}
+                {amount && !Number.isNaN(Number.parseFloat(amount.replace(',', '.'))) && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center justify-between">
+                    <span>
+                      {isTotalAmount ? (
+                        <>
+                          <strong>{installmentsCount}x</strong> de aprox.{' '}
+                          <strong>
+                            {formatCurrency(
+                              Number.parseFloat(amount.replace(',', '.')) / installmentsCount,
+                            )}
+                          </strong>
+                        </>
+                      ) : (
+                        <>
+                          <strong>{installmentsCount}x</strong> de{' '}
+                          <strong>
+                            {formatCurrency(Number.parseFloat(amount.replace(',', '.')))}
+                          </strong>{' '}
+                          (Total:{' '}
+                          <strong>
+                            {formatCurrency(
+                              Number.parseFloat(amount.replace(',', '.')) * installmentsCount,
+                            )}
+                          </strong>
+                          )
+                        </>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-zinc-400">1 por mês</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Opções específicas para Fixa / Recorrente */}
+            {recurrence === 'recurring' && (
+              <div className="space-y-2.5 pt-1">
+                <div>
+                  <label
+                    htmlFor="tx-recurring-months"
+                    className="block text-[11px] font-medium text-zinc-400 mb-1"
+                  >
+                    Duração da Recorrência
+                  </label>
+                  <select
+                    id="tx-recurring-months"
+                    data-testid="select-recurring-months"
+                    value={recurringMonths}
+                    onChange={(e) => setRecurringMonths(Number(e.target.value))}
+                    className="w-full glass-input rounded-xl px-3 py-2 text-xs text-white cursor-pointer"
+                  >
+                    {[3, 6, 12, 24, 36].map((m) => (
+                      <option key={m} value={m} className="bg-zinc-900 text-white">
+                        Próximos {m} meses
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center justify-between">
+                  <span>
+                    Lançamento fixo de{' '}
+                    <strong>
+                      {amount && !Number.isNaN(Number.parseFloat(amount.replace(',', '.')))
+                        ? formatCurrency(Number.parseFloat(amount.replace(',', '.')))
+                        : 'R$ 0,00'}
+                    </strong>{' '}
+                    repetido por <strong>{recurringMonths} meses</strong>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Linha 6: Botão de Envio com Laser Shimmer */}
         <button
           type="submit"
           disabled={isSubmitting}

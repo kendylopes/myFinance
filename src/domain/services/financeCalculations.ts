@@ -1,3 +1,4 @@
+import { addMonthsToDate } from '../../core/formatters/date'
 import type {
   BudgetProgress,
   BudgetStatus,
@@ -70,18 +71,50 @@ export const calculateSavingsRate = (totalIncome: number, totalExpense: number):
 }
 
 /**
- * Retorna o resumo consolidado com Entradas, Saídas e Saldo Líquido.
+ * Retorna o resumo consolidado com Entradas, Saídas, Saldo Geral, e desdobramento entre Realizado e Pendente.
  */
 export const calculateSummary = (transactions: Transaction[]): FinanceSummary => {
-  const totalIncome = calculateTotalIncome(transactions)
-  const totalExpense = calculateTotalExpense(transactions)
+  let totalIncome = 0
+  let totalExpense = 0
+  let paidIncome = 0
+  let pendingIncome = 0
+  let paidExpense = 0
+  let pendingExpense = 0
+
+  for (const item of transactions) {
+    const amount = Number(item.amount) || 0
+    const isPaid = (item.status || 'paid') === 'paid'
+
+    if (item.type === 'income') {
+      totalIncome += amount
+      if (isPaid) {
+        paidIncome += amount
+      } else {
+        pendingIncome += amount
+      }
+    } else if (item.type === 'expense') {
+      totalExpense += amount
+      if (isPaid) {
+        paidExpense += amount
+      } else {
+        pendingExpense += amount
+      }
+    }
+  }
+
   const balance = calculateBalance(totalIncome, totalExpense)
+  const liquidBalance = calculateBalance(paidIncome, paidExpense)
   const savingsRate = calculateSavingsRate(totalIncome, totalExpense)
 
   return {
     totalIncome,
     totalExpense,
     balance,
+    paidIncome,
+    pendingIncome,
+    paidExpense,
+    pendingExpense,
+    liquidBalance,
     savingsRate,
   }
 }
@@ -195,20 +228,21 @@ export const calculateBudgetProgress = (
 }
 
 /**
- * Filtra transações combinando busca textual por título/categoria, filtro de categoria e tipo (receita/despesa).
+ * Filtra transações combinando busca textual por título/categoria, filtro de categoria, tipo (receita/despesa) e status de pagamento.
  */
 export const filterTransactions = (
   transactions: Transaction[],
   options: TransactionFilterOptions = {},
 ): Transaction[] => {
-  const { searchQuery, category, type } = options
+  const { searchQuery, category, type, status } = options
 
   const normalizedQuery = searchQuery?.trim().toLowerCase() || ''
   const hasQuery = normalizedQuery.length > 0
   const hasCategory = Boolean(category && category !== 'all')
   const hasType = Boolean(type && type !== 'all')
+  const hasStatus = Boolean(status && status !== 'all')
 
-  if (!hasQuery && !hasCategory && !hasType) {
+  if (!hasQuery && !hasCategory && !hasType && !hasStatus) {
     return transactions
   }
 
@@ -232,6 +266,124 @@ export const filterTransactions = (
       return false
     }
 
+    // Filtro por status de pagamento (paid / pending)
+    if (hasStatus) {
+      const itemStatus = t.status || 'paid'
+      if (itemStatus !== status) {
+        return false
+      }
+    }
+
     return true
   })
+}
+
+/**
+ * Inverte o status de pagamento de uma transação ('paid' <-> 'pending').
+ */
+export const togglePaymentStatus = (status?: string): 'paid' | 'pending' => {
+  return status === 'pending' ? 'paid' : 'pending'
+}
+
+/**
+ * Verifica se uma transação pendente está vencida em relação a uma data de referência (YYYY-MM-DD).
+ */
+export const isOverdue = (transaction: Transaction, referenceDate?: string): boolean => {
+  if ((transaction.status || 'paid') === 'paid') return false
+  const today = referenceDate || new Date().toISOString().split('T')[0]
+  return transaction.date < today
+}
+
+/**
+ * Divide um valor total em N parcelas com ajuste exato de centavos na primeira parcela.
+ */
+export const splitInstallmentAmounts = (totalAmount: number, count: number): number[] => {
+  if (count <= 1) return [totalAmount]
+  const base = Math.floor((totalAmount / count) * 100) / 100
+  const remainder = Math.round((totalAmount - base * count) * 100) / 100
+  const amounts = Array(count).fill(base)
+  amounts[0] = Math.round((amounts[0] + remainder) * 100) / 100
+  return amounts
+}
+
+/**
+ * Extrai dados de parcelamento a partir do título (ex: "Notebook (1/10)").
+ */
+export const parseInstallment = (
+  title: string,
+): { baseTitle: string; current: number; total: number } | null => {
+  const match = title.match(/^(.*?)\s*\((\d+)\/(\d+)\)$/)
+  if (!match) return null
+  const baseTitle = match[1].trim()
+  const current = Number.parseInt(match[2], 10)
+  const total = Number.parseInt(match[3], 10)
+  if (Number.isNaN(current) || Number.isNaN(total) || total <= 1 || current > total) return null
+  return { baseTitle, current, total }
+}
+
+/**
+ * Gera a lista de transações a partir de uma DTO com recorrência ou parcelamento.
+ */
+export const generateRecurrenceTransactions = (
+  dto: CreateTransactionDTO,
+): CreateTransactionDTO[] => {
+  const recurrence = dto.recurrence || 'single'
+  const initialStatus = dto.status || 'paid'
+
+  if (recurrence === 'single') {
+    return [{ ...dto, status: initialStatus }]
+  }
+
+  const groupId = dto.groupId || `group_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+
+  if (recurrence === 'installment') {
+    const count = Math.max(2, dto.installmentsCount || 2)
+    const isTotal = dto.isTotalAmount !== false // padrão: o valor digitado é o total
+    const amounts = isTotal
+      ? splitInstallmentAmounts(dto.amount, count)
+      : Array(count).fill(dto.amount)
+
+    return amounts.map((parcelAmount, index) => {
+      const current = index + 1
+      // Parcela 1 herda o status informado; parcelas futuras (2..N) entram como 'pending'
+      const parcelStatus = index === 0 ? initialStatus : 'pending'
+
+      return {
+        title: `${dto.title.trim()} (${current}/${count})`,
+        amount: parcelAmount,
+        type: dto.type,
+        category: dto.category.trim() || 'Geral',
+        date: addMonthsToDate(dto.date, index),
+        status: parcelStatus,
+        recurrence: 'installment',
+        installmentsCount: count,
+        installmentCurrent: current,
+        groupId,
+      }
+    })
+  }
+
+  if (recurrence === 'recurring') {
+    const months = Math.max(2, dto.installmentsCount || 12)
+    return Array.from({ length: months }, (_, index) => {
+      const current = index + 1
+      // Mês 1 herda o status informado; meses futuros entram como 'pending'
+      const monthStatus = index === 0 ? initialStatus : 'pending'
+
+      return {
+        title: dto.title.trim(),
+        amount: dto.amount,
+        type: dto.type,
+        category: dto.category.trim() || 'Geral',
+        date: addMonthsToDate(dto.date, index),
+        status: monthStatus,
+        recurrence: 'recurring',
+        installmentsCount: months,
+        installmentCurrent: current,
+        groupId,
+      }
+    })
+  }
+
+  return [{ ...dto, status: initialStatus }]
 }

@@ -143,4 +143,66 @@ describe('useFinance (Ações Rápidas: Duplicação & Exclusão em Massa)', () 
     expect(transactionRepo.delete).toHaveBeenCalledWith('tx-100')
     expect(transactionRepo.delete).toHaveBeenCalledWith('tx-102')
   })
+
+  it('deve criar todas as parcelas ao registrar transação parcelada', async () => {
+    const { transactionRepo, budgetRepo, categoryRepo } = createMockRepos()
+    const { result } = renderHook(() => useFinance(transactionRepo, budgetRepo, null, categoryRepo))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    expect(result.current.transactions.length).toBe(3)
+
+    let success = false
+    await act(async () => {
+      success = await result.current.addTransaction({
+        title: 'Curso de React',
+        amount: 300,
+        type: 'expense',
+        category: 'Educação',
+        date: '2026-09-10',
+        recurrence: 'installment',
+        installmentsCount: 3,
+        isTotalAmount: true,
+      })
+    })
+
+    expect(success).toBe(true)
+    expect(result.current.transactions.length).toBe(6) // 3 iniciais + 3 parcelas
+    const installments = result.current.transactions.filter((tx) =>
+      tx.title.includes('Curso de React'),
+    )
+    expect(installments).toHaveLength(3)
+    expect(installments.some((tx) => tx.title === 'Curso de React (1/3)')).toBe(true)
+    expect(installments.some((tx) => tx.title === 'Curso de React (2/3)')).toBe(true)
+    expect(installments.some((tx) => tx.title === 'Curso de React (3/3)')).toBe(true)
+    expect(installments.every((tx) => tx.amount === 100)).toBe(true)
+  })
+
+  it('deve alternar o status da transação entre paid e pending com sucesso', async () => {
+    const { transactionRepo, budgetRepo, categoryRepo } = createMockRepos()
+    const { result } = renderHook(() => useFinance(transactionRepo, budgetRepo, null, categoryRepo))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    let success = false
+    await act(async () => {
+      success = await result.current.toggleTransactionStatus('tx-100')
+    })
+
+    expect(success).toBe(true)
+    const updatedTx = result.current.transactions.find((t) => t.id === 'tx-100')
+    expect(updatedTx?.status).toBe('pending')
+    expect(transactionRepo.update).toHaveBeenCalledWith('tx-100', { status: 'pending' })
+
+    // Alternar de volta para paid
+    await act(async () => {
+      await result.current.toggleTransactionStatus('tx-100')
+    })
+    const toggledBackTx = result.current.transactions.find((t) => t.id === 'tx-100')
+    expect(toggledBackTx?.status).toBe('paid')
+  })
 })

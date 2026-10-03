@@ -12,6 +12,11 @@ export interface ITransactionRepository {
   create(data: CreateTransactionDTO): Promise<Transaction>
 
   /**
+   * Cria e persiste múltiplas transações em lote (útil para parcelamentos e recorrência).
+   */
+  createMany?(data: CreateTransactionDTO[]): Promise<Transaction[]>
+
+  /**
    * Remove uma transação pelo identificador único.
    */
   delete(id: string): Promise<boolean>

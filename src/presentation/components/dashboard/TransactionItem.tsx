@@ -1,16 +1,18 @@
-import { Copy, Pencil, Trash2 } from 'lucide-react'
+import { CheckCircle2, Clock, Copy, Pencil, Repeat, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
 import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
+import { isOverdue, parseInstallment } from '../../../domain/services/financeCalculations'
 
 interface TransactionItemProps {
   transaction: Transaction
   onDelete: (id: string) => void
   onEdit?: (transaction: Transaction) => void
   onDuplicate?: (transaction: Transaction) => void
+  onToggleStatus?: (id: string) => void
   isSelected?: boolean
   onToggleSelect?: (id: string) => void
 }
@@ -20,11 +22,14 @@ export const TransactionItem = ({
   onDelete,
   onEdit,
   onDuplicate,
+  onToggleStatus,
   isSelected,
   onToggleSelect,
 }: TransactionItemProps) => {
   const toast = useToast()
   const isIncome = transaction.type === 'income'
+  const isPending = (transaction.status || 'paid') === 'pending'
+  const isExpired = !isIncome && isOverdue(transaction)
   const CategoryIcon = getCategoryIcon(transaction.category)
 
   const handleDelete = () => {
@@ -36,6 +41,24 @@ export const TransactionItem = ({
   const handleDuplicate = () => {
     soundFX.playClick()
     onDuplicate?.(transaction)
+  }
+
+  const handleToggleStatus = () => {
+    const nextStatus = isPending ? 'paid' : 'pending'
+    if (nextStatus === 'paid') {
+      soundFX.playSuccess()
+      toast.success(
+        isIncome ? 'Recebimento confirmado!' : 'Pagamento confirmado!',
+        `"${transaction.title}" marcado como ${isIncome ? 'recebido' : 'pago'}.`,
+      )
+    } else {
+      soundFX.playClick()
+      toast.info(
+        'Status alterado',
+        `"${transaction.title}" marcado como ${isIncome ? 'a receber' : 'a pagar'}.`,
+      )
+    }
+    onToggleStatus?.(transaction.id)
   }
 
   return (
@@ -80,15 +103,82 @@ export const TransactionItem = ({
           </div>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
-            {transaction.title}
-          </p>
+          {(() => {
+            const installmentInfo = parseInstallment(transaction.title)
+            const isRecurring = transaction.recurrence === 'recurring'
+
+            return (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                  {installmentInfo ? installmentInfo.baseTitle : transaction.title}
+                </p>
+                {installmentInfo && (
+                  <span
+                    data-testid={`installment-badge-${transaction.id}`}
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-emerald-300 border border-white/10"
+                    title={`Parcela ${installmentInfo.current} de ${installmentInfo.total}`}
+                  >
+                    {installmentInfo.current}/{installmentInfo.total}
+                  </span>
+                )}
+                {isRecurring && (
+                  <span
+                    data-testid={`recurring-badge-${transaction.id}`}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
+                    title="Lançamento Recorrente"
+                  >
+                    <Repeat className="w-2.5 h-2.5" />
+                    <span>Recorrente</span>
+                  </span>
+                )}
+              </div>
+            )
+          })()}
           <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-400 mt-0.5">
             <span className="glass-pill px-2 py-0.5 rounded-lg text-[11px] text-zinc-300">
               {transaction.category}
             </span>
             <span>•</span>
             <span>{formatDate(transaction.date)}</span>
+            <span>•</span>
+            <button
+              type="button"
+              data-testid={`status-toggle-${transaction.id}`}
+              onClick={handleToggleStatus}
+              aria-label={`Status: ${isPending ? (isIncome ? 'A Receber' : 'Pendente') : isIncome ? 'Recebido' : 'Pago'}. Clique para alternar.`}
+              title={
+                isPending
+                  ? isIncome
+                    ? 'Pendente de recebimento. Clique para confirmar recebimento.'
+                    : isExpired
+                      ? 'Despesa vencida! Clique para marcar como paga.'
+                      : 'Pendente de pagamento. Clique para marcar como paga.'
+                  : isIncome
+                    ? 'Recebido. Clique para marcar como pendente.'
+                    : 'Pago. Clique para marcar como pendente.'
+              }
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                isPending
+                  ? isExpired
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 animate-pulse ring-1 ring-rose-500/30'
+                    : isIncome
+                      ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+              }`}
+            >
+              {isPending ? (
+                <>
+                  <Clock className="w-2.5 h-2.5" aria-hidden="true" />
+                  <span>{isExpired ? 'Vencido' : isIncome ? 'A Receber' : 'Pendente'}</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-2.5 h-2.5" aria-hidden="true" />
+                  <span>{isIncome ? 'Recebido' : 'Pago'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>

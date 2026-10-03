@@ -13,6 +13,7 @@ import type {
   FinanceSummary,
   Transaction,
   TransactionFilterType,
+  TransactionStatusFilter,
 } from '../../domain/models/transaction'
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 import type { ICategoryRepository } from '../../domain/repositories/ICategoryRepository'
@@ -22,6 +23,8 @@ import {
   calculateSummary,
   filterTransactions,
   filterTransactionsByMonth,
+  generateRecurrenceTransactions,
+  togglePaymentStatus,
   validateTransactionData,
 } from '../../domain/services/financeCalculations'
 
@@ -43,13 +46,15 @@ export interface UseFinanceReturn {
   budgetAmount: number
   budgetProgress: BudgetProgress
   updateBudget: (newAmount: number) => Promise<boolean>
-  // Filtros de busca e categoria
+  // Filtros de busca, categoria e status
   searchQuery: string
   setSearchQuery: (query: string) => void
   selectedCategory: string
   setSelectedCategory: (category: string) => void
   selectedType: TransactionFilterType
   setSelectedType: (type: TransactionFilterType) => void
+  selectedStatus: TransactionStatusFilter
+  setSelectedStatus: (status: TransactionStatusFilter) => void
   clearFilters: () => void
   hasActiveFilters: boolean
   totalFilteredCount: number
@@ -60,6 +65,7 @@ export interface UseFinanceReturn {
   addTransaction: (dto: CreateTransactionDTO) => Promise<boolean>
   duplicateTransaction: (id: string) => Promise<boolean>
   editTransaction: (id: string, dto: Partial<CreateTransactionDTO>) => Promise<boolean>
+  toggleTransactionStatus: (id: string) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   deleteMultipleTransactions: (ids: string[]) => Promise<boolean>
   refresh: () => Promise<void>
@@ -90,10 +96,11 @@ export function useFinance(
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Estados dos filtros de busca e categoria
+  // Estados dos filtros de busca, categoria e status de pagamento
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<TransactionFilterType>('all')
+  const [selectedStatus, setSelectedStatus] = useState<TransactionStatusFilter>('all')
 
   // Carregamento de categorias personalizadas
   const refreshCategories = useCallback(async () => {
@@ -175,24 +182,29 @@ export function useFinance(
     return Array.from(set).sort()
   }, [transactions, categories])
 
-  // Filtragem reativa das transações com base na busca textual, categoria e tipo
+  // Filtragem reativa das transações com base na busca textual, categoria, tipo e status
   const filteredTransactions = useMemo<Transaction[]>(() => {
     return filterTransactions(periodTransactions, {
       searchQuery,
       category: selectedCategory,
       type: selectedType,
+      status: selectedStatus,
     })
-  }, [periodTransactions, searchQuery, selectedCategory, selectedType])
+  }, [periodTransactions, searchQuery, selectedCategory, selectedType, selectedStatus])
 
   // Limpar todos os filtros de busca
   const clearFilters = useCallback(() => {
     setSearchQuery('')
     setSelectedCategory('all')
     setSelectedType('all')
+    setSelectedStatus('all')
   }, [])
 
   const hasActiveFilters =
-    searchQuery.trim().length > 0 || selectedCategory !== 'all' || selectedType !== 'all'
+    searchQuery.trim().length > 0 ||
+    selectedCategory !== 'all' ||
+    selectedType !== 'all' ||
+    selectedStatus !== 'all'
 
   // Cálculo memorizado de métricas financeiras do período selecionado
   const summary = useMemo<FinanceSummary>(() => {
@@ -242,7 +254,18 @@ export function useFinance(
 
       try {
         setError(null)
-        const created = await activeTransactionRepo.create(dto)
+        const dtosToCreate = generateRecurrenceTransactions(dto)
+
+        if (dtosToCreate.length > 1) {
+          const createdList = activeTransactionRepo.createMany
+            ? await activeTransactionRepo.createMany(dtosToCreate)
+            : await Promise.all(dtosToCreate.map((d) => activeTransactionRepo.create(d)))
+
+          setTransactions((prev) => [...createdList, ...prev])
+          return true
+        }
+
+        const created = await activeTransactionRepo.create(dtosToCreate[0] || dto)
         setTransactions((prev) => [created, ...prev])
         return true
       } catch (err) {
@@ -306,6 +329,7 @@ export function useFinance(
         type: target.type,
         category: target.category,
         date: target.date,
+        status: target.status,
       }
 
       return addTransaction(dto)
@@ -328,6 +352,37 @@ export function useFinance(
       }
     },
     [activeTransactionRepo],
+  )
+
+  // Alternar status de pagamento com atualização otimista imediata na UI
+  const toggleTransactionStatus = useCallback(
+    async (id: string): Promise<boolean> => {
+      const target = transactions.find((item) => item.id === id)
+      if (!target) {
+        setError('Transação não encontrada para alteração de status.')
+        return false
+      }
+
+      const newStatus = togglePaymentStatus(target.status)
+
+      // Atualização otimista
+      setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t)))
+
+      try {
+        setError(null)
+        await activeTransactionRepo.update(id, { status: newStatus })
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao alternar status da transação:', err)
+        // Rollback otimista
+        setTransactions((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, status: target.status } : t)),
+        )
+        setError('Erro ao atualizar status de pagamento.')
+        return false
+      }
+    },
+    [transactions, activeTransactionRepo],
   )
 
   // Adicionar categoria personalizada
@@ -391,6 +446,8 @@ export function useFinance(
     setSelectedCategory,
     selectedType,
     setSelectedType,
+    selectedStatus,
+    setSelectedStatus,
     clearFilters,
     hasActiveFilters,
     totalFilteredCount: filteredTransactions.length,
@@ -401,6 +458,7 @@ export function useFinance(
     addTransaction,
     duplicateTransaction,
     editTransaction,
+    toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
     refresh,

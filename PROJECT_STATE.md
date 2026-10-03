@@ -77,26 +77,27 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **111/111 testes passando** (Vitest em 24 suítes):
+- **Suíte de Testes Automatizados:** 🟢 **201/201 testes passando** (Vitest em 39 suítes com execução otimizada):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
-  - Filtragem combinada por busca textual, categoria e tipo de transação (`filterTransactions`).
+  - Filtragem combinada por busca textual, categoria, tipo e **status de pagamento** (`filterTransactions`).
   - Geração de extrato CSV com cabeçalho, UTF-8 BOM, separador brasileiro e escape de caracteres (`generateCsvContent`).
   - Geração de documento de impressão/PDF estruturado com cabeçalho, cards e tabela zebrada (`generatePrintableHtml`).
   - Cálculo percentual relativo por categoria com ordenação da maior para a menor despesa.
   - Filtragem temporal por mês (`filterTransactionsByMonth`) e modo global.
-  - Validações estritas de inputs (valores positivos, descrições obrigatórias).
-  - Integridade de gravação e exclusão nos repositórios de transações, categorias e orçamento 100% em Nuvem (Supabase PostgreSQL).
-  - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação e gráfico Donut SVG.
+  - Validações estritas de inputs (valores positivos, descrições obrigatórias e status opcional).
+  - Integridade de gravação, exclusão e alternância de status nos repositórios 100% em Nuvem (Supabase PostgreSQL).
+  - Renderização correta e acessibilidade de cards, seletor de mês, barra de meta, formulário, filtros, ações de exportação, gráfico Donut SVG e badges interativos de status.
+  - **[NOVO] Status de Pagamento ("Pago / Recebido" vs. "Pendente / Agendado / Vencido"):** Detecção automática de despesas vencidas, badge interativo com 1 clique diretamente no extrato, segmented control no formulário, filtro rápido no extrato e desdobramento realizado vs pendente nos cards de resumo.
   - **[NOVO] 5 Temas de Desenvolvedor (Emerald Matrix, Dracula, Tokyo Night, Catppuccin, One Dark):** Sistema reativo completo com variáveis CSS, prévias reais, efeitos táteis e persistência em `localStorage`.
   - **[NOVO] Menu Lateral Responsivo (Sidebar):** Navegação fluida para desktop (expandida e compacta) e mobile (drawer deslizante), status do usuário e atalho rápido de temas.
-  - **[NOVO] Categorias Personalizadas no Supabase (Entrada & Saída):** Usuários podem criar e salvar na nuvem suas próprias categorias de onde vem o dinheiro (Receitas) e para onde vai (Despesas) diretamente pelo formulário com isolamento total via Row Level Security (RLS).
+  - **[NOVO] Categorias Personalizadas no Supabase (Entrada & Saída):** Usuários podem criar e salvar na nuvem suas próprias categorias diretamente pelo formulário com isolamento total via Row Level Security (RLS).
   - **[NOVO] 100% em Nuvem com Supabase Auth & RLS:** Aplicação com autenticação individual, dados isolados por usuário no banco e tela de Auth Gate (`AuthPage`) limpa e sem ruídos visuais.
   - **[NOVO] Ícones Visuais de Categorias no Extrato:** Renderização de ícones ricos temáticos para cada categoria no extrato com mini-badge indicador de tipo (+ para receita, - para despesa).
   - **[NOVO] Auto-Classificação Inteligente:** Predição de categorias e tipos em tempo real conforme a digitação da descrição via serviço puro `categoryPredictor.ts`.
   - **[NOVO] Números Vivos & Interpolação:** Validação unitária de `AnimatedCurrency` com formatação BRL, acessibilidade e valores negativos.
   - **[NOVO] Curva Vetorial de Tendência:** Validação unitária do componente vetorial `BalanceSparkline` com paths Bézier SVG puros.
-- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** (`npm run lint`).
+- **Qualidade de Código (Biome):** 🟢 **0 erros, 0 avisos** em todos os 106 arquivos (`npm run lint`).
 - **Tipagem Estrita (TypeScript):** 🟢 **0 erros de compilação** (`npm run build` gerando bundle otimizado de produção).
 - **Acessibilidade:** Padrão WAI-ARIA estrito, foco visível, contraste calibrado e compatibilidade total com leitores de tela e preferência de movimento reduzido (`prefers-reduced-motion`).
 
@@ -136,6 +137,19 @@ myFinance/
 - [x] **⚡ Ações Rápidas no Extrato (Duplicação & Exclusão em Massa):**
   - **Duplicar com 1 Clique:** Botão de ação direta em cada item do extrato e na lista de recentes do Dashboard para clonar movimentações com feedback sonoro e toast imediato.
   - **Exclusão em Massa (Bulk Delete):** Checkboxes individuais e seletor global da página, barra flutuante de ações em lote com totalizador de impacto financeiro líquido e modal seguro de confirmação.
+- [x] **🔁 Transações Recorrentes & Parcelamentos (Installments & Subscriptions):**
+  - **Lançamentos Parcelados (ex: 2x até 48x):** Divisão automática com ajuste exato de centavos, cálculo das datas futuras mensais com clamp seguro de dias de mês e geração de parcelas individuais identificadas (`(1/X)` a `(X/X)`).
+  - **Contas Fixas & Recorrência:** Opção de agendamento mensal contínuo para despesas e receitas fixas (3, 6, 12, 24 ou 36 meses).
+  - **Inserção Atômica em Lote no Supabase:** Método `createMany` para persistência em um único roundtrip HTTP.
+- [x] **✅ Status de Pagamento ("Pago / Recebido" vs. "Pendente / Agendado / Vencido"):**
+  - **Persistência no Supabase:** Coluna `status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'pending'))` e índice dedicado.
+  - **Alternância com 1 Clique:** Badge interativo em cada transação no extrato que alterna entre pago e pendente com feedback sonoro e toast imediato (atualização otimista com rollback seguro).
+  - **Detecção Automática de Despesas Vencidas:** Alerta visual pulsante em âmbar/vermelho caso a data da conta pendente já tenha passado.
+  - **Filtro no Extrato:** Segmented control para alternar entre "Todas", "Pagas / Recebidas" e "Pendentes".
+  - **Desdobramento nos Cards:** Resumo exibindo valores já realizados e a realizar/pagar, além do saldo previsto vs saldo em conta (líquido realizado).
+  - **Parcelas Futuras Automáticas:** Parcelas 2..N de um parcelamento ou conta fixa já nascem automaticamente com status "Pendente".
+- [ ] **📥 Importação de Extrato Bancário (OFX / CSV):**
+  - Drag-and-drop de arquivo de extrato bancário (Nubank, Inter, Itaú, Bradesco) com categorização preditiva automática e conferência antes de salvar.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -143,21 +157,26 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a implementação de **Ações Rápidas no Extrato (CRUD Estendido)**:
-  - **Duplicação de Transações com 1 Clique:**
-    - Adicionado método `duplicateTransaction(id)` em [`useFinance.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts).
-    - Ícone de cópia com micro-interação, efeitos sonoros (`soundFX`) e notificação Toast contextual em [`TransactionItem.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionItem.tsx).
-    - Disponível tanto no extrato completo ([`TransactionList.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionList.tsx)) quanto nas transações recentes do Dashboard ([`App.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/App.tsx)).
-  - **Seleção & Exclusão em Massa (Bulk Delete):**
-    - Checkbox elegante por transação e seletor *"Selecionar todos da página"*.
-    - Barra inteligente de ações em massa (`bulk-action-bar`) com contagem em tempo real e cálculo do **impacto líquido no saldo**.
-    - Modal de confirmação (`alertdialog`) para prevenção de exclusões acidentais.
-    - Método `deleteMultipleTransactions(ids)` no hook central e integração em nuvem via Supabase.
+- **Última Ação:** Concluída a implementação de **Status de Pagamento ("Pago / Recebido" vs. "Pendente / Agendado / Vencido")**:
+  - **Banco de Dados (Supabase PostgreSQL):**
+    - Coluna `status` e índice `idx_transactions_status` aplicados no projeto remoto `ehdlpxpciarxnfgymbtx` e documentados em [`supabase/schema.sql`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/supabase/schema.sql).
+  - **Domínio & Cálculos:**
+    - [`transaction.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/models/transaction.ts): adicionados tipos `PaymentStatus`, `TransactionStatusFilter`, campo `status` em `Transaction`/`CreateTransactionDTO` e métricas de realizado/pendente em `FinanceSummary`.
+    - [`transactionSchema.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/schemas/transactionSchema.ts): validação Zod atualizada com `status`.
+    - [`financeCalculations.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts): funções puras `togglePaymentStatus`, `isOverdue`, suporte a filtro por status e métricas em `calculateSummary`.
+  - **Acesso a Dados & Repositório:**
+    - [`SupabaseTransactionRepository.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/data/repositories/SupabaseTransactionRepository.ts): sincronização do campo `status` em `getAll`, `create`, `createMany` e `update`.
+  - **Apresentação (UI/UX):**
+    - [`useFinance.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts): novo estado `selectedStatus` e método `toggleTransactionStatus(id)` com atualização otimista na interface.
+    - [`TransactionItem.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionItem.tsx): badge interativo com 1 clique e detecção de contas vencidas.
+    - [`TransactionForm.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionForm.tsx): seletor de status estilizado ("Pago/Recebido" vs "Pendente/Agendado").
+    - [`TransactionFilters.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionFilters.tsx): filtro rápido por status de pagamento.
+    - [`SummaryCards.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/SummaryCards.tsx): desdobramento de realizados vs pendentes.
   - **Qualidade & Validação:**
-    - Testes unitários dedicados em [`useFinance.test.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/unit/useFinance.test.ts) e [`TransactionItem.test.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/unit/TransactionItem.test.tsx).
-    - Testes de integração em [`TransactionList.test.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/tests/integration/TransactionList.test.tsx).
-    - **100% dos testes aprovados**, Biome com 0 erros e build de produção verificado com sucesso.
+    - 🟢 **201/201 testes automatizados passando** (39 suítes de teste).
+    - 🟢 **Biome 100% limpo em 106 arquivos** (0 erros, 0 avisos).
+    - 🟢 **Build de produção verificado com sucesso** (`npm run build`).
 - **Próximos Passos Sugeridos:**
-  - Status da transação (pago vs pendente / agendado).
-  - Transações recorrentes / parcelamentos.
+  - Salvar no Git (`git commit` e `git push`).
+  - Importação de Extrato Bancário (OFX / CSV).
   - Deploy Online na Vercel ou Netlify.

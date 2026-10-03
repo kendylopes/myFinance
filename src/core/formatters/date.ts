@@ -42,3 +42,26 @@ export const getAdjacentMonth = (yearMonth: string, offset: number): string => {
   const nextMonth = String(date.getMonth() + 1).padStart(2, '0')
   return `${nextYear}-${nextMonth}`
 }
+
+/**
+ * Adiciona uma quantidade de meses a uma data YYYY-MM-DD mantendo o dia com clamp seguro para meses com menos dias.
+ */
+export const addMonthsToDate = (dateString: string, monthsToAdd: number): string => {
+  if (monthsToAdd === 0) return dateString
+  const [yearStr, monthStr, dayStr] = dateString.split('-')
+  const year = Number(yearStr)
+  const month = Number(monthStr) - 1
+  const day = Number(dayStr)
+
+  const targetDate = new Date(year, month + monthsToAdd, 1)
+  const targetYear = targetDate.getFullYear()
+  const targetMonth = targetDate.getMonth()
+
+  // Quantidade de dias disponíveis no mês alvo (ex: 28 em fev, 30 em abr, etc.)
+  const daysInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate()
+  const finalDay = Math.min(day, daysInTargetMonth)
+
+  const formattedMonth = String(targetMonth + 1).padStart(2, '0')
+  const formattedDay = String(finalDay).padStart(2, '0')
+  return `${targetYear}-${formattedMonth}-${formattedDay}`
+}

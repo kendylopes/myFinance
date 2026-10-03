@@ -40,6 +40,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
         type: row.type as 'income' | 'expense',
         category: String(row.category),
         date: String(row.date),
+        status: (row.status as 'paid' | 'pending') || 'paid',
       }))
     } catch (err) {
       console.error('[SupabaseTransactionRepository] Exceção ao buscar transações:', err)
@@ -55,6 +56,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
       type: data.type,
       category: data.category.trim() || 'Geral',
       date: data.date,
+      status: data.status || 'paid',
     }
 
     const { data: createdRow, error } = await client
@@ -75,7 +77,44 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
       type: createdRow.type as 'income' | 'expense',
       category: String(createdRow.category),
       date: String(createdRow.date),
+      status: (createdRow.status as 'paid' | 'pending') || 'paid',
     }
+  }
+
+  async createMany(items: CreateTransactionDTO[]): Promise<Transaction[]> {
+    if (items.length === 0) return []
+    const client = this.getClient()
+    const payloads = items.map((data) => ({
+      title: data.title.trim(),
+      amount: Number(data.amount),
+      type: data.type,
+      category: data.category.trim() || 'Geral',
+      date: data.date,
+      status: data.status || 'paid',
+    }))
+
+    const { data: createdRows, error } = await client
+      .from('transactions')
+      .insert(payloads)
+      .select('*')
+
+    if (error || !createdRows) {
+      console.error(
+        '[SupabaseTransactionRepository] Erro ao criar transações em lote:',
+        error?.message,
+      )
+      throw new Error(error?.message || 'Falha ao gravar transações no banco em nuvem.')
+    }
+
+    return createdRows.map((row) => ({
+      id: String(row.id),
+      title: String(row.title),
+      amount: Number(row.amount),
+      type: row.type as 'income' | 'expense',
+      category: String(row.category),
+      date: String(row.date),
+      status: (row.status as 'paid' | 'pending') || 'paid',
+    }))
   }
 
   async delete(id: string): Promise<boolean> {
@@ -103,6 +142,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
     if (data.type !== undefined) payload.type = data.type
     if (data.category !== undefined) payload.category = data.category.trim()
     if (data.date !== undefined) payload.date = data.date
+    if (data.status !== undefined) payload.status = data.status
 
     const { data: updatedRow, error } = await client
       .from('transactions')
@@ -127,6 +167,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
       type: updatedRow.type as 'income' | 'expense',
       category: String(updatedRow.category),
       date: String(updatedRow.date),
+      status: (updatedRow.status as 'paid' | 'pending') || 'paid',
     }
   }
 

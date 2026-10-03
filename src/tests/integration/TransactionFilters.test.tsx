@@ -82,4 +82,23 @@ describe('<TransactionFilters /> (Filtros e Busca por Descrição ou Categoria)'
     fireEvent.click(clearFiltersBtn)
     expect(onClearFilters).toHaveBeenCalled()
   })
+
+  it('deve disparar onStatusChange ao clicar nos botões de filtro de status', () => {
+    const onStatusChange = vi.fn()
+    render(
+      <TransactionFilters {...defaultProps} onStatusChange={onStatusChange} selectedStatus="all" />,
+    )
+
+    const paidBtn = screen.getByTestId('status-filter-paid')
+    fireEvent.click(paidBtn)
+    expect(onStatusChange).toHaveBeenCalledWith('paid')
+
+    const pendingBtn = screen.getByTestId('status-filter-pending')
+    fireEvent.click(pendingBtn)
+    expect(onStatusChange).toHaveBeenCalledWith('pending')
+
+    const allBtn = screen.getByTestId('status-filter-all')
+    fireEvent.click(allBtn)
+    expect(onStatusChange).toHaveBeenCalledWith('all')
+  })
 })
