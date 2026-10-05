@@ -68,6 +68,7 @@ export interface UseFinanceReturn {
   toggleTransactionStatus: (id: string) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   deleteMultipleTransactions: (ids: string[]) => Promise<boolean>
+  importTransactions: (dtos: CreateTransactionDTO[]) => Promise<boolean>
   refresh: () => Promise<void>
 }
 
@@ -318,6 +319,27 @@ export function useFinance(
     [activeTransactionRepo],
   )
 
+  // Importar múltiplas transações (ex: de extrato bancário OFX/CSV)
+  const importTransactions = useCallback(
+    async (dtos: CreateTransactionDTO[]): Promise<boolean> => {
+      if (dtos.length === 0) return true
+      try {
+        setError(null)
+        const createdList = activeTransactionRepo.createMany
+          ? await activeTransactionRepo.createMany(dtos)
+          : await Promise.all(dtos.map((d) => activeTransactionRepo.create(d)))
+
+        setTransactions((prev) => [...createdList, ...prev])
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao importar transações:', err)
+        setError('Erro ao importar movimentações do extrato.')
+        return false
+      }
+    },
+    [activeTransactionRepo],
+  )
+
   // Duplicar transação existente com 1 clique
   const duplicateTransaction = useCallback(
     async (id: string): Promise<boolean> => {
@@ -465,6 +487,7 @@ export function useFinance(
     toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
+    importTransactions,
     refresh,
   }
 }

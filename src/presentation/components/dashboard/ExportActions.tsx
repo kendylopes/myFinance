@@ -1,3 +1,4 @@
+import { Upload } from 'lucide-react'
 import { formatMonthYear } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
@@ -9,9 +10,15 @@ export interface ExportActionsProps {
   transactions: Transaction[]
   summary: FinanceSummary
   selectedMonth: string
+  onOpenImport?: () => void
 }
 
-export function ExportActions({ transactions, summary, selectedMonth }: ExportActionsProps) {
+export function ExportActions({
+  transactions,
+  summary,
+  selectedMonth,
+  onOpenImport,
+}: ExportActionsProps) {
   const toast = useToast()
   const hasTransactions = transactions.length > 0
 
@@ -85,6 +92,23 @@ export function ExportActions({ transactions, summary, selectedMonth }: ExportAc
         </svg>
         <span>Imprimir / PDF</span>
       </button>
+
+      {onOpenImport && (
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playClick()
+            onOpenImport()
+          }}
+          title="Importar extrato bancário (OFX ou CSV)"
+          aria-label="Importar Extrato"
+          data-testid="open-import-statement-btn"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all duration-150 shadow-sm cursor-pointer"
+        >
+          <Upload className="w-3.5 h-3.5" aria-hidden="true" />
+          <span>Importar Extrato</span>
+        </button>
+      )}
     </div>
   )
 }

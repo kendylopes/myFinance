@@ -42,6 +42,7 @@ export interface TransactionListProps {
   // Props de exportação opcionais
   exportSummary?: FinanceSummary
   selectedMonth?: string
+  onOpenImport?: () => void
 }
 
 export const TransactionList = ({
@@ -54,6 +55,7 @@ export const TransactionList = ({
   onDeleteMultiple,
   onOpenNewTransaction,
   onOpenOnboarding,
+  onOpenImport,
   searchQuery,
   onSearchChange,
   selectedCategory,
@@ -212,6 +214,7 @@ export const TransactionList = ({
             transactions={transactions}
             summary={exportSummary}
             selectedMonth={selectedMonth}
+            onOpenImport={onOpenImport}
           />
         )}
       </div>

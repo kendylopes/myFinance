@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **205/205 testes passando** (Vitest em 39 suítes com execução otimizada):
+- **Suíte de Testes Automatizados:** 🟢 **217/217 testes passando** (Vitest em 41 suítes com execução otimizada):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria, tipo e **status de pagamento** (`filterTransactions`).
@@ -148,8 +148,12 @@ myFinance/
   - **Filtro no Extrato:** Segmented control para alternar entre "Todas", "Pagas / Recebidas" e "Pendentes".
   - **Desdobramento nos Cards:** Resumo exibindo valores já realizados e a realizar/pagar, além do saldo previsto vs saldo em conta (líquido realizado).
   - **Parcelas Futuras Automáticas:** Parcelas 2..N de um parcelamento ou conta fixa já nascem automaticamente com status "Pendente".
-- [ ] **📥 Importação de Extrato Bancário (OFX / CSV):**
-  - Drag-and-drop de arquivo de extrato bancário (Nubank, Inter, Itaú, Bradesco) com categorização preditiva automática e conferência antes de salvar.
+- [x] **📥 Importação de Extrato Bancário (OFX / CSV):**
+  - **Drag-and-Drop & File Reader:** Carregamento de arquivos `.ofx`, `.csv` e `.txt` com detecção automática de formato.
+  - **Parser Puro de OFX & CSV:** Leitura de tags SGML/XML dos principais bancos (Nubank, Inter, Itaú, Bradesco, etc.), com conversão de datas e valores decimais brasileiros.
+  - **Categorização Preditiva Automática:** Atribuição instantânea de categorias baseada nas descrições do extrato.
+  - **Detecção Inteligente de Duplicatas:** Cruzamento com transações existentes no período para evitar lançamentos repetidos (com desmarcação preventiva automática).
+  - **Tela de Conferência & Curadoria (Modal):** Painel interativo com totalizadores de receitas/despesas selecionadas, edição inline de títulos e categorias, seleção individual/global e importação em lote (`createMany`) direto para o Supabase.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -157,26 +161,18 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a implementação de **Status de Pagamento ("Pago / Recebido" vs. "Pendente / Agendado / Vencido")**:
-  - **Banco de Dados (Supabase PostgreSQL):**
-    - Coluna `status` e índice `idx_transactions_status` aplicados no projeto remoto `ehdlpxpciarxnfgymbtx` e documentados em [`supabase/schema.sql`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/supabase/schema.sql).
-  - **Domínio & Cálculos:**
-    - [`transaction.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/models/transaction.ts): adicionados tipos `PaymentStatus`, `TransactionStatusFilter`, campo `status` em `Transaction`/`CreateTransactionDTO` e métricas de realizado/pendente em `FinanceSummary`.
-    - [`transactionSchema.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/schemas/transactionSchema.ts): validação Zod atualizada com `status`.
-    - [`financeCalculations.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/financeCalculations.ts): funções puras `togglePaymentStatus`, `isOverdue`, suporte a filtro por status e métricas em `calculateSummary`.
-  - **Acesso a Dados & Repositório:**
-    - [`SupabaseTransactionRepository.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/data/repositories/SupabaseTransactionRepository.ts): sincronização do campo `status` em `getAll`, `create`, `createMany` e `update`.
+- **Última Ação:** Concluída a implementação de **Importação de Extrato Bancário (OFX e CSV)**:
+  - **Domínio & Serviços Puros:**
+    - [`statement.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/models/statement.ts): contratos de dados para transações extraídas (`ParsedStatementItem` e `StatementParseResult`).
+    - [`statementParser.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/statementParser.ts): parsers para OFX e CSV com detecção de delimitadores, formatos de data/moeda e detecção de duplicatas.
   - **Apresentação (UI/UX):**
-    - [`useFinance.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/hooks/useFinance.ts): novo estado `selectedStatus` e método `toggleTransactionStatus(id)` com atualização otimista na interface.
-    - [`TransactionItem.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionItem.tsx): badge interativo com 1 clique e detecção de contas vencidas.
-    - [`TransactionForm.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionForm.tsx): seletor de status estilizado ("Pago/Recebido" vs "Pendente/Agendado").
-    - [`TransactionFilters.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionFilters.tsx): filtro rápido por status de pagamento.
-    - [`SummaryCards.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/SummaryCards.tsx): desdobramento de realizados vs pendentes.
+    - [`ImportStatementModal.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ImportStatementModal.tsx): modal com drag-and-drop, preview de transações, resumo visual de entradas/saídas, edição inline e importação em lote.
+    - [`ExportActions.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ExportActions.tsx): botão de atalho direto para "Importar Extrato".
+    - [`App.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/App.tsx): integração do modal com lazy loading, atalho no Dashboard e repasse de `importTransactions`.
   - **Qualidade & Validação:**
-    - 🟢 **205/205 testes automatizados passando** (39 suítes de teste).
-    - 🟢 **Biome 100% limpo em 104 arquivos** (0 erros, 0 avisos).
+    - 🟢 **217/217 testes automatizados passando** (41 suítes de teste).
+    - 🟢 **Biome 100% limpo em 109 arquivos** (0 erros, 0 avisos).
     - 🟢 **Build de produção verificado com sucesso** (`npm run build`).
 - **Próximos Passos Sugeridos:**
   - Salvar no Git (`git commit` e `git push`).
-  - Importação de Extrato Bancário (OFX / CSV).
   - Deploy Online na Vercel ou Netlify.

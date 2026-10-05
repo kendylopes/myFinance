@@ -1,4 +1,4 @@
-import { ArrowRight, Layers, Plus, Rocket, Wallet } from 'lucide-react'
+import { ArrowRight, Layers, Plus, Rocket, Upload, Wallet } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { CurrencyProvider } from './core/currency/currencyContext'
 import { getCurrentYearMonth, getLocalDateString } from './core/formatters/date'
@@ -45,6 +45,11 @@ const ThemeSelectorModal = lazy(() =>
     default: m.ThemeSelectorModal,
   })),
 )
+const ImportStatementModal = lazy(() =>
+  import('./presentation/components/dashboard/ImportStatementModal').then((m) => ({
+    default: m.ImportStatementModal,
+  })),
+)
 
 export function AppContent() {
   const toast = useToast()
@@ -62,6 +67,7 @@ export function AppContent() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isTxModalOpen, setIsTxModalOpen] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -105,6 +111,7 @@ export function AppContent() {
     toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
+    importTransactions,
   } = useFinance(undefined, undefined, user)
 
   const handleDuplicateTransaction = async (id: string) => {
@@ -352,17 +359,31 @@ export function AppContent() {
                         ({periodTransactions.length} no período)
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        soundFX.playClick()
-                        handleSelectSection('transactions')
-                      }}
-                      className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      <span>Ver todos</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFX.playClick()
+                          setIsImportModalOpen(true)
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                        title="Importar extrato bancário OFX ou CSV"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Importar Extrato</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFX.playClick()
+                          handleSelectSection('transactions')
+                        }}
+                        className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <span>Ver todos</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {periodTransactions.length === 0 ? (
@@ -384,6 +405,18 @@ export function AppContent() {
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>Adicionar Transação</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playClick()
+                            setIsImportModalOpen(true)
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                        >
+                          <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Importar Extrato</span>
                         </button>
 
                         <button
@@ -438,6 +471,7 @@ export function AppContent() {
                 onDeleteMultiple={deleteMultipleTransactions}
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
+                onOpenImport={() => setIsImportModalOpen(true)}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 selectedCategory={selectedCategory}
@@ -533,6 +567,16 @@ export function AppContent() {
             transactionToEdit={editingTransaction}
             categories={categories}
             onAddCategory={addCategory}
+          />
+        )}
+
+        {isImportModalOpen && (
+          <ImportStatementModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            existingTransactions={transactions}
+            availableCategories={availableCategories}
+            onImport={importTransactions}
           />
         )}
       </Suspense>
