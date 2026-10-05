@@ -9,6 +9,7 @@ import {
   Palette,
   Receipt,
   Settings,
+  Smartphone,
   Target,
   Wallet,
 } from 'lucide-react'
@@ -16,6 +17,7 @@ import { useState } from 'react'
 import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
+import { usePWA } from '../../hooks/usePWA'
 
 export interface SidebarProps {
   user?: AuthUser | null
@@ -46,6 +48,7 @@ export function Sidebar({
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed
 
   const { currentTheme } = useTheme()
+  const { isInstallable, installApp } = usePWA()
 
   const navItems = [
     {
@@ -262,6 +265,37 @@ export function Sidebar({
 
         {/* Rodapé da Sidebar / Configurações & Perfil */}
         <div className="p-2 border-t border-white/10 space-y-1">
+          {/* Botão de Instalar App Nativo (PWA) */}
+          {isInstallable && (
+            <button
+              type="button"
+              onClick={async () => {
+                soundFX.playClick()
+                await installApp()
+              }}
+              title="Instalar myFinance no dispositivo"
+              aria-label="Instalar myFinance no dispositivo"
+              className={`flex items-center text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all cursor-pointer group ${
+                isCollapsed
+                  ? 'w-8 h-8 mx-auto justify-center rounded-xl bg-emerald-500/10'
+                  : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold bg-emerald-500/5'
+              }`}
+            >
+              <Smartphone
+                className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110"
+                aria-hidden="true"
+              />
+              {!isCollapsed && (
+                <div className="text-left overflow-hidden flex-1">
+                  <span className="block truncate text-emerald-300 font-bold">Instalar App</span>
+                  <span className="text-[10px] text-emerald-400/80 font-normal block truncate">
+                    Tela cheia nativa
+                  </span>
+                </div>
+              )}
+            </button>
+          )}
+
           {/* Botão de Configurações no lugar do antigo indicador de nuvem */}
           <button
             type="button"
