@@ -11,6 +11,7 @@ import {
   UserCheck,
   UserPlus,
   Wallet,
+  X,
 } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import type { AuthResult } from '../../../core/auth/authService'
@@ -43,6 +44,11 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
     setSuccessMessage(null)
   }
 
+  const handleDismissError = () => {
+    soundFX.playClick()
+    setErrorMessage(null)
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setErrorMessage(null)
@@ -73,6 +79,7 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
       if (mode === 'login') {
         const result = await onLogin(cleanEmail, password)
         if (result.success) {
+          toast.dismissAll()
           soundFX.playSuccess()
           toast.success('Bem-vindo de volta!', 'Login realizado com sucesso.')
         } else {
@@ -80,11 +87,11 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           const err =
             result.error || 'E-mail ou senha incorretos. Verifique seus dados e tente novamente.'
           setErrorMessage(err)
-          toast.error('Não foi possível entrar', err)
         }
       } else {
         const result = await onRegister(cleanEmail, password, name)
         if (result.success) {
+          toast.dismissAll()
           soundFX.playSuccess()
           toast.success('Conta criada!', 'Bem-vindo ao myFinance!')
           if (result.requiresEmailConfirmation) {
@@ -94,7 +101,6 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           soundFX.playError()
           const err = result.error || 'Erro ao realizar cadastro.'
           setErrorMessage(err)
-          toast.error('Falha no cadastro', err)
         }
       }
     } finally {
@@ -175,44 +181,49 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                 errorMessage.toLowerCase().includes('não localizada') ||
                 errorMessage.toLowerCase().includes('não encontrado')
 
-              // Determinar o título, ícone e cores contextuais
-              let title = 'Não foi possível entrar'
+              // Determinar o título, ícone e cores contextuais sem redundância
+              let title = 'Credenciais Incorretas'
+              let cleanMessage =
+                'O e-mail ou a senha digitados não conferem. Confira sua digitação e tente novamente.'
               let icon = <Lock className="w-4 h-4 text-rose-400" />
               let badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
               let borderColor = 'border-rose-500/30'
 
               if (isShortPassword) {
                 title = 'Senha muito curta'
+                cleanMessage = 'A senha precisa ter no mínimo 6 dígitos para continuar.'
                 icon = <Lock className="w-4 h-4 text-amber-400" />
                 badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
                 borderColor = 'border-amber-500/30'
               } else if (isInvalidEmail) {
                 title = 'E-mail inválido'
+                cleanMessage =
+                  'Informe um endereço de e-mail no formato correto (ex: nome@exemplo.com).'
                 icon = <Mail className="w-4 h-4 text-amber-400" />
                 badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
                 borderColor = 'border-amber-500/30'
               } else if (isMismatch) {
                 title = 'Senhas diferentes'
+                cleanMessage = 'A confirmação deve ser idêntica à senha digitada.'
                 icon = <Lock className="w-4 h-4 text-rose-400" />
                 badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
                 borderColor = 'border-rose-500/30'
               } else if (isExplicitUserNotFound) {
                 title = 'Conta não localizada'
+                cleanMessage =
+                  'Nenhuma conta foi encontrada com este e-mail. Crie seu acesso abaixo.'
                 icon = <UserPlus className="w-4 h-4 text-emerald-400" />
                 badgeBg = 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
                 borderColor = 'border-emerald-500/30'
-              } else if (mode === 'login') {
-                title = 'E-mail ou senha incorretos'
-                icon = <Lock className="w-4 h-4 text-rose-400" />
-                badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
-                borderColor = 'border-rose-500/30'
               } else if (isUserAlreadyRegistered) {
                 title = 'E-mail já cadastrado'
+                cleanMessage = 'Já existe uma conta com este e-mail. Acesse o login para entrar.'
                 icon = <UserCheck className="w-4 h-4 text-emerald-400" />
                 badgeBg = 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
                 borderColor = 'border-emerald-500/30'
-              } else {
-                title = 'Não foi possível concluir o cadastro'
+              } else if (mode === 'register') {
+                title = 'Falha no cadastro'
+                cleanMessage = errorMessage
                 icon = <AlertCircle className="w-4 h-4 text-amber-400" />
                 badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
                 borderColor = 'border-amber-500/30'
@@ -221,9 +232,9 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
               return (
                 <div
                   role="alert"
-                  className={`mb-5 overflow-hidden rounded-2xl border ${borderColor} bg-linear-to-b from-zinc-900/95 to-zinc-950/95 p-4 backdrop-blur-md shadow-xl shadow-black/60 animate-scale-in`}
+                  className={`mb-5 overflow-hidden rounded-2xl border ${borderColor} bg-linear-to-b from-zinc-900/95 to-zinc-950/95 p-4 backdrop-blur-md shadow-2xl shadow-black/70 animate-scale-in`}
                 >
-                  {/* Topo do Card: Ícone + Título + Mensagem */}
+                  {/* Topo do Card: Ícone + Título + Botão Fechar/Sair */}
                   <div className="flex items-start gap-3">
                     <div className={`p-2 rounded-xl border ${badgeBg} shrink-0 mt-0.5 shadow-xs`}>
                       {icon}
@@ -231,62 +242,95 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="text-xs font-semibold text-zinc-100">{title}</h4>
-                        {isExplicitUserNotFound && (
-                          <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            Novo por aqui?
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {isExplicitUserNotFound && (
+                            <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                              Novo por aqui?
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleDismissError}
+                            className="p-1 text-zinc-400 hover:text-zinc-100 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                            aria-label="Fechar aviso"
+                            title="Fechar aviso"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-[11.5px] text-zinc-300 leading-relaxed">{errorMessage}</p>
+                      <p className="text-[11.5px] text-zinc-300 leading-relaxed">{cleanMessage}</p>
                     </div>
                   </div>
 
-                  {/* Caso 1: Usuário explicitamente não encontrado - CTA para criar conta */}
-                  {mode === 'login' && isExplicitUserNotFound && (
-                    <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => handleTabSwitch('register')}
-                        className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-emerald-500/20 active:scale-[0.99]"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Criar conta com este e-mail</span>
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Caso 2: Senha errada ou credenciais inválidas (usuário tem conta mas errou a senha) */}
-                  {mode === 'login' &&
-                    !isShortPassword &&
-                    !isInvalidEmail &&
-                    !isExplicitUserNotFound && (
-                      <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-400">
-                        <span>Não tem certeza do seu acesso?</span>
+                  {/* Barra de ação inferior do card */}
+                  <div className="mt-3.5 pt-3 border-t border-white/10 flex items-center justify-between gap-3">
+                    {isExplicitUserNotFound ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleDismissError}
+                          className="py-1.5 px-3 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+                        >
+                          Sair
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleTabSwitch('register')}
-                          className="text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2 cursor-pointer transition-colors"
+                          className="py-2 px-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Criar conta com este e-mail</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    ) : isUserAlreadyRegistered ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleDismissError}
+                          className="py-1.5 px-3 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+                        >
+                          Sair
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleTabSwitch('login')}
+                          className="py-1.5 px-3.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          <span>Acessar minha conta</span>
+                        </button>
+                      </>
+                    ) : mode === 'login' ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleTabSwitch('register')}
+                          className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2 cursor-pointer transition-colors"
                         >
                           Criar nova conta
                         </button>
+                        <button
+                          type="button"
+                          onClick={handleDismissError}
+                          className="py-1.5 px-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          Sair do aviso
+                        </button>
+                      </>
+                    ) : (
+                      <div className="w-full flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleDismissError}
+                          className="py-1.5 px-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          Sair do aviso
+                        </button>
                       </div>
                     )}
-
-                  {/* Caso 3: Cadastro com e-mail já existente */}
-                  {mode === 'register' && isUserAlreadyRegistered && (
-                    <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
-                      <button
-                        type="button"
-                        onClick={() => handleTabSwitch('login')}
-                        className="w-full py-2.5 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs active:scale-[0.99]"
-                      >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        <span>Acessar minha conta</span>
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )
             })()}
@@ -301,8 +345,16 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
             </div>
           )}
 
-          {/* Formulário */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Formulário (desabilitado enquanto o aviso de erro estiver aberto) */}
+          <form
+            onSubmit={handleSubmit}
+            className={`space-y-4 transition-all duration-200 ${
+              errorMessage
+                ? 'opacity-35 pointer-events-none select-none filter blur-[0.4px]'
+                : 'opacity-100'
+            }`}
+            aria-disabled={!!errorMessage}
+          >
             {mode === 'register' && (
               <div>
                 <label
@@ -316,10 +368,11 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                   <input
                     id="page-auth-name"
                     type="text"
+                    disabled={!!errorMessage || isSubmitting}
                     placeholder="Ex: Kennedy Lopes"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -338,10 +391,11 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                   id="page-auth-email"
                   type="email"
                   required
+                  disabled={!!errorMessage || isSubmitting}
                   placeholder="seu.email@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -359,15 +413,17 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                   id="page-auth-password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  disabled={!!errorMessage || isSubmitting}
                   placeholder="Mínimo de 6 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"
+                  disabled={!!errorMessage || isSubmitting}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer disabled:pointer-events-none"
                   aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -389,10 +445,11 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                     id="page-auth-confirm-password"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    disabled={!!errorMessage || isSubmitting}
                     placeholder="Repita sua senha"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/80 border border-white/10 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -400,7 +457,7 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={!!errorMessage || isSubmitting}
               className="w-full relative overflow-hidden py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-2xl shadow-lg shadow-emerald-500/25 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
             >
               <span

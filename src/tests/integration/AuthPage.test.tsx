@@ -54,9 +54,7 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(screen.getByText(/Conta não localizada/i)).toBeInTheDocument()
-    expect(
-      screen.getByText(/Este e-mail ainda não está cadastrado no myFinance/i),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Nenhuma conta foi encontrada com este e-mail/i)).toBeInTheDocument()
 
     // Botão de ação rápida para criar conta direto do erro
     const quickRegisterBtn = screen.getByRole('button', {
@@ -70,7 +68,7 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     expect(screen.getByLabelText(/E-mail/i)).toHaveValue('novato@exemplo.com')
   }, 25000)
 
-  it('deve exibir aviso contextual de senha muito curta sem exibir botão de criar conta', async () => {
+  it('deve exibir aviso contextual de senha muito curta, desabilitar formulário e reabilitar ao sair do aviso', async () => {
     const mockLogin = vi.fn()
     render(<AuthPage onLogin={mockLogin} onRegister={vi.fn()} />)
 
@@ -85,13 +83,27 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     const alertBox = await screen.findByRole('alert')
     expect(alertBox).toBeInTheDocument()
     expect(screen.getByText('Senha muito curta')).toBeInTheDocument()
-    expect(screen.getByText('A senha deve conter no mínimo 6 caracteres.')).toBeInTheDocument()
+    expect(screen.getByText(/A senha precisa ter no mínimo 6 dígitos/i)).toBeInTheDocument()
+
+    // Os inputs abaixo devem estar desabilitados enquanto o aviso estiver aberto
+    expect(emailInput).toBeDisabled()
+    expect(passwordInput).toBeDisabled()
+    expect(submitBtn).toBeDisabled()
 
     // O alert não deve conter a tag de "Novo por aqui?" nem o botão de criar conta
     expect(within(alertBox).queryByText('Novo por aqui?')).not.toBeInTheDocument()
     expect(
       within(alertBox).queryByRole('button', { name: /Criar conta com este e-mail/i }),
     ).not.toBeInTheDocument()
+
+    // Clicar em "Sair do aviso" deve fechar o alerta e reabilitar os inputs
+    const exitBtn = within(alertBox).getByRole('button', { name: /Sair do aviso/i })
+    fireEvent.click(exitBtn)
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(emailInput).not.toBeDisabled()
+    expect(passwordInput).not.toBeDisabled()
+    expect(submitBtn).not.toBeDisabled()
     expect(mockLogin).not.toHaveBeenCalled()
   }, 25000)
 })

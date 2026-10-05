@@ -30,6 +30,7 @@ export interface ToastContextValue {
   toasts: ToastItemData[]
   showToast: (options: ToastOptions) => string
   dismissToast: (id: string) => void
+  dismissAll: () => void
   success: (title: string, description?: string, options?: Partial<ToastOptions>) => string
   error: (title: string, description?: string, options?: Partial<ToastOptions>) => string
   info: (title: string, description?: string, options?: Partial<ToastOptions>) => string
@@ -46,6 +47,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  }, [])
+
+  const dismissAll = useCallback(() => {
+    setToasts([])
   }, [])
 
   const showToast = useCallback((options: ToastOptions): string => {
@@ -115,12 +120,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       toasts,
       showToast,
       dismissToast,
+      dismissAll,
       success,
       error,
       info,
       warning,
     }),
-    [toasts, showToast, dismissToast, success, error, info, warning],
+    [toasts, showToast, dismissToast, dismissAll, success, error, info, warning],
   )
 
   return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>
@@ -131,6 +137,7 @@ const fallbackValue: ToastContextValue = {
   toasts: [],
   showToast: noopToast,
   dismissToast: () => {},
+  dismissAll: () => {},
   success: noopToast,
   error: noopToast,
   info: noopToast,
