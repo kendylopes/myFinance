@@ -1,0 +1,454 @@
+import {
+  AlertCircle,
+  Eye,
+  EyeOff,
+  HandCoins,
+  History,
+  Info,
+  Plus,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  Wallet,
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useCurrency } from '../../../core/currency/currencyContext'
+import { soundFX } from '../../../core/sound/soundEffects'
+import { useTheme } from '../../../core/theme/themeContext'
+import type { CreateDebtDTO, Debt, RecordDebtPaymentDTO } from '../../../domain/models/debt'
+import type { CreateTransactionDTO } from '../../../domain/models/transaction'
+import { useDebts } from '../../hooks/useDebts'
+import { DebtCard } from './DebtCard'
+import { DebtHistoryModal } from './DebtHistoryModal'
+import { DebtModal } from './DebtModal'
+import { DebtPaymentModal } from './DebtPaymentModal'
+
+interface DebtsViewProps {
+  onAddTransaction?: (tx: CreateTransactionDTO) => Promise<unknown>
+}
+
+export function DebtsView({ onAddTransaction }: DebtsViewProps) {
+  const { currentTheme } = useTheme()
+  const { formatValue } = useCurrency()
+
+  const {
+    debts,
+    payments,
+    activeDebts,
+    paidDebts,
+    overdueDebts,
+    totalDebtBalance,
+    totalInterestPaid,
+    totalAmountPaid,
+    isLoading,
+    isPrivacyMode,
+    togglePrivacyMode,
+    addDebt,
+    updateDebt,
+    deleteDebt,
+    payDebt,
+  } = useDebts({ onAddTransaction })
+
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'urgent' | 'paid'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Modais
+  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false)
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null)
+
+  const [paymentDebt, setPaymentDebt] = useState<Debt | null>(null)
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+
+  const [historyDebt, setHistoryDebt] = useState<Debt | null>(null)
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
+
+  // Dívidas filtradas
+  const filteredDebts = useMemo(() => {
+    return debts.filter((d) => {
+      // Filtro de status
+      if (filterStatus === 'active' && d.status === 'paid') return false
+      if (filterStatus === 'paid' && d.status !== 'paid') return false
+      if (filterStatus === 'urgent') {
+        const isUrgent = d.status === 'overdue' || d.status === 'active'
+        if (d.status === 'paid') return false
+        if (!isUrgent) return false
+      }
+
+      // Filtro de busca
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        const matchName = d.lenderName.toLowerCase().includes(q)
+        const matchDesc = d.description?.toLowerCase().includes(q) || false
+        if (!matchName && !matchDesc) return false
+      }
+
+      return true
+    })
+  }, [debts, filterStatus, searchQuery])
+
+  const mask = (val: string) => (isPrivacyMode ? '••••••' : val)
+
+  const handleOpenNew = () => {
+    soundFX.playClick()
+    setEditingDebt(null)
+    setIsDebtModalOpen(true)
+  }
+
+  const handleOpenEdit = (debt: Debt) => {
+    soundFX.playClick()
+    setEditingDebt(debt)
+    setIsDebtModalOpen(true)
+  }
+
+  const handleOpenPayment = (debt: Debt) => {
+    soundFX.playClick()
+    setPaymentDebt(debt)
+    setIsPaymentModalOpen(true)
+  }
+
+  const handleOpenHistory = (debt: Debt) => {
+    soundFX.playClick()
+    setHistoryDebt(debt)
+    setIsHistoryModalOpen(true)
+  }
+
+  const handleSaveDebt = async (dto: CreateDebtDTO) => {
+    if (editingDebt) {
+      await updateDebt(editingDebt.id, dto)
+    } else {
+      await addDebt(dto)
+    }
+  }
+
+  const handleRecordPayment = async (dto: RecordDebtPaymentDTO) => {
+    await payDebt(dto)
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* 1. Header da Seção */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div
+              className="p-2.5 rounded-2xl border"
+              style={{
+                backgroundColor: `${currentTheme.primaryColor}15`,
+                borderColor: `${currentTheme.primaryColor}30`,
+                color: currentTheme.primaryColor,
+              }}
+            >
+              <HandCoins className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Dívidas & Empréstimos
+              </h1>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Gestão estratégica de agiotas, empréstimos pessoais e rolagem de juros
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Botões do Topo: Modo Discreto e Nova Dívida */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              togglePrivacyMode()
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+              isPrivacyMode
+                ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                : 'bg-white/5 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10'
+            }`}
+            title={
+              isPrivacyMode ? 'Desativar modo discreto' : 'Ativar modo discreto (ocultar valores)'
+            }
+          >
+            {isPrivacyMode ? (
+              <EyeOff className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+            <span>{isPrivacyMode ? 'Modo Discreto Ativo' : 'Modo Discreto'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenNew}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-black shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            style={{
+              backgroundColor: currentTheme.primaryColor,
+              boxShadow: `0 4px 15px ${currentTheme.primaryColor}40`,
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Novo Empréstimo</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Banner de Alerta Se Houver Dívidas Atrasadas */}
+      {overdueDebts.length > 0 && (
+        <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between gap-3 shadow-lg shadow-rose-950/30 text-rose-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 animate-pulse">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-rose-100">
+                Atenção: Você possui {overdueDebts.length} dívida(s) em atraso!
+              </h4>
+              <p className="text-xs text-rose-300/80">
+                Dívidas de agiota com juros diários ou de mora crescem rápido. Priorize a rolagem ou
+                quitação.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFilterStatus('urgent')}
+            className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold cursor-pointer transition-colors"
+          >
+            Ver Atrasadas
+          </button>
+        </div>
+      )}
+
+      {/* 3. Cards com Resumo Analítico Superior */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Saldo Devedor Total */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">Total em Dívidas</span>
+            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">
+            {mask(formatValue(totalDebtBalance))}
+          </div>
+          <p className="text-[11px] text-zinc-400">{activeDebts.length} compromisso(s) em aberto</p>
+        </div>
+
+        {/* Card 2: Total Pago Só em Juros */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-amber-500/20 bg-amber-950/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+              Só em Juros Pagos
+            </span>
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
+              <RefreshCw className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
+            {mask(formatValue(totalInterestPaid))}
+          </div>
+          <p className="text-[11px] text-zinc-400">Custo total de rolagens e encargos</p>
+        </div>
+
+        {/* Card 3: Total Geral Pago (Principal + Juros) */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Volume Total Pago
+            </span>
+            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+              <History className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">
+            {mask(formatValue(totalAmountPaid))}
+          </div>
+          <p className="text-[11px] text-zinc-400">{payments.length} pagamento(s) efetuados</p>
+        </div>
+
+        {/* Card 4: Dívidas Liquidadas */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-emerald-500/20 bg-emerald-950/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+              Dívidas Quitadas
+            </span>
+            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+              <Wallet className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
+            {paidDebts.length}
+          </div>
+          <p className="text-[11px] text-zinc-400">Compromissos 100% resolvidos</p>
+        </div>
+      </div>
+
+      {/* 4. Barra de Filtros e Busca */}
+      <div className="glass-card p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Abas de Filtro */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setFilterStatus('all')
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+              filterStatus === 'all'
+                ? 'bg-white/10 border-white/20 text-white'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Todas ({debts.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setFilterStatus('active')
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+              filterStatus === 'active'
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Ativas ({activeDebts.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setFilterStatus('urgent')
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+              filterStatus === 'urgent'
+                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 font-bold'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Atrasadas / Urgentes ({overdueDebts.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setFilterStatus('paid')
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+              filterStatus === 'paid'
+                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Quitadas ({paidDebts.length})
+          </button>
+        </div>
+
+        {/* Input de Busca */}
+        <div className="relative min-w-[200px]">
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Buscar por credor..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+      </div>
+
+      {/* 5. Grid de Cards de Dívidas */}
+      {isLoading ? (
+        <div className="text-center py-16 text-zinc-400 space-y-2">
+          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs">Carregando seus compromissos...</p>
+        </div>
+      ) : filteredDebts.length === 0 ? (
+        <div className="glass-card p-12 rounded-3xl border border-white/10 text-center space-y-3">
+          <div
+            className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center border"
+            style={{
+              backgroundColor: `${currentTheme.primaryColor}15`,
+              borderColor: `${currentTheme.primaryColor}30`,
+              color: currentTheme.primaryColor,
+            }}
+          >
+            <HandCoins className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Nenhum empréstimo encontrado</h3>
+          <p className="text-xs text-zinc-400 max-w-md mx-auto">
+            {searchQuery.trim() || filterStatus !== 'all'
+              ? 'Nenhum resultado corresponde aos filtros aplicados.'
+              : 'Cadastre dívidas de agiota ou empréstimos pessoais para acompanhar vencimentos, renovações e abatimentos.'}
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleOpenNew}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-black cursor-pointer shadow-lg hover:scale-105 transition-all"
+              style={{
+                backgroundColor: currentTheme.primaryColor,
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>Cadastrar Primeiro Empréstimo</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredDebts.map((debt) => (
+            <DebtCard
+              key={debt.id}
+              debt={debt}
+              payments={payments}
+              isPrivacyMode={isPrivacyMode}
+              onOpenPaymentModal={handleOpenPayment}
+              onOpenHistoryModal={handleOpenHistory}
+              onEdit={handleOpenEdit}
+              onDelete={deleteDebt}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 6. Dica Estratégica na Base */}
+      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
+        <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <p>
+          <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}
+          <strong className="text-emerald-400">&quot;Rola a dívida&quot;</strong>, paga apenas os
+          juros do mês e o capital inicial continua idêntico. Sempre que possível, utilize a opção{' '}
+          <strong className="text-cyan-400">&quot;Amortizar&quot;</strong> para reduzir o saldo do
+          principal e diminuir o custo do próximo mês.
+        </p>
+      </div>
+
+      {/* Modais */}
+      <DebtModal
+        isOpen={isDebtModalOpen}
+        onClose={() => setIsDebtModalOpen(false)}
+        onSave={handleSaveDebt}
+        initialData={editingDebt}
+      />
+
+      <DebtPaymentModal
+        isOpen={isPaymentModalOpen}
+        debt={paymentDebt}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onRecordPayment={handleRecordPayment}
+      />
+
+      <DebtHistoryModal
+        isOpen={isHistoryModalOpen}
+        debt={historyDebt}
+        payments={payments}
+        onClose={() => setIsHistoryModalOpen(false)}
+      />
+    </div>
+  )
+}

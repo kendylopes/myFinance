@@ -1,8 +1,10 @@
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 import type { ICategoryRepository } from '../../domain/repositories/ICategoryRepository'
+import type { IDebtRepository } from '../../domain/repositories/IDebtRepository'
 import type { ITransactionRepository } from '../../domain/repositories/ITransactionRepository'
 import { SupabaseBudgetRepository } from './SupabaseBudgetRepository'
 import { SupabaseCategoryRepository } from './SupabaseCategoryRepository'
+import { SupabaseDebtRepository } from './SupabaseDebtRepository'
 import { SupabaseTransactionRepository } from './SupabaseTransactionRepository'
 
 /**
@@ -32,4 +34,11 @@ export function createBudgetRepository(): IBudgetRepository {
  */
 export function createCategoryRepository(): ICategoryRepository {
   return new SupabaseCategoryRepository()
+}
+
+/**
+ * Cria a instância do repositório de dívidas e empréstimos.
+ */
+export function createDebtRepository(): IDebtRepository {
+  return new SupabaseDebtRepository()
 }

@@ -50,6 +50,11 @@ const ImportStatementModal = lazy(() =>
     default: m.ImportStatementModal,
   })),
 )
+const DebtsView = lazy(() =>
+  import('./presentation/components/debts/DebtsView').then((m) => ({
+    default: m.DebtsView,
+  })),
+)
 
 export function AppContent() {
   const toast = useToast()
@@ -491,7 +496,23 @@ export function AppContent() {
             </div>
           )}
 
-          {/* 3. TELA: PLANEJAMENTO (Metas, Teto Mensal e Comparativos) */}
+          {/* 3. TELA: DÍVIDAS & EMPRÉSTIMOS (Agiotas, Empréstimos Pessoais, Renovações e Juros) */}
+          {activeSection === 'debts' && (
+            <div className="space-y-6 min-w-0" id="section-debts">
+              <Suspense
+                fallback={
+                  <div className="py-20 text-center text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Carregando painel de dívidas e empréstimos...</p>
+                  </div>
+                }
+              >
+                <DebtsView onAddTransaction={addTransaction} />
+              </Suspense>
+            </div>
+          )}
+
+          {/* 4. TELA: PLANEJAMENTO (Metas, Teto Mensal e Comparativos) */}
           {activeSection === 'budget' && (
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
               <div className="xl:col-span-7 space-y-6 min-w-0">

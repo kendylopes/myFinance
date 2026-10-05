@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderTree,
+  HandCoins,
   LayoutDashboard,
   LogOut,
   Palette,
@@ -64,6 +65,12 @@ export function Sidebar({
       label: 'Transações',
       icon: Receipt,
       description: 'Entradas e Saídas',
+    },
+    {
+      id: 'debts',
+      label: 'Dívidas & Empréstimos',
+      icon: HandCoins,
+      description: 'Agiotas & Renovações',
     },
     {
       id: 'budget',

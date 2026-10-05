@@ -101,3 +101,65 @@ CREATE POLICY "Metas do usuario autenticado - ALL"
     TO authenticated
     USING (auth.uid() = user_id)
     WITH CHECK (auth.uid() = user_id);
+
+-- ==============================================================================
+-- 5. Tabela de Dívidas & Empréstimos (Agiotas, Contratos e Renovações)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.debts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    lender_name TEXT NOT NULL,
+    description TEXT,
+    original_amount NUMERIC(12, 2) NOT NULL CHECK (original_amount > 0),
+    current_balance NUMERIC(12, 2) NOT NULL CHECK (current_balance >= 0),
+    interest_rate NUMERIC(6, 2) NOT NULL DEFAULT 0,
+    interest_type TEXT NOT NULL DEFAULT 'monthly' CHECK (interest_type IN ('monthly', 'daily', 'fixed')),
+    fixed_interest_amount NUMERIC(12, 2),
+    start_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    total_installments INT,
+    paid_installments INT NOT NULL DEFAULT 0,
+    installment_amount NUMERIC(12, 2),
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paid', 'overdue', 'renewed')),
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_debts_user_id ON public.debts (user_id);
+CREATE INDEX IF NOT EXISTS idx_debts_due_date ON public.debts (due_date ASC);
+CREATE INDEX IF NOT EXISTS idx_debts_status ON public.debts (status);
+
+-- 6. Tabela de Pagamentos / Renovações de Dívidas
+CREATE TABLE IF NOT EXISTS public.debt_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+    debt_id UUID REFERENCES public.debts(id) ON DELETE CASCADE,
+    payment_date DATE NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    type TEXT NOT NULL CHECK (type IN ('renewal', 'amortization', 'installment', 'full_payoff')),
+    interest_paid NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    principal_paid NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    new_due_date DATE,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON public.debt_payments (debt_id);
+CREATE INDEX IF NOT EXISTS idx_debt_payments_user_id ON public.debt_payments (user_id);
+
+-- RLS para Dívidas e Pagamentos
+ALTER TABLE public.debts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.debt_payments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Dividas do usuario autenticado - ALL"
+    ON public.debts FOR ALL
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Pagamentos de dividas do usuario autenticado - ALL"
+    ON public.debt_payments FOR ALL
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
