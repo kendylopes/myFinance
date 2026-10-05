@@ -55,6 +55,11 @@ const DebtsView = lazy(() =>
     default: m.DebtsView,
   })),
 )
+const InstallmentsForecastModal = lazy(() =>
+  import('./presentation/components/dashboard/InstallmentsForecastModal').then((m) => ({
+    default: m.InstallmentsForecastModal,
+  })),
+)
 
 export function AppContent() {
   const toast = useToast()
@@ -73,6 +78,7 @@ export function AppContent() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isTxModalOpen, setIsTxModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const [isForecastModalOpen, setIsForecastModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -302,6 +308,7 @@ export function AppContent() {
             user={user}
             onLogout={logout}
             onOpenNewTransaction={handleOpenNewTransaction}
+            onOpenForecastModal={() => setIsForecastModalOpen(true)}
           />
 
           {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
@@ -598,6 +605,18 @@ export function AppContent() {
             existingTransactions={transactions}
             availableCategories={availableCategories}
             onImport={importTransactions}
+          />
+        )}
+
+        {isForecastModalOpen && (
+          <InstallmentsForecastModal
+            isOpen={isForecastModalOpen}
+            onClose={() => setIsForecastModalOpen(false)}
+            transactions={transactions}
+            onOpenNewInstallment={() => {
+              setIsForecastModalOpen(false)
+              handleOpenNewTransaction()
+            }}
           />
         )}
       </Suspense>
