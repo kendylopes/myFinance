@@ -6,7 +6,10 @@ import {
   EyeOff,
   Lock,
   Mail,
+  Sparkles,
   User,
+  UserCheck,
+  UserPlus,
   Wallet,
 } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
@@ -165,46 +168,60 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           {errorMessage && (
             <div
               role="alert"
-              className="mb-5 p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs space-y-2.5 animate-scale-in shadow-lg shadow-rose-950/30"
+              className="mb-5 overflow-hidden rounded-2xl border border-emerald-500/30 bg-linear-to-b from-zinc-900/95 to-zinc-950/95 p-4 backdrop-blur-md shadow-xl shadow-black/60 animate-scale-in"
             >
-              <div className="flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
-                <div className="flex-1 space-y-0.5">
-                  <p className="font-semibold text-rose-100">
-                    {mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível cadastrar'}
-                  </p>
-                  <p className="text-zinc-300 leading-relaxed">{errorMessage}</p>
+              {/* Topo do Card: Ícone + Título + Mensagem */}
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0 mt-0.5 shadow-xs">
+                  {mode === 'login' ? (
+                    <UserPlus className="w-4 h-4" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-zinc-100">
+                      {mode === 'login'
+                        ? 'Não foi possível entrar'
+                        : 'Não foi possível concluir o cadastro'}
+                    </h4>
+                    {mode === 'login' && (
+                      <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        Novo por aqui?
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11.5px] text-zinc-300 leading-relaxed">{errorMessage}</p>
                 </div>
               </div>
 
-              {/* Ação rápida para criar conta direto do erro de login */}
+              {/* Botão de ação rápida espaçoso e sem quebras de linha */}
               {mode === 'login' && (
-                <div className="pt-2.5 border-t border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="text-[11px] text-zinc-400">
-                    Ainda não tem conta no myFinance?
-                  </span>
+                <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
                   <button
                     type="button"
                     onClick={() => handleTabSwitch('register')}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl font-semibold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-emerald-500/20 active:scale-[0.99]"
                   >
+                    <Sparkles className="w-3.5 h-3.5" />
                     <span>Criar conta com este e-mail</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </div>
               )}
 
-              {/* Ação rápida para fazer login quando o e-mail já existe no cadastro */}
+              {/* Ação rápida para login se o e-mail já existe no cadastro */}
               {mode === 'register' && errorMessage.toLowerCase().includes('já existe') && (
-                <div className="pt-2.5 border-t border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="text-[11px] text-zinc-400">Já possui uma conta registrada?</span>
+                <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
                   <button
                     type="button"
                     onClick={() => handleTabSwitch('login')}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl font-semibold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="w-full py-2.5 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs active:scale-[0.99]"
                   >
+                    <UserCheck className="w-3.5 h-3.5" />
                     <span>Acessar minha conta</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </div>
               )}
