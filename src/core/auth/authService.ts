@@ -41,19 +41,29 @@ function mapUser(
 function translateAuthError(errorMessage: string): string {
   const lower = errorMessage.toLowerCase()
   if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
-    return 'E-mail ou senha incorretos. Verifique seus dados e tente novamente.'
+    return 'E-mail não cadastrado ou senha incorreta. Se você ainda não possui conta, crie seu cadastro.'
+  }
+  if (
+    lower.includes('user not found') ||
+    lower.includes('email not found') ||
+    lower.includes('no user found')
+  ) {
+    return 'Este e-mail ainda não está cadastrado. Clique em "Criar Nova Conta" para começar.'
   }
   if (lower.includes('user already registered') || lower.includes('already registered')) {
-    return 'Já existe uma conta cadastrada com este e-mail.'
+    return 'Já existe uma conta cadastrada com este e-mail. Acesse a aba de login.'
   }
   if (lower.includes('password should be at least')) {
     return 'A senha deve conter no mínimo 6 caracteres.'
   }
   if (lower.includes('email not confirmed')) {
-    return 'E-mail ainda não confirmado. Verifique a caixa de entrada do seu e-mail.'
+    return 'E-mail ainda não confirmado. Verifique a caixa de entrada ou spam do seu e-mail para ativar sua conta.'
   }
   if (lower.includes('rate limit')) {
     return 'Muitas tentativas em pouco tempo. Por favor, aguarde alguns instantes.'
+  }
+  if (lower.includes('failed to fetch') || lower.includes('networkerror')) {
+    return 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.'
   }
   return errorMessage
 }

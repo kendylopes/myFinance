@@ -1,4 +1,14 @@
-import { CheckCircle2, Eye, EyeOff, Lock, Mail, User, Wallet } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  User,
+  Wallet,
+} from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import type { AuthResult } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -37,16 +47,19 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
 
     const cleanEmail = email.trim()
     if (!cleanEmail?.includes('@')) {
+      soundFX.playError()
       setErrorMessage('Por favor, informe um endereço de e-mail válido.')
       return
     }
 
     if (password.length < 6) {
+      soundFX.playError()
       setErrorMessage('A senha deve conter no mínimo 6 caracteres.')
       return
     }
 
     if (mode === 'register' && password !== confirmPassword) {
+      soundFX.playError()
       setErrorMessage('As senhas digitadas não coincidem.')
       return
     }
@@ -60,8 +73,12 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           soundFX.playSuccess()
           toast.success('Bem-vindo de volta!', 'Login realizado com sucesso.')
         } else {
-          setErrorMessage(result.error || 'Erro ao realizar login.')
-          toast.error('Falha no login', result.error || 'Verifique seus dados de acesso.')
+          soundFX.playError()
+          const err =
+            result.error ||
+            'E-mail não cadastrado ou senha incorreta. Se ainda não possui conta, crie seu cadastro.'
+          setErrorMessage(err)
+          toast.error('Não foi possível entrar', err)
         }
       } else {
         const result = await onRegister(cleanEmail, password, name)
@@ -72,8 +89,10 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
             setSuccessMessage(result.message || 'Conta criada! Verifique seu e-mail para ativar.')
           }
         } else {
-          setErrorMessage(result.error || 'Erro ao realizar cadastro.')
-          toast.error('Falha no cadastro', result.error || 'Não foi possível criar a conta.')
+          soundFX.playError()
+          const err = result.error || 'Erro ao realizar cadastro.'
+          setErrorMessage(err)
+          toast.error('Falha no cadastro', err)
         }
       }
     } finally {
@@ -146,10 +165,49 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           {errorMessage && (
             <div
               role="alert"
-              className="mb-4 p-3 rounded-2xl bg-rose-950/50 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5 animate-scale-in"
+              className="mb-5 p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs space-y-2.5 animate-scale-in shadow-lg shadow-rose-950/30"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
-              <span>{errorMessage}</span>
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                <div className="flex-1 space-y-0.5">
+                  <p className="font-semibold text-rose-100">
+                    {mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível cadastrar'}
+                  </p>
+                  <p className="text-zinc-300 leading-relaxed">{errorMessage}</p>
+                </div>
+              </div>
+
+              {/* Ação rápida para criar conta direto do erro de login */}
+              {mode === 'login' && (
+                <div className="pt-2.5 border-t border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[11px] text-zinc-400">
+                    Ainda não tem conta no myFinance?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleTabSwitch('register')}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl font-semibold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
+                  >
+                    <span>Criar conta com este e-mail</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Ação rápida para fazer login quando o e-mail já existe no cadastro */}
+              {mode === 'register' && errorMessage.toLowerCase().includes('já existe') && (
+                <div className="pt-2.5 border-t border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[11px] text-zinc-400">Já possui uma conta registrada?</span>
+                  <button
+                    type="button"
+                    onClick={() => handleTabSwitch('login')}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-xl font-semibold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
+                  >
+                    <span>Acessar minha conta</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

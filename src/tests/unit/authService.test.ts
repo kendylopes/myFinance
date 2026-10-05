@@ -60,7 +60,7 @@ describe('AuthService (Serviço de Autenticação Supabase Auth)', () => {
     const result = await auth.signUp('jaexiste@exemplo.com', '123456')
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Já existe uma conta cadastrada com este e-mail.')
+    expect(result.error).toContain('Já existe uma conta cadastrada com este e-mail')
   })
 
   it('deve autenticar usuário com sucesso no signIn', async () => {
@@ -98,7 +98,7 @@ describe('AuthService (Serviço de Autenticação Supabase Auth)', () => {
     const result = await auth.signIn('errado@exemplo.com', 'senhaerrada')
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('E-mail ou senha incorretos')
+    expect(result.error).toContain('E-mail não cadastrado ou senha incorreta')
   })
 
   it('deve realizar logout com sucesso', async () => {

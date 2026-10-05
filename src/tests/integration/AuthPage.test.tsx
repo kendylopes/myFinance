@@ -36,4 +36,36 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
 
     expect(mockLogin).toHaveBeenCalledWith('usuario@nuvem.com', 'senha123')
   }, 25000)
+
+  it('deve exibir mensagem clara e botão de criar conta quando login falhar para usuário não cadastrado', async () => {
+    const mockLogin = vi.fn().mockResolvedValue({
+      success: false,
+      error:
+        'E-mail não cadastrado ou senha incorreta. Se você ainda não possui conta, crie seu cadastro.',
+    })
+    render(<AuthPage onLogin={mockLogin} onRegister={vi.fn()} />)
+
+    const emailInput = screen.getByLabelText(/E-mail/i)
+    const passwordInput = screen.getByLabelText(/^Senha/i)
+    const submitBtn = screen.getByRole('button', { name: 'Entrar no myFinance' })
+
+    fireEvent.change(emailInput, { target: { value: 'novato@exemplo.com' } })
+    fireEvent.change(passwordInput, { target: { value: 'senha123' } })
+    fireEvent.click(submitBtn)
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.getByText(/Não foi possível entrar/i)).toBeInTheDocument()
+    expect(screen.getByText(/E-mail não cadastrado ou senha incorreta/i)).toBeInTheDocument()
+
+    // Botão de ação rápida para criar conta direto do erro
+    const quickRegisterBtn = screen.getByRole('button', {
+      name: /Criar conta com este e-mail/i,
+    })
+    expect(quickRegisterBtn).toBeInTheDocument()
+
+    // Ao clicar, deve alternar para a aba de criar conta preservando o e-mail
+    fireEvent.click(quickRegisterBtn)
+    expect(screen.getByRole('button', { name: 'Criar Minha Conta' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/E-mail/i)).toHaveValue('novato@exemplo.com')
+  }, 25000)
 })

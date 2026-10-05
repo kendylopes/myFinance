@@ -114,6 +114,40 @@ class SoundFX {
       // Falha silenciosa
     }
   }
+
+  /**
+   * Som sutil de erro/aviso (dois tons descendentes rápidos)
+   */
+  public playError(): void {
+    if (!this.enabled) return
+    const ctx = this.getContext()
+    if (!ctx) return
+
+    try {
+      const now = ctx.currentTime
+      const freqs = [380, 260]
+
+      for (let i = 0; i < freqs.length; i++) {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+
+        osc.type = 'triangle'
+        const startTime = now + i * 0.06
+
+        osc.frequency.setValueAtTime(freqs[i], startTime)
+        gain.gain.setValueAtTime(0.04, startTime)
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08)
+
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+
+        osc.start(startTime)
+        osc.stop(startTime + 0.09)
+      }
+    } catch {
+      // Falha silenciosa
+    }
+  }
 }
 
 export const soundFX = new SoundFX()

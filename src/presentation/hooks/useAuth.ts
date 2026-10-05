@@ -47,23 +47,19 @@ export function useAuth(): UseAuthReturn {
   }, [])
 
   const login = useCallback(async (email: string, pass: string): Promise<AuthResult> => {
-    setIsLoading(true)
     const result = await authService.signIn(email, pass)
     if (result.success && result.user) {
       setUser(result.user)
     }
-    setIsLoading(false)
     return result
   }, [])
 
   const register = useCallback(
     async (email: string, pass: string, name?: string): Promise<AuthResult> => {
-      setIsLoading(true)
       const result = await authService.signUp(email, pass, name)
       if (result.success && result.user && !result.requiresEmailConfirmation) {
         setUser(result.user)
       }
-      setIsLoading(false)
       return result
     },
     [],
