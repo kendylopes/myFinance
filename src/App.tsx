@@ -20,11 +20,15 @@ import { TransactionItem } from './presentation/components/dashboard/Transaction
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
 import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
-import { ReportsView } from './presentation/components/reports/ReportsView'
 import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
 
-// Lazy Loading dos modais para code-splitting e performance otimizada
+// Lazy Loading dos modais e visões pesadas para code-splitting e performance otimizada
+const ReportsView = lazy(() =>
+  import('./presentation/components/reports/ReportsView').then((m) => ({
+    default: m.ReportsView,
+  })),
+)
 const TransactionModal = lazy(() =>
   import('./presentation/components/dashboard/TransactionModal').then((m) => ({
     default: m.TransactionModal,
@@ -75,6 +79,7 @@ export function AppContent() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'themes'>('general')
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isTxModalOpen, setIsTxModalOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
@@ -287,8 +292,14 @@ export function AppContent() {
         onLogout={handleLogout}
         activeSection={activeSection}
         onSelectSection={handleSelectSection}
-        onOpenThemeModal={() => setIsThemeModalOpen(true)}
-        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        onOpenThemeModal={() => {
+          setSettingsInitialTab('themes')
+          setIsSettingsModalOpen(true)
+        }}
+        onOpenSettingsModal={() => {
+          setSettingsInitialTab('general')
+          setIsSettingsModalOpen(true)
+        }}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
@@ -321,21 +332,29 @@ export function AppContent() {
             </div>
           )}
 
-          {/* SELETOR E FILTRO POR PERÍODO / MÊS */}
-          <MonthSelector
-            selectedMonth={selectedMonth}
-            onPreviousMonth={goToPreviousMonth}
-            onNextMonth={goToNextMonth}
-            onCurrentMonth={goToCurrentMonth}
-            onToggleAllPeriods={handleToggleAllPeriods}
-          />
+          {/* SELETOR E FILTRO POR PERÍODO / MÊS (Visível apenas nas seções com escopo mensal) */}
+          {activeSection !== 'debts' && activeSection !== 'reports' && (
+            <MonthSelector
+              selectedMonth={selectedMonth}
+              onPreviousMonth={goToPreviousMonth}
+              onNextMonth={goToNextMonth}
+              onCurrentMonth={goToCurrentMonth}
+              onToggleAllPeriods={handleToggleAllPeriods}
+            />
+          )}
 
           {/* 1. TELA: DASHBOARD (Apenas Informações Principais: Resumo Financeiro, Gráfico de Categorias e Transações Recentes) */}
           {activeSection === 'dashboard' && (
             <div className="space-y-6">
               {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
               <div id="section-summary">
-                <SummaryCards summary={summary} />
+                <SummaryCards
+                  summary={summary}
+                  onSelectType={(type) => {
+                    setSelectedType(type)
+                    handleSelectSection('transactions')
+                  }}
+                />
               </div>
 
               {/* INSIGHTS FINANCEIROS INTELIGENTES */}
@@ -466,7 +485,16 @@ export function AppContent() {
           {/* 2. TELA: RELATÓRIOS (Inteligência Semanal, Mensal, Anual e Customizada) */}
           {activeSection === 'reports' && (
             <div className="space-y-6 min-w-0" id="section-reports">
-              <ReportsView transactions={transactions} categories={categories} />
+              <Suspense
+                fallback={
+                  <div className="py-20 text-center text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Carregando relatórios financeiros...</p>
+                  </div>
+                }
+              >
+                <ReportsView transactions={transactions} categories={categories} />
+              </Suspense>
             </div>
           )}
 
@@ -484,6 +512,7 @@ export function AppContent() {
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
                 onOpenImport={() => setIsImportModalOpen(true)}
+                onOpenForecastModal={() => setIsForecastModalOpen(true)}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 selectedCategory={selectedCategory}
@@ -527,7 +556,13 @@ export function AppContent() {
               </div>
 
               <div className="xl:col-span-5 space-y-6 min-w-0">
-                <SummaryCards summary={summary} />
+                <SummaryCards
+                  summary={summary}
+                  onSelectType={(type) => {
+                    setSelectedType(type)
+                    handleSelectSection('transactions')
+                  }}
+                />
               </div>
             </div>
           )}
@@ -541,7 +576,13 @@ export function AppContent() {
                 </div>
 
                 <div className="xl:col-span-4 space-y-6 min-w-0">
-                  <SummaryCards summary={summary} />
+                  <SummaryCards
+                    summary={summary}
+                    onSelectType={(type) => {
+                      setSelectedType(type)
+                      handleSelectSection('transactions')
+                    }}
+                  />
                 </div>
               </div>
 
@@ -573,6 +614,7 @@ export function AppContent() {
           <SettingsModal
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
+            initialTab={settingsInitialTab}
           />
         )}
 

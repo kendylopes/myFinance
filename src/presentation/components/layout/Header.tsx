@@ -18,27 +18,27 @@ interface HeaderProps {
 
 const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
   dashboard: {
-    title: 'DASHBOARD',
+    title: 'Dashboard',
     subtitle: 'Aqui está o resumo das suas finanças',
   },
   reports: {
-    title: 'RELATÓRIOS',
+    title: 'Relatórios',
     subtitle: 'Análise detalhada por semana, mês, ano e períodos personalizados',
   },
   transactions: {
-    title: 'TRANSAÇÕES',
+    title: 'Transações',
     subtitle: 'Histórico e registro de entradas e saídas',
   },
   debts: {
-    title: 'DÍVIDAS & EMPRÉSTIMOS',
+    title: 'Dívidas & Empréstimos',
     subtitle: 'Gestão estratégica de agiotas, empréstimos pessoais e rolagem de juros',
   },
   budget: {
-    title: 'PLANEJAMENTO',
+    title: 'Planejamento',
     subtitle: 'Controle de metas e teto mensal de gastos',
   },
   categories: {
-    title: 'CATEGORIAS',
+    title: 'Categorias',
     subtitle: 'Distribuição de despesas por origem e destino',
   },
 }
@@ -71,7 +71,7 @@ export const Header = ({
     <header className="flex items-center justify-between gap-3 sm:gap-4 py-1">
       {/* Nome da tela em questão */}
       <div className="min-w-0">
-        <h1 className="text-xl sm:text-2xl font-black tracking-wider text-white drop-shadow-sm uppercase truncate">
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-sm truncate">
           {displayTitle}
         </h1>
         <p className="text-xs text-zinc-400 mt-0.5 truncate">{displaySubtitle}</p>

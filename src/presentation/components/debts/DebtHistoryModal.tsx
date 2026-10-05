@@ -1,4 +1,5 @@
 import { Calendar, CheckCircle2, Clock, DollarSign, History, RefreshCw, X } from 'lucide-react'
+import { useEffect } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
 import type { Debt, DebtPayment } from '../../../domain/models/debt'
@@ -12,6 +13,16 @@ interface DebtHistoryModalProps {
 
 export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistoryModalProps) {
   const { formatValue } = useCurrency()
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen || !debt) return null
 

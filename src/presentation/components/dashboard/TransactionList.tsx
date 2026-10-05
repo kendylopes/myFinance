@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Layers, Plus, Rocket, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Layers, Plus, Rocket, Trash2, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -43,6 +43,7 @@ export interface TransactionListProps {
   exportSummary?: FinanceSummary
   selectedMonth?: string
   onOpenImport?: () => void
+  onOpenForecastModal?: () => void
 }
 
 export const TransactionList = ({
@@ -56,6 +57,7 @@ export const TransactionList = ({
   onOpenNewTransaction,
   onOpenOnboarding,
   onOpenImport,
+  onOpenForecastModal,
   searchQuery,
   onSearchChange,
   selectedCategory,
@@ -215,6 +217,7 @@ export const TransactionList = ({
             summary={exportSummary}
             selectedMonth={selectedMonth}
             onOpenImport={onOpenImport}
+            onOpenForecastModal={onOpenForecastModal}
           />
         )}
       </div>
@@ -335,6 +338,16 @@ export const TransactionList = ({
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Nova Transação</span>
+                  </button>
+                )}
+                {onOpenImport && (
+                  <button
+                    type="button"
+                    onClick={onOpenImport}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold glass-pill hover:border-white/20 text-cyan-300 transition-all cursor-pointer shadow-sm hover:scale-105"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Importar Extrato</span>
                   </button>
                 )}
                 {onOpenOnboarding && (

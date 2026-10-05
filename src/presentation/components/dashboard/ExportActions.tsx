@@ -1,4 +1,4 @@
-import { Upload } from 'lucide-react'
+import { CreditCard, Upload } from 'lucide-react'
 import { formatMonthYear } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
@@ -11,6 +11,7 @@ export interface ExportActionsProps {
   summary: FinanceSummary
   selectedMonth: string
   onOpenImport?: () => void
+  onOpenForecastModal?: () => void
 }
 
 export function ExportActions({
@@ -18,6 +19,7 @@ export function ExportActions({
   summary,
   selectedMonth,
   onOpenImport,
+  onOpenForecastModal,
 }: ExportActionsProps) {
   const toast = useToast()
   const hasTransactions = transactions.length > 0
@@ -107,6 +109,22 @@ export function ExportActions({
         >
           <Upload className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Importar Extrato</span>
+        </button>
+      )}
+
+      {onOpenForecastModal && (
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playClick()
+            onOpenForecastModal()
+          }}
+          title="Ver projeção e faturas de cartão de crédito"
+          aria-label="Faturas do Cartão"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white transition-all duration-150 shadow-sm cursor-pointer"
+        >
+          <CreditCard className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
+          <span className="hidden sm:inline">Faturas</span>
         </button>
       )}
     </div>

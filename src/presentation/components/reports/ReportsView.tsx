@@ -108,21 +108,19 @@ export function ReportsView({ transactions }: ReportsViewProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Cabeçalho da Seção de Relatórios */}
+      {/* Barra de Ações & Período do Relatório */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs">
-              <BarChart3 className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                Relatórios & Inteligência
-              </h1>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-                Visão semanal, mensal, anual e personalizada das suas finanças
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs">
+            <BarChart3 className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Relatórios & Inteligência
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
+              Visão semanal, mensal, anual e personalizada das suas finanças
+            </p>
           </div>
         </div>
 

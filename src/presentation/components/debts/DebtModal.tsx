@@ -32,6 +32,16 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   // Preenche dados ao abrir para edição ou zera para criação
   useEffect(() => {
     if (initialData) {

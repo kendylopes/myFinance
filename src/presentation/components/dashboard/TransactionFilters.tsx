@@ -1,4 +1,4 @@
-import { ArrowUpDown, CheckCircle2, Clock, Search, X } from 'lucide-react'
+import { ArrowUpDown, CheckCircle2, Clock, Search, Tag, X } from 'lucide-react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import type {
   TransactionFilterType,
@@ -28,6 +28,9 @@ export interface TransactionFiltersProps {
 export function TransactionFilters({
   searchQuery,
   onSearchChange,
+  selectedCategory = 'all',
+  onCategoryChange,
+  categories = [],
   selectedType,
   onTypeChange,
   selectedStatus = 'all',
@@ -175,6 +178,31 @@ export function TransactionFilters({
                 <Clock className="w-3 h-3" />
                 <span>Pendentes</span>
               </button>
+            </div>
+          )}
+
+          {/* SELETOR DE CATEGORIA */}
+          {onCategoryChange && categories.length > 0 && (
+            <div className="flex items-center gap-1.5 glass-pill px-2.5 py-1.5 rounded-2xl border border-white/10 text-xs shadow-sm">
+              <Tag className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+              <select
+                aria-label="Filtrar por categoria"
+                value={selectedCategory}
+                onChange={(e) => {
+                  soundFX.playClick()
+                  onCategoryChange(e.target.value)
+                }}
+                className="bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1 max-w-36 truncate"
+              >
+                <option value="all" className="bg-zinc-900 text-white">
+                  Todas as categorias
+                </option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat} className="bg-zinc-900 text-white">
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

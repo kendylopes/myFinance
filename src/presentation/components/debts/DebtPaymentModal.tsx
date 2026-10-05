@@ -33,6 +33,16 @@ export function DebtPaymentModal({
   const [registerAsExpense, setRegisterAsExpense] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   // Calcula o valor dos juros baseado no tipo da dívida
   const calculatedInterest = debt
     ? debt.interestType === 'fixed'

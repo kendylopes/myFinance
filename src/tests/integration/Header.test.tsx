@@ -10,7 +10,7 @@ describe('<Header /> (Componente de Cabeçalho)', () => {
         <Header activeSection="dashboard" />
       </ThemeProvider>,
     )
-    expect(screen.getByText('DASHBOARD')).toBeInTheDocument()
+    expect(screen.getByText(/Dashboard/i)).toBeInTheDocument()
   })
 
   it('deve renderizar o título RELATÓRIOS quando activeSection for reports', () => {
@@ -19,7 +19,7 @@ describe('<Header /> (Componente de Cabeçalho)', () => {
         <Header activeSection="reports" />
       </ThemeProvider>,
     )
-    expect(screen.getByText('RELATÓRIOS')).toBeInTheDocument()
+    expect(screen.getByText(/Relatórios/i)).toBeInTheDocument()
     expect(screen.getByText(/Análise detalhada por semana, mês, ano/i)).toBeInTheDocument()
   })
 

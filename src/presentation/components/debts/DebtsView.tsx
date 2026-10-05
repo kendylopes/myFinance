@@ -126,28 +126,27 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* 1. Header da Seção */}
+      {/* 1. Header de Ações da Seção */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div
-              className="p-2.5 rounded-2xl border"
-              style={{
-                backgroundColor: `${currentTheme.primaryColor}15`,
-                borderColor: `${currentTheme.primaryColor}30`,
-                color: currentTheme.primaryColor,
-              }}
-            >
-              <HandCoins className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Dívidas & Empréstimos
-              </h1>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                Gestão estratégica de agiotas, empréstimos pessoais e rolagem de juros
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5">
+          <div
+            className="p-2 rounded-xl border flex items-center justify-center shrink-0"
+            style={{
+              backgroundColor: `${currentTheme.primaryColor}15`,
+              borderColor: `${currentTheme.primaryColor}30`,
+              color: currentTheme.primaryColor,
+            }}
+          >
+            <HandCoins className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              Contratos & Compromissos
+            </h2>
+            <p className="text-xs text-zinc-400">
+              {debts.filter((d) => d.status === 'active').length} contrato(s) ativo(s) sob
+              acompanhamento
+            </p>
           </div>
         </div>
 

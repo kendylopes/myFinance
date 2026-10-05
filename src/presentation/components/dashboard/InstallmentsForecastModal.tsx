@@ -1,5 +1,5 @@
 import { Calendar, CheckCircle2, Clock, CreditCard, Plus, TrendingDown, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
@@ -26,6 +26,16 @@ export function InstallmentsForecastModal({
   const { formatValue } = useCurrency()
 
   const [activeTab, setActiveTab] = useState<'timeline' | 'purchases'>('timeline')
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   // Agrupa compras parceladas
   const installmentGroups = useMemo(() => {

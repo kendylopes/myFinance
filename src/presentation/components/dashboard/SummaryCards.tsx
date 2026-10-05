@@ -7,6 +7,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { formatCurrency } from '../../../core/formatters/currency'
+import { soundFX } from '../../../core/sound/soundEffects'
 import type { FinanceSummary } from '../../../domain/models/transaction'
 import { useSpotlight } from '../../hooks/useSpotlight'
 import { AnimatedCurrency } from '../common/AnimatedCurrency'
@@ -14,9 +15,10 @@ import { BalanceSparkline } from './BalanceSparkline'
 
 interface SummaryCardsProps {
   summary: FinanceSummary
+  onSelectType?: (type: 'income' | 'expense') => void
 }
 
-export const SummaryCards = ({ summary }: SummaryCardsProps) => {
+export const SummaryCards = ({ summary, onSelectType }: SummaryCardsProps) => {
   const {
     totalIncome,
     totalExpense,
@@ -29,8 +31,8 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
   } = summary
   const isPositive = balance >= 0
 
-  const incomeRef = useSpotlight<HTMLDivElement>()
-  const expenseRef = useSpotlight<HTMLDivElement>()
+  const incomeRef = useSpotlight<HTMLButtonElement>()
+  const expenseRef = useSpotlight<HTMLButtonElement>()
   const balanceRef = useSpotlight<HTMLDivElement>()
 
   // Pontos de visualização de tendência para o Sparkline
@@ -106,10 +108,21 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
       </div>
 
       {/* Card 2: Total de Entradas (Segundo) */}
-      <div
+      <button
+        type="button"
         ref={incomeRef}
         data-testid="card-income"
-        className="glass-card glass-card-interactive spotlight-card p-6 rounded-3xl relative overflow-hidden group hover:border-emerald-500/40"
+        disabled={!onSelectType}
+        onClick={() => {
+          if (onSelectType) {
+            soundFX.playClick()
+            onSelectType('income')
+          }
+        }}
+        title={onSelectType ? 'Clique para ver todas as entradas' : undefined}
+        className={`glass-card glass-card-interactive spotlight-card p-6 rounded-3xl relative overflow-hidden group hover:border-emerald-500/40 text-left w-full ${
+          onSelectType ? 'cursor-pointer' : ''
+        }`}
       >
         <div
           aria-hidden="true"
@@ -139,13 +152,24 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
             </span>
           )}
         </div>
-      </div>
+      </button>
 
       {/* Card 3: Total de Saídas (Terceiro) */}
-      <div
+      <button
+        type="button"
         ref={expenseRef}
         data-testid="card-expense"
-        className="glass-card glass-card-interactive spotlight-card p-6 rounded-3xl relative overflow-hidden group hover:border-rose-500/40"
+        disabled={!onSelectType}
+        onClick={() => {
+          if (onSelectType) {
+            soundFX.playClick()
+            onSelectType('expense')
+          }
+        }}
+        title={onSelectType ? 'Clique para ver todas as saídas' : undefined}
+        className={`glass-card glass-card-interactive spotlight-card p-6 rounded-3xl relative overflow-hidden group hover:border-rose-500/40 text-left w-full ${
+          onSelectType ? 'cursor-pointer' : ''
+        }`}
       >
         <div
           aria-hidden="true"
@@ -176,7 +200,7 @@ export const SummaryCards = ({ summary }: SummaryCardsProps) => {
             </span>
           )}
         </div>
-      </div>
+      </button>
     </section>
   )
 }
