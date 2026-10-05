@@ -12,6 +12,7 @@ import {
 import { type FormEvent, useEffect, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
 import { formatCurrency } from '../../../core/formatters/currency'
+import { getLocalDateString } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
 import type { Category, CreateCategoryDTO } from '../../../domain/models/categories'
@@ -62,9 +63,7 @@ export const TransactionForm = ({
   const [isCustomCategory, setIsCustomCategory] = useState(false)
   const [hasManualOverride, setHasManualOverride] = useState(Boolean(transactionToEdit))
   const [autoSuggested, setAutoSuggested] = useState<string | null>(null)
-  const [date, setDate] = useState(
-    transactionToEdit?.date || new Date().toISOString().split('T')[0],
-  )
+  const [date, setDate] = useState(transactionToEdit?.date || getLocalDateString())
   const [status, setStatus] = useState<PaymentStatus>(transactionToEdit?.status || 'paid')
   const [recurrence, setRecurrence] = useState<RecurrenceType>('single')
   const [installmentsCount, setInstallmentsCount] = useState<number>(3)

@@ -1,7 +1,7 @@
 import { ArrowRight, Layers, Plus, Rocket, Wallet } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { CurrencyProvider } from './core/currency/currencyContext'
-import { getCurrentYearMonth } from './core/formatters/date'
+import { getCurrentYearMonth, getLocalDateString } from './core/formatters/date'
 import { DEMO_BUDGET_AMOUNT, getDemoTransactions } from './core/onboarding/demoData'
 import { soundFX } from './core/sound/soundEffects'
 import { ThemeProvider, useTheme } from './core/theme/themeContext'
@@ -151,7 +151,7 @@ export function AppContent() {
 
   const handleCompleteZeroSetup = async (initialBalance: number, budgetAmount: number) => {
     if (initialBalance > 0) {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getLocalDateString()
       await addTransaction({
         title: 'Saldo Inicial',
         amount: initialBalance,

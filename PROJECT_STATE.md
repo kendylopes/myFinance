@@ -77,7 +77,7 @@ myFinance/
 
 ## 🛡️ 4. Padrões de Qualidade & Métricas Atingidas
 
-- **Suíte de Testes Automatizados:** 🟢 **201/201 testes passando** (Vitest em 39 suítes com execução otimizada):
+- **Suíte de Testes Automatizados:** 🟢 **205/205 testes passando** (Vitest em 39 suítes com execução otimizada):
   - Cálculos de receitas, despesas, saldo líquido e agrupamento por categoria.
   - Cálculo de meta orçamentária (`calculateBudgetProgress`) com status safe, warning e exceeded.
   - Filtragem combinada por busca textual, categoria, tipo e **status de pagamento** (`filterTransactions`).
@@ -173,8 +173,8 @@ myFinance/
     - [`TransactionFilters.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/TransactionFilters.tsx): filtro rápido por status de pagamento.
     - [`SummaryCards.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/SummaryCards.tsx): desdobramento de realizados vs pendentes.
   - **Qualidade & Validação:**
-    - 🟢 **201/201 testes automatizados passando** (39 suítes de teste).
-    - 🟢 **Biome 100% limpo em 106 arquivos** (0 erros, 0 avisos).
+    - 🟢 **205/205 testes automatizados passando** (39 suítes de teste).
+    - 🟢 **Biome 100% limpo em 104 arquivos** (0 erros, 0 avisos).
     - 🟢 **Build de produção verificado com sucesso** (`npm run build`).
 - **Próximos Passos Sugeridos:**
   - Salvar no Git (`git commit` e `git push`).

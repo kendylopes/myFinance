@@ -128,8 +128,12 @@ export function useFinance(
   }, [activeTransactionRepo, refreshCategories])
 
   useEffect(() => {
+    if (user === null) {
+      setTransactions([])
+      setCategories([])
+    }
     refresh()
-  }, [refresh])
+  }, [refresh, user])
 
   // Carregamento reativo do orçamento para o mês selecionado
   useEffect(() => {

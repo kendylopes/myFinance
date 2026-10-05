@@ -65,3 +65,13 @@ export const addMonthsToDate = (dateString: string, monthsToAdd: number): string
   const formattedDay = String(finalDay).padStart(2, '0')
   return `${targetYear}-${formattedMonth}-${formattedDay}`
 }
+
+/**
+ * Retorna a data atual (ou fornecida) no formato local YYYY-MM-DD sem sofrer roll-over prematuro de fuso horário UTC.
+ */
+export const getLocalDateString = (date = new Date()): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}

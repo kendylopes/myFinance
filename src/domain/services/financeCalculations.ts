@@ -1,4 +1,4 @@
-import { addMonthsToDate } from '../../core/formatters/date'
+import { addMonthsToDate, getLocalDateString } from '../../core/formatters/date'
 import type {
   BudgetProgress,
   BudgetStatus,
@@ -290,7 +290,7 @@ export const togglePaymentStatus = (status?: string): 'paid' | 'pending' => {
  */
 export const isOverdue = (transaction: Transaction, referenceDate?: string): boolean => {
   if ((transaction.status || 'paid') === 'paid') return false
-  const today = referenceDate || new Date().toISOString().split('T')[0]
+  const today = referenceDate || getLocalDateString()
   return transaction.date < today
 }
 

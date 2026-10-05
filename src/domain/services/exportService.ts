@@ -3,14 +3,42 @@ import { formatDate } from '../../core/formatters/date'
 import type { FinanceSummary, Transaction } from '../models/transaction'
 
 /**
- * Escapa strings para formato CSV caso contenham delimitadores ou aspas.
+ * Escapa entidades HTML para evitar injeção de script (XSS) no extrato impresso.
  */
-const escapeCsvField = (field: string | number): string => {
-  const str = String(field ?? '')
+export const escapeHtml = (text: string): string => {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Escapa strings para formato CSV e previne CSV Formula Injection.
+ */
+export const escapeCsvField = (field: string | number): string => {
+  let str = String(field ?? '')
+  // Previne execução de fórmulas no Excel caso o campo inicie com =, +, -, @ ou tab
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`
+  }
   if (str.includes(';') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`
   }
   return str
+}
+
+/**
+ * Retorna o rótulo amigável em português para o status de pagamento da transação.
+ */
+export const getTransactionStatusLabel = (t: Transaction): string => {
+  const isPaid = (t.status || 'paid') === 'paid'
+  const isIncome = t.type === 'income'
+  if (isPaid) {
+    return isIncome ? 'Recebido' : 'Pago'
+  }
+  return isIncome ? 'A Receber' : 'Pendente'
 }
 
 /**
@@ -19,17 +47,18 @@ const escapeCsvField = (field: string | number): string => {
  */
 export const generateCsvContent = (transactions: Transaction[]): string => {
   const BOM = '\uFEFF'
-  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor (R$)'].join(';')
+  const header = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Status', 'Valor (R$)'].join(';')
 
   const rows = transactions.map((t) => {
     const formattedDate = formatDate(t.date)
     const title = escapeCsvField(t.title)
     const category = escapeCsvField(t.category || 'Geral')
     const type = t.type === 'income' ? 'Receita' : 'Despesa'
+    const statusLabel = escapeCsvField(getTransactionStatusLabel(t))
     // Formata o número com 2 casas decimais e vírgula como separador decimal
     const amountStr = t.amount.toFixed(2).replace('.', ',')
 
-    return [formattedDate, title, category, type, amountStr].join(';')
+    return [formattedDate, title, category, type, statusLabel, amountStr].join(';')
   })
 
   return BOM + [header, ...rows].join('\r\n')
@@ -53,14 +82,17 @@ export const generatePrintableHtml = (
 
   const rowsHtml =
     transactions.length === 0
-      ? '<tr><td colspan="5" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>'
+      ? '<tr><td colspan="6" style="text-align: center; padding: 24px; color: #64748b;">Nenhuma movimentação registrada no período.</td></tr>'
       : transactions
-          .map(
-            (t, index) => `
+          .map((t, index) => {
+            const isPaid = (t.status || 'paid') === 'paid'
+            const statusLabel = getTransactionStatusLabel(t)
+
+            return `
       <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">${formatDate(t.date)}</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #0f172a;">${t.title}</td>
-        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #475569;">${t.category || 'Geral'}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155;">${escapeHtml(formatDate(t.date))}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; color: #0f172a;">${escapeHtml(t.title)}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #475569;">${escapeHtml(t.category || 'Geral')}</td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px;">
           <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; ${
             t.type === 'income'
@@ -70,14 +102,23 @@ export const generatePrintableHtml = (
             ${t.type === 'income' ? 'Receita' : 'Despesa'}
           </span>
         </td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px;">
+          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; ${
+            isPaid
+              ? 'background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;'
+              : 'background-color: #fefce8; color: #a16207; border: 1px solid #fef08a;'
+          }">
+            ${statusLabel}
+          </span>
+        </td>
         <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; text-align: right; color: ${
           t.type === 'income' ? '#15803d' : '#be123c'
         };">
           ${t.type === 'income' ? '+' : '-'} ${formatBRL(t.amount)}
         </td>
       </tr>
-    `,
-          )
+    `
+          })
           .join('')
 
   return `<!DOCTYPE html>
@@ -175,7 +216,7 @@ export const generatePrintableHtml = (
   <div class="header">
     <div>
       <div class="logo">my<span>Finance</span></div>
-      <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Extrato Consolidado • ${periodLabel}</div>
+      <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Extrato Consolidado • ${escapeHtml(periodLabel)}</div>
     </div>
     <div class="meta">
       <div><strong>Emissão:</strong> ${issueDate}</div>
@@ -201,11 +242,12 @@ export const generatePrintableHtml = (
   <table>
     <thead>
       <tr>
-        <th style="width: 15%;">Data</th>
-        <th style="width: 35%;">Descrição</th>
-        <th style="width: 20%;">Categoria</th>
-        <th style="width: 15%;">Tipo</th>
-        <th style="width: 15%; text-align: right;">Valor</th>
+        <th style="width: 12%;">Data</th>
+        <th style="width: 32%;">Descrição</th>
+        <th style="width: 18%;">Categoria</th>
+        <th style="width: 12%;">Tipo</th>
+        <th style="width: 12%;">Status</th>
+        <th style="width: 14%; text-align: right;">Valor</th>
       </tr>
     </thead>
     <tbody>

@@ -89,18 +89,28 @@ export const TransactionList = ({
     setCurrentPage(1)
   }, [searchQuery, selectedCategory, selectedType, selectedStatus, transactions.length])
 
-  // 1. Ordenação das transações
+  // 1. Ordenação estável das transações com critério de desempate
   const sortedTransactions = useMemo(() => {
     const list = [...transactions]
     switch (sortBy) {
       case 'date_desc':
-        return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        return list.sort((a, b) => {
+          const diff = new Date(b.date).getTime() - new Date(a.date).getTime()
+          return diff !== 0 ? diff : b.id.localeCompare(a.id)
+        })
       case 'date_asc':
-        return list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        return list.sort((a, b) => {
+          const diff = new Date(a.date).getTime() - new Date(b.date).getTime()
+          return diff !== 0 ? diff : a.id.localeCompare(b.id)
+        })
       case 'amount_desc':
-        return list.sort((a, b) => b.amount - a.amount)
+        return list.sort((a, b) =>
+          b.amount !== a.amount ? b.amount - a.amount : b.id.localeCompare(a.id),
+        )
       case 'amount_asc':
-        return list.sort((a, b) => a.amount - b.amount)
+        return list.sort((a, b) =>
+          a.amount !== b.amount ? a.amount - b.amount : a.id.localeCompare(b.id),
+        )
       default:
         return list
     }
