@@ -98,7 +98,7 @@ describe('AuthService (Serviço de Autenticação Supabase Auth)', () => {
     const result = await auth.signIn('errado@exemplo.com', 'senhaerrada')
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('E-mail não cadastrado ou senha incorreta')
+    expect(result.error).toContain('E-mail ou senha incorretos')
   })
 
   it('deve realizar logout com sucesso', async () => {

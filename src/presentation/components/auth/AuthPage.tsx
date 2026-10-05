@@ -78,8 +78,7 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
         } else {
           soundFX.playError()
           const err =
-            result.error ||
-            'E-mail não cadastrado ou senha incorreta. Se ainda não possui conta, crie seu cadastro.'
+            result.error || 'E-mail ou senha incorretos. Verifique seus dados e tente novamente.'
           setErrorMessage(err)
           toast.error('Não foi possível entrar', err)
         }
@@ -165,68 +164,132 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
           </div>
 
           {/* Feedback de Erro ou Sucesso */}
-          {errorMessage && (
-            <div
-              role="alert"
-              className="mb-5 overflow-hidden rounded-2xl border border-emerald-500/30 bg-linear-to-b from-zinc-900/95 to-zinc-950/95 p-4 backdrop-blur-md shadow-xl shadow-black/60 animate-scale-in"
-            >
-              {/* Topo do Card: Ícone + Título + Mensagem */}
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0 mt-0.5 shadow-xs">
-                  {mode === 'login' ? (
-                    <UserPlus className="w-4 h-4" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-amber-400" />
+          {errorMessage &&
+            (() => {
+              const isShortPassword = errorMessage.includes('mínimo 6 caracteres')
+              const isInvalidEmail = errorMessage.includes('e-mail válido')
+              const isMismatch = errorMessage.includes('não coincidem')
+              const isUserAlreadyRegistered = errorMessage.toLowerCase().includes('já existe')
+              const isExplicitUserNotFound =
+                errorMessage.toLowerCase().includes('não está cadastrado') ||
+                errorMessage.toLowerCase().includes('não localizada') ||
+                errorMessage.toLowerCase().includes('não encontrado')
+
+              // Determinar o título, ícone e cores contextuais
+              let title = 'Não foi possível entrar'
+              let icon = <Lock className="w-4 h-4 text-rose-400" />
+              let badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+              let borderColor = 'border-rose-500/30'
+
+              if (isShortPassword) {
+                title = 'Senha muito curta'
+                icon = <Lock className="w-4 h-4 text-amber-400" />
+                badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                borderColor = 'border-amber-500/30'
+              } else if (isInvalidEmail) {
+                title = 'E-mail inválido'
+                icon = <Mail className="w-4 h-4 text-amber-400" />
+                badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                borderColor = 'border-amber-500/30'
+              } else if (isMismatch) {
+                title = 'Senhas diferentes'
+                icon = <Lock className="w-4 h-4 text-rose-400" />
+                badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+                borderColor = 'border-rose-500/30'
+              } else if (isExplicitUserNotFound) {
+                title = 'Conta não localizada'
+                icon = <UserPlus className="w-4 h-4 text-emerald-400" />
+                badgeBg = 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                borderColor = 'border-emerald-500/30'
+              } else if (mode === 'login') {
+                title = 'E-mail ou senha incorretos'
+                icon = <Lock className="w-4 h-4 text-rose-400" />
+                badgeBg = 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+                borderColor = 'border-rose-500/30'
+              } else if (isUserAlreadyRegistered) {
+                title = 'E-mail já cadastrado'
+                icon = <UserCheck className="w-4 h-4 text-emerald-400" />
+                badgeBg = 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                borderColor = 'border-emerald-500/30'
+              } else {
+                title = 'Não foi possível concluir o cadastro'
+                icon = <AlertCircle className="w-4 h-4 text-amber-400" />
+                badgeBg = 'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                borderColor = 'border-amber-500/30'
+              }
+
+              return (
+                <div
+                  role="alert"
+                  className={`mb-5 overflow-hidden rounded-2xl border ${borderColor} bg-linear-to-b from-zinc-900/95 to-zinc-950/95 p-4 backdrop-blur-md shadow-xl shadow-black/60 animate-scale-in`}
+                >
+                  {/* Topo do Card: Ícone + Título + Mensagem */}
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-xl border ${badgeBg} shrink-0 mt-0.5 shadow-xs`}>
+                      {icon}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-xs font-semibold text-zinc-100">{title}</h4>
+                        {isExplicitUserNotFound && (
+                          <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            Novo por aqui?
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11.5px] text-zinc-300 leading-relaxed">{errorMessage}</p>
+                    </div>
+                  </div>
+
+                  {/* Caso 1: Usuário explicitamente não encontrado - CTA para criar conta */}
+                  {mode === 'login' && isExplicitUserNotFound && (
+                    <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTabSwitch('register')}
+                        className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-emerald-500/20 active:scale-[0.99]"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Criar conta com este e-mail</span>
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Caso 2: Senha errada ou credenciais inválidas (usuário tem conta mas errou a senha) */}
+                  {mode === 'login' &&
+                    !isShortPassword &&
+                    !isInvalidEmail &&
+                    !isExplicitUserNotFound && (
+                      <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] text-zinc-400">
+                        <span>Não tem certeza do seu acesso?</span>
+                        <button
+                          type="button"
+                          onClick={() => handleTabSwitch('register')}
+                          className="text-emerald-400 hover:text-emerald-300 font-medium underline underline-offset-2 cursor-pointer transition-colors"
+                        >
+                          Criar nova conta
+                        </button>
+                      </div>
+                    )}
+
+                  {/* Caso 3: Cadastro com e-mail já existente */}
+                  {mode === 'register' && isUserAlreadyRegistered && (
+                    <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTabSwitch('login')}
+                        className="w-full py-2.5 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs active:scale-[0.99]"
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        <span>Acessar minha conta</span>
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-xs font-semibold text-zinc-100">
-                      {mode === 'login'
-                        ? 'Não foi possível entrar'
-                        : 'Não foi possível concluir o cadastro'}
-                    </h4>
-                    {mode === 'login' && (
-                      <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        Novo por aqui?
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11.5px] text-zinc-300 leading-relaxed">{errorMessage}</p>
-                </div>
-              </div>
-
-              {/* Botão de ação rápida espaçoso e sem quebras de linha */}
-              {mode === 'login' && (
-                <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => handleTabSwitch('register')}
-                    className="w-full py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-emerald-500/20 active:scale-[0.99]"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Criar conta com este e-mail</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </button>
-                </div>
-              )}
-
-              {/* Ação rápida para login se o e-mail já existe no cadastro */}
-              {mode === 'register' && errorMessage.toLowerCase().includes('já existe') && (
-                <div className="mt-3.5 pt-3 border-t border-white/5 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => handleTabSwitch('login')}
-                    className="w-full py-2.5 px-4 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-xs active:scale-[0.99]"
-                  >
-                    <UserCheck className="w-3.5 h-3.5" />
-                    <span>Acessar minha conta</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+              )
+            })()}
 
           {successMessage && (
             <div

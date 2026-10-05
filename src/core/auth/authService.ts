@@ -41,7 +41,7 @@ function mapUser(
 function translateAuthError(errorMessage: string): string {
   const lower = errorMessage.toLowerCase()
   if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
-    return 'E-mail não cadastrado ou senha incorreta. Se você ainda não possui conta, crie seu cadastro.'
+    return 'E-mail ou senha incorretos. Verifique seus dados e tente novamente.'
   }
   if (
     lower.includes('user not found') ||

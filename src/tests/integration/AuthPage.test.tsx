@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { AuthPage } from '../../presentation/components/auth/AuthPage'
 
@@ -37,11 +37,10 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     expect(mockLogin).toHaveBeenCalledWith('usuario@nuvem.com', 'senha123')
   }, 25000)
 
-  it('deve exibir mensagem clara e botão de criar conta quando login falhar para usuário não cadastrado', async () => {
+  it('deve exibir mensagem clara e botão de criar conta quando login falhar para usuário explicitamente não cadastrado', async () => {
     const mockLogin = vi.fn().mockResolvedValue({
       success: false,
-      error:
-        'E-mail não cadastrado ou senha incorreta. Se você ainda não possui conta, crie seu cadastro.',
+      error: 'Este e-mail ainda não está cadastrado no myFinance.',
     })
     render(<AuthPage onLogin={mockLogin} onRegister={vi.fn()} />)
 
@@ -54,8 +53,10 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     fireEvent.click(submitBtn)
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
-    expect(screen.getByText(/Não foi possível entrar/i)).toBeInTheDocument()
-    expect(screen.getByText(/E-mail não cadastrado ou senha incorreta/i)).toBeInTheDocument()
+    expect(screen.getByText(/Conta não localizada/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Este e-mail ainda não está cadastrado no myFinance/i),
+    ).toBeInTheDocument()
 
     // Botão de ação rápida para criar conta direto do erro
     const quickRegisterBtn = screen.getByRole('button', {
@@ -67,5 +68,30 @@ describe('<AuthPage /> (Tela de Autenticação / Auth Gate)', () => {
     fireEvent.click(quickRegisterBtn)
     expect(screen.getByRole('button', { name: 'Criar Minha Conta' })).toBeInTheDocument()
     expect(screen.getByLabelText(/E-mail/i)).toHaveValue('novato@exemplo.com')
+  }, 25000)
+
+  it('deve exibir aviso contextual de senha muito curta sem exibir botão de criar conta', async () => {
+    const mockLogin = vi.fn()
+    render(<AuthPage onLogin={mockLogin} onRegister={vi.fn()} />)
+
+    const emailInput = screen.getByLabelText(/E-mail/i)
+    const passwordInput = screen.getByLabelText(/^Senha/i)
+    const submitBtn = screen.getByRole('button', { name: 'Entrar no myFinance' })
+
+    fireEvent.change(emailInput, { target: { value: 'kendylopes@gmail.com' } })
+    fireEvent.change(passwordInput, { target: { value: '12345' } }) // 5 caracteres!
+    fireEvent.click(submitBtn)
+
+    const alertBox = await screen.findByRole('alert')
+    expect(alertBox).toBeInTheDocument()
+    expect(screen.getByText('Senha muito curta')).toBeInTheDocument()
+    expect(screen.getByText('A senha deve conter no mínimo 6 caracteres.')).toBeInTheDocument()
+
+    // O alert não deve conter a tag de "Novo por aqui?" nem o botão de criar conta
+    expect(within(alertBox).queryByText('Novo por aqui?')).not.toBeInTheDocument()
+    expect(
+      within(alertBox).queryByRole('button', { name: /Criar conta com este e-mail/i }),
+    ).not.toBeInTheDocument()
+    expect(mockLogin).not.toHaveBeenCalled()
   }, 25000)
 })
