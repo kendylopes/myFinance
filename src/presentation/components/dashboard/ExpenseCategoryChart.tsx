@@ -72,9 +72,9 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
           </p>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
           {/* Gráfico Donut SVG */}
-          <div className="relative w-44 h-44 flex items-center justify-center shrink-0">
+          <div className="relative w-40 h-40 sm:w-44 sm:h-44 flex items-center justify-center shrink-0">
             <svg
               className="w-full h-full -rotate-90 transform"
               viewBox="0 0 160 160"
@@ -110,34 +110,38 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
             </svg>
 
             {/* Texto central do Donut */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-              <span className="text-xs font-medium text-slate-400">Total Gasto</span>
-              <span className="text-sm font-bold text-white tracking-tight">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2">
+              <span className="text-[11px] sm:text-xs font-medium text-slate-400">Total Gasto</span>
+              <span className="text-xs sm:text-sm font-bold text-white tracking-tight truncate max-w-full">
                 {formatCurrency(totalExpense)}
               </span>
             </div>
           </div>
 
           {/* Legenda & Barras de Progresso */}
-          <div className="w-full space-y-3.5">
+          <div className="w-full min-w-0 flex-1 space-y-3">
             {categoryExpenses.map((item) => (
               <div
                 key={item.category}
-                className="space-y-1.5"
+                className="space-y-1.5 min-w-0"
                 data-testid={`cat-row-${item.category}`}
               >
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between text-xs gap-3">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
                       style={{ backgroundColor: item.color }}
                       aria-hidden="true"
                     />
-                    <span className="font-semibold text-slate-200">{item.category}</span>
+                    <span className="font-semibold text-slate-200 truncate" title={item.category}>
+                      {item.category}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-300">{formatCurrency(item.amount)}</span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 font-mono text-[10px]">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-bold text-slate-300 font-mono whitespace-nowrap">
+                      {formatCurrency(item.amount)}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-slate-800/80 text-slate-400 font-mono text-[10px] shrink-0 border border-white/5">
                       {item.percentage}%
                     </span>
                   </div>

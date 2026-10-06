@@ -133,22 +133,25 @@ export const FinancialFlowChart = ({ transactions, selectedMonth }: FinancialFlo
     >
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/8 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0">
             <BarChart3 className="w-5 h-5" aria-hidden="true" />
           </div>
-          <div>
-            <h2 id="flow-chart-title" className="text-lg font-semibold text-white drop-shadow-sm">
+          <div className="min-w-0">
+            <h2
+              id="flow-chart-title"
+              className="text-base sm:text-lg font-semibold text-white drop-shadow-sm truncate"
+            >
               Fluxo Financeiro Semestral
             </h2>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-400 truncate">
               Comparativo de entradas, saídas e resultado líquido mês a mês
             </p>
           </div>
         </div>
 
         {/* Legenda visual interativa */}
-        <div className="flex items-center gap-4 text-xs font-medium">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-medium shrink-0 flex-wrap">
           <div className="flex items-center gap-1.5 text-zinc-300">
             <span className="w-3 h-3 rounded-md bg-emerald-500 shadow-xs shadow-emerald-500/50" />
             <span>Entradas</span>
@@ -369,9 +372,9 @@ export const FinancialFlowChart = ({ transactions, selectedMonth }: FinancialFlo
                 </div>
               </>
             ) : (
-              <div className="w-full flex items-center justify-between text-zinc-400">
+              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-zinc-400 text-xs">
                 <span>Passe o mouse sobre as colunas para ver detalhes de cada mês.</span>
-                <span className="text-zinc-300 font-medium">
+                <span className="text-zinc-300 font-semibold whitespace-nowrap">
                   Saldo Líquido 6M: {formatCurrency(totalPeriodIncome - totalPeriodExpense)}
                 </span>
               </div>

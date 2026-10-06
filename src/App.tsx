@@ -371,26 +371,26 @@ export function AppContent() {
                 <FinancialFlowChart transactions={transactions} selectedMonth={selectedMonth} />
               </div>
 
-              {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES (Responsivo: 1 coluna em telas compactas/médias e 2 colunas em telas amplas) */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
                 {/* 1. GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-                <div className="min-w-0">
+                <div className="min-w-0 w-full">
                   <ExpenseCategoryChart transactions={periodTransactions} />
                 </div>
 
                 {/* 2. CARD DE TRANSAÇÕES RECENTES */}
-                <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0">
-                  <div className="flex items-center justify-between border-b border-white/8 pb-3">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-                      <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm">
+                <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0 w-full">
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/8 pb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Layers className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />
+                      <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm whitespace-nowrap">
                         Transações Recentes
                       </h2>
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-zinc-400 whitespace-nowrap">
                         ({periodTransactions.length} no período)
                       </span>
                     </div>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5 shrink-0">
                       <button
                         type="button"
                         onClick={() => {
