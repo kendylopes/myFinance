@@ -6,7 +6,6 @@ import {
   HandCoins,
   LayoutDashboard,
   LogOut,
-  Palette,
   Receipt,
   Settings,
   Smartphone,
@@ -17,6 +16,7 @@ import { useState } from 'react'
 import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
+import { useToast } from '../../../core/toast/toastContext'
 import { usePWA } from '../../hooks/usePWA'
 
 export interface SidebarProps {
@@ -24,7 +24,7 @@ export interface SidebarProps {
   onLogout?: () => void
   activeSection: string
   onSelectSection: (section: string) => void
-  onOpenThemeModal: () => void
+  onOpenThemeModal?: () => void
   onOpenSettingsModal?: () => void
   isMobileOpen?: boolean
   onCloseMobile: () => void
@@ -48,7 +48,8 @@ export function Sidebar({
   const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed
 
   const { currentTheme } = useTheme()
-  const { isInstallable, installApp } = usePWA()
+  const toast = useToast()
+  const { isInstallable, isInstalled, installApp } = usePWA()
 
   const navItems = [
     {
@@ -229,52 +230,24 @@ export function Sidebar({
           {/* Divisor */}
           <div className="pt-2 my-1.5 border-t border-white/10" />
 
-          {/* Botão de Temas Dev (Padronizado com os demais itens de navegação) */}
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              onOpenThemeModal()
-              onCloseMobile()
-            }}
-            title="Temas Dev"
-            aria-label="Temas Dev"
-            className={`flex items-center text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent transition-all cursor-pointer group ${
-              isCollapsed
-                ? 'w-8 h-8 mx-auto justify-center rounded-xl'
-                : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
-            }`}
-          >
-            <Palette
-              className="w-4 h-4 shrink-0 transition-transform group-hover:scale-105"
-              style={{ color: currentTheme.primaryColor }}
-              aria-hidden="true"
-            />
-            {!isCollapsed && (
-              <div className="text-left overflow-hidden flex-1">
-                <span className="block truncate text-zinc-300 group-hover:text-white">
-                  Temas Dev
-                </span>
-                <span className="text-[10px] text-zinc-500 font-normal block truncate">
-                  5 paletas de IDE
-                </span>
-              </div>
-            )}
-          </button>
-        </nav>
-
-        {/* Rodapé da Sidebar / Configurações & Perfil */}
-        <div className="p-2 border-t border-white/10 space-y-1">
-          {/* Botão de Instalar App Nativo (PWA) */}
-          {isInstallable && (
+          {/* Botão de Instalar App Nativo (PWA) no lugar do antigo Temas Dev */}
+          {!isInstalled && (
             <button
               type="button"
               onClick={async () => {
                 soundFX.playClick()
-                await installApp()
+                if (isInstallable) {
+                  await installApp()
+                } else {
+                  toast.info(
+                    'Instalação do myFinance',
+                    'Para instalar, abra as opções do seu navegador e clique em "Instalar aplicativo" ou "Adicionar à tela de início".',
+                  )
+                }
+                onCloseMobile()
               }}
-              title="Instalar myFinance no dispositivo"
-              aria-label="Instalar myFinance no dispositivo"
+              title="Instalar App no dispositivo"
+              aria-label="Instalar App"
               className={`flex items-center text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all cursor-pointer group ${
                 isCollapsed
                   ? 'w-8 h-8 mx-auto justify-center rounded-xl bg-emerald-500/10'
@@ -295,7 +268,10 @@ export function Sidebar({
               )}
             </button>
           )}
+        </nav>
 
+        {/* Rodapé da Sidebar / Configurações & Perfil */}
+        <div className="p-2 border-t border-white/10 space-y-1">
           {/* Botão de Configurações no lugar do antigo indicador de nuvem */}
           <button
             type="button"
@@ -304,7 +280,7 @@ export function Sidebar({
               if (onOpenSettingsModal) {
                 onOpenSettingsModal()
               } else {
-                onOpenThemeModal()
+                onOpenThemeModal?.()
               }
               onCloseMobile()
             }}

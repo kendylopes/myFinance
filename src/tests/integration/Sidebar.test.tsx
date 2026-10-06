@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from '../../core/theme/themeContext'
+import { ToastProvider } from '../../core/toast/toastContext'
 import { Sidebar } from '../../presentation/components/layout/Sidebar'
 
 describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
@@ -16,20 +17,22 @@ describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
     onLogout: vi.fn(),
     activeSection: 'dashboard',
     onSelectSection: vi.fn(),
-    onOpenThemeModal: vi.fn(),
+    onOpenSettingsModal: vi.fn(),
     isMobileOpen: false,
     onCloseMobile: vi.fn(),
   }
 
   const renderSidebar = (props = {}) => {
     return render(
-      <ThemeProvider>
-        <Sidebar {...defaultProps} {...props} />
-      </ThemeProvider>,
+      <ToastProvider>
+        <ThemeProvider>
+          <Sidebar {...defaultProps} {...props} />
+        </ThemeProvider>
+      </ToastProvider>,
     )
   }
 
-  it('deve renderizar a marca, itens de navegação e atalho de temas', () => {
+  it('deve renderizar a marca, itens de navegação, botão de instalar app e configurações', () => {
     renderSidebar()
 
     expect(screen.getByText(/my/i)).toBeInTheDocument()
@@ -38,7 +41,8 @@ describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
     expect(screen.getByRole('button', { name: /Transações/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Planejamento/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Categorias/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Temas Dev/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Instalar App/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Configurações/i })).toBeInTheDocument()
   }, 25000)
 
   it('deve exibir o botão de logout e disparar onLogout ao clicar', async () => {
@@ -71,15 +75,28 @@ describe('<Sidebar /> (Menu Lateral de Navegação)', () => {
     expect(onCloseMobileMock).toHaveBeenCalledTimes(1)
   })
 
-  it('deve acionar onOpenThemeModal ao clicar no botão de Temas Dev', async () => {
-    const onOpenThemeModalMock = vi.fn()
+  it('deve acionar onOpenSettingsModal ao clicar no botão de Configurações', async () => {
+    const onOpenSettingsModalMock = vi.fn()
     const user = userEvent.setup()
 
-    renderSidebar({ onOpenThemeModal: onOpenThemeModalMock })
+    renderSidebar({ onOpenSettingsModal: onOpenSettingsModalMock })
 
-    const themesBtn = screen.getByRole('button', { name: /Temas Dev/i })
-    await user.click(themesBtn)
+    const configBtn = screen.getByRole('button', { name: /Configurações/i })
+    await user.click(configBtn)
 
-    expect(onOpenThemeModalMock).toHaveBeenCalledTimes(1)
+    expect(onOpenSettingsModalMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('deve permitir clicar no botão de Instalar App e fechar menu mobile', async () => {
+    const onCloseMobileMock = vi.fn()
+    const user = userEvent.setup()
+
+    renderSidebar({ onCloseMobile: onCloseMobileMock })
+
+    const installBtn = screen.getByRole('button', { name: /Instalar App/i })
+    expect(installBtn).toBeInTheDocument()
+    await user.click(installBtn)
+
+    expect(onCloseMobileMock).toHaveBeenCalledTimes(1)
   })
 })
