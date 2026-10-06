@@ -33,18 +33,19 @@ const mockTransactions: Transaction[] = [
 ]
 
 describe('<ReportsView />', () => {
-  it('deve renderizar o cabeçalho e abas de períodos', () => {
+  it('deve renderizar a barra de períodos e botões de exportação', () => {
     render(
       <ToastProvider>
         <ReportsView transactions={mockTransactions} />
       </ToastProvider>,
     )
 
-    expect(screen.getByText('Relatórios & Inteligência')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /Semanal/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /Mensal/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /Anual/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /Personalizado/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Exportar CSV/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Imprimir \/ PDF/i })).toBeInTheDocument()
   })
 
   it('deve alternar para a visão Semanal ao clicar na aba correspondente', async () => {

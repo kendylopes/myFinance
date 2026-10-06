@@ -69,20 +69,31 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="h-64 sm:h-72 flex items-end gap-1.5 sm:gap-3 pt-6 pb-2 overflow-x-auto">
+          <div className="h-64 sm:h-72 flex items-end gap-1 sm:gap-2 pt-6 pb-2 overflow-x-auto custom-scrollbar">
             {items.map((item, index) => {
               const incomeHeight = `${Math.min(100, Math.round((item.income / maxAmount) * 100))}%`
               const expenseHeight = `${Math.min(100, Math.round((item.expense / maxAmount) * 100))}%`
 
               const label = 'monthLabel' in item ? item.monthLabel : item.dayLabel
               const isHovered = hoveredIndex === index
+              const isManyItems = items.length > 20
+
+              // Rótulo exibido na barra inferior
+              const displayBottomLabel =
+                'date' in item
+                  ? isManyItems
+                    ? item.date.split('-')[2] // Exibe o número do dia (ex: 01, 15, 31)
+                    : label.split(' ')[0] // Exibe o dia da semana abreviado (ex: Qui, Sex)
+                  : label
 
               return (
                 <div
                   key={'date' in item ? item.date : item.yearMonth}
                   onPointerEnter={() => setHoveredIndex(index)}
                   onPointerLeave={() => setHoveredIndex(null)}
-                  className="flex-1 min-w-8 sm:min-w-10.5 h-full flex flex-col justify-end items-center group relative cursor-pointer"
+                  className={`flex-1 ${
+                    isManyItems ? 'min-w-[18px] sm:min-w-[24px]' : 'min-w-8 sm:min-w-10'
+                  } h-full flex flex-col justify-end items-center group relative cursor-pointer`}
                 >
                   {/* Tooltip flutuante no hover */}
                   {isHovered && (
@@ -99,22 +110,26 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
                   )}
 
                   {/* Barras Lado a Lado */}
-                  <div className="w-full flex items-end justify-center gap-1 h-full px-0.5">
+                  <div className="w-full flex items-end justify-center gap-0.5 sm:gap-1 h-full px-0.5">
                     {/* Barra Receita */}
                     <div
-                      className="w-1/2 max-w-3.5 bg-emerald-500/80 hover:bg-emerald-400 rounded-t-md transition-all duration-300 shadow-xs"
+                      className="w-1/2 max-w-3.5 bg-emerald-500/80 hover:bg-emerald-400 rounded-t-sm transition-all duration-300 shadow-xs"
                       style={{ height: incomeHeight }}
                     />
                     {/* Barra Despesa */}
                     <div
-                      className="w-1/2 max-w-3.5 bg-rose-500/80 hover:bg-rose-400 rounded-t-md transition-all duration-300 shadow-xs"
+                      className="w-1/2 max-w-3.5 bg-rose-500/80 hover:bg-rose-400 rounded-t-sm transition-all duration-300 shadow-xs"
                       style={{ height: expenseHeight }}
                     />
                   </div>
 
                   {/* Rótulo inferior */}
-                  <span className="text-[10px] text-zinc-400 mt-2 truncate w-full text-center">
-                    {label.split(' ')[0]}
+                  <span
+                    className={`text-zinc-400 mt-2 truncate w-full text-center font-mono ${
+                      isManyItems ? 'text-[9px] sm:text-[10px]' : 'text-[10px]'
+                    }`}
+                  >
+                    {displayBottomLabel}
                   </span>
                 </div>
               )

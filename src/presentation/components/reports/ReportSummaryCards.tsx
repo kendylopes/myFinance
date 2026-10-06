@@ -55,7 +55,7 @@ export function ReportSummaryCards({ report }: ReportSummaryCardsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {/* 1. Receitas Totais */}
       <div className="glass-card p-5 rounded-3xl border border-white/10 space-y-3 relative overflow-hidden">
         <div className="flex items-center justify-between">

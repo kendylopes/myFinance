@@ -1,4 +1,12 @@
-import { Calendar, ChevronLeft, ChevronRight, Clock, SlidersHorizontal } from 'lucide-react'
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Download,
+  Printer,
+  SlidersHorizontal,
+} from 'lucide-react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import type { DateRange, ReportPeriodType } from '../../../domain/services/reportCalculations'
 
@@ -12,6 +20,9 @@ interface ReportPeriodSelectorProps {
   customStart: string
   customEnd: string
   onCustomRangeChange: (start: string, end: string) => void
+  onExportCsv?: () => void
+  onExportPdf?: () => void
+  canExport?: boolean
 }
 
 export function ReportPeriodSelector({
@@ -24,6 +35,9 @@ export function ReportPeriodSelector({
   customStart,
   customEnd,
   onCustomRangeChange,
+  onExportCsv,
+  onExportPdf,
+  canExport = true,
 }: ReportPeriodSelectorProps) {
   const tabs: { id: ReportPeriodType; label: string; icon: typeof Clock }[] = [
     { id: 'week', label: 'Semanal', icon: Clock },
@@ -55,87 +69,117 @@ export function ReportPeriodSelector({
 
   return (
     <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-4">
-      {/* Linha Superior: Abas de Período e Navegação */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Abas Pílula */}
-        <div
-          role="tablist"
-          aria-label="Granularidade do Relatório"
-          className="inline-flex p-1 rounded-2xl glass-pill border border-white/10 self-start sm:self-auto"
-        >
-          {tabs.map((tab) => {
-            const isActive = periodType === tab.id
-            const Icon = tab.icon
-            return (
+      {/* Linha Superior: Abas de Período, Navegação e Ações de Exportação */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* Esquerda: Abas Pílula e Navegação */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div
+            role="tablist"
+            aria-label="Granularidade do Relatório"
+            className="inline-flex p-1 rounded-2xl glass-pill border border-white/10"
+          >
+            {tabs.map((tab) => {
+              const isActive = periodType === tab.id
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  type="button"
+                  aria-selected={isActive}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-emerald-500 text-zinc-950 shadow-md font-bold'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Controles de Navegação (Anterior / Atual / Próximo) */}
+          {periodType !== 'custom' && (
+            <div className="flex items-center gap-1.5">
               <button
-                key={tab.id}
-                role="tab"
                 type="button"
-                aria-selected={isActive}
-                onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-emerald-500 text-zinc-950 shadow-md font-bold'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                }`}
+                onClick={() => {
+                  soundFX.playClick()
+                  onPreviousPeriod()
+                }}
+                aria-label="Período anterior"
+                className="p-1.5 rounded-xl border border-white/10 glass-pill text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
+                <ChevronLeft className="w-4 h-4" />
               </button>
-            )
-          })}
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  onCurrentPeriod()
+                }}
+                className="px-3 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+              >
+                Hoje
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  onNextPeriod()
+                }}
+                aria-label="Próximo período"
+                className="p-1.5 rounded-xl border border-white/10 glass-pill text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Controles de Navegação (Anterior / Atual / Próximo) */}
-        {periodType !== 'custom' && (
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+        {/* Direita: Ações de Exportação (CSV e PDF) */}
+        {onExportCsv && onExportPdf && (
+          <div className="flex items-center gap-2 self-start lg:self-auto">
             <button
               type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onPreviousPeriod()
-              }}
-              aria-label="Período anterior"
-              className="p-1.5 rounded-xl border border-white/10 glass-pill text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+              onClick={onExportCsv}
+              disabled={!canExport}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold glass-pill border border-white/10 hover:border-emerald-500/30 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Exportar dados do período em CSV"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Exportar CSV</span>
             </button>
 
             <button
               type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onCurrentPeriod()
-              }}
-              className="px-3 py-1 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+              onClick={onExportPdf}
+              disabled={!canExport}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold glass-pill border border-white/10 hover:border-purple-500/30 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Imprimir ou gerar PDF deste relatório"
             >
-              Hoje
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onNextPeriod()
-              }}
-              aria-label="Próximo período"
-              className="p-1.5 rounded-xl border border-white/10 glass-pill text-zinc-300 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
+              <Printer className="w-3.5 h-3.5 text-purple-400" />
+              <span>Imprimir / PDF</span>
             </button>
           </div>
         )}
       </div>
 
       {/* Rótulo do Período Atual Ativo */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2.5 border-t border-white/5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           <span className="text-sm font-semibold text-white tracking-wide">
             {currentRange.label}
           </span>
           <span className="text-xs text-zinc-400 font-mono">
-            ({currentRange.startDate} a {currentRange.endDate})
+            ({currentRange.startDate.split('-').reverse().join('/')} a{' '}
+            {currentRange.endDate.split('-').reverse().join('/')})
           </span>
         </div>
 

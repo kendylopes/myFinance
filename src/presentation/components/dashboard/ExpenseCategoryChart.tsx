@@ -38,13 +38,13 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
     <section
       aria-labelledby="chart-title"
       data-testid="expense-category-chart"
-      className="glass-card p-6 rounded-3xl space-y-6"
+      className="glass-card p-5 sm:p-6 rounded-3xl space-y-6 @container"
     >
       {/* Cabeçalho */}
       <div className="flex items-center justify-between border-b border-white/8 pb-3">
         <div className="flex items-center gap-2">
           <PieChart className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-          <h2 id="chart-title" className="text-lg font-semibold text-white drop-shadow-sm">
+          <h2 id="chart-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
             Despesas por Categorias
           </h2>
         </div>
@@ -72,9 +72,9 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
           </p>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+        <div className="flex flex-col @md:flex-row items-center gap-6">
           {/* Gráfico Donut SVG */}
-          <div className="relative w-40 h-40 sm:w-44 sm:h-44 flex items-center justify-center shrink-0">
+          <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center shrink-0">
             <svg
               className="w-full h-full -rotate-90 transform"
               viewBox="0 0 160 160"
@@ -126,10 +126,10 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                 className="space-y-1.5 min-w-0"
                 data-testid={`cat-row-${item.category}`}
               >
-                <div className="flex items-center justify-between text-xs gap-3">
+                <div className="flex items-center justify-between text-xs gap-2 min-w-0">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                      className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
                       style={{ backgroundColor: item.color }}
                       aria-hidden="true"
                     />
@@ -137,7 +137,7 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                       {item.category}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
                     <span className="font-bold text-slate-300 font-mono whitespace-nowrap">
                       {formatCurrency(item.amount)}
                     </span>

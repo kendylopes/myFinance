@@ -1,4 +1,3 @@
-import { BarChart3, Download, Printer } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
@@ -108,47 +107,7 @@ export function ReportsView({ transactions }: ReportsViewProps) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Barra de Ações & Período do Relatório */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs">
-            <BarChart3 className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              Relatórios & Inteligência
-            </h2>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-              Visão semanal, mensal, anual e personalizada das suas finanças
-            </p>
-          </div>
-        </div>
-
-        {/* Botões de Ação para o Relatório Ativo */}
-        <div className="flex items-center gap-2 self-start md:self-auto">
-          <button
-            type="button"
-            onClick={handleExportCsv}
-            disabled={reportData.transactions.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold glass-pill border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Exportar CSV</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleExportPdf}
-            disabled={reportData.transactions.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold glass-pill border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
-          >
-            <Printer className="w-3.5 h-3.5 text-purple-400" />
-            <span>Imprimir / PDF</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Seletor de Período & Navegação Temporal */}
+      {/* Seletor de Período, Navegação Temporal & Ações de Exportação */}
       <ReportPeriodSelector
         periodType={periodType}
         onPeriodTypeChange={setPeriodType}
@@ -159,18 +118,21 @@ export function ReportsView({ transactions }: ReportsViewProps) {
         customStart={customStart}
         customEnd={customEnd}
         onCustomRangeChange={handleCustomRangeChange}
+        onExportCsv={handleExportCsv}
+        onExportPdf={handleExportPdf}
+        canExport={reportData.transactions.length > 0}
       />
 
       {/* Cards de Métricas e Comparativo Percentual */}
       <ReportSummaryCards report={reportData} />
 
       {/* Grid com Gráfico de Evolução e Distribuição por Categoria */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        <div className="xl:col-span-7 space-y-6 min-w-0">
           <ReportEvolutionChart report={reportData} />
         </div>
 
-        <div className="lg:col-span-5 space-y-6">
+        <div className="xl:col-span-5 space-y-6 min-w-0">
           <ExpenseCategoryChart transactions={reportData.transactions} />
         </div>
       </div>
