@@ -131,7 +131,7 @@ export function InstallmentsForecastModal({
 
         {/* Cards de Resumo Superior */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
+          <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5">
             <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Futuro Comprometido
             </span>
@@ -141,7 +141,7 @@ export function InstallmentsForecastModal({
             <span className="text-[10px] text-zinc-500">Parcelas ainda a vencer no cartão</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
+          <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5">
             <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Compras Parceladas Ativas
             </span>
@@ -153,7 +153,7 @@ export function InstallmentsForecastModal({
             </span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5">
+          <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5">
             <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
               Fatura Mês Atual
             </span>
@@ -203,7 +203,7 @@ export function InstallmentsForecastModal({
           {activeTab === 'timeline' ? (
             <div className="space-y-4">
               {/* Gráfico Visual de Barras com as Faturas Futuras */}
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+              <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-3">
                 <span className="text-xs font-semibold text-zinc-300 block">
                   Curva de Comprometimento das Faturas:
                 </span>
@@ -224,7 +224,7 @@ export function InstallmentsForecastModal({
                         <div
                           className={`w-full rounded-lg transition-all duration-300 relative group-hover:scale-105 ${
                             hasAmount
-                              ? 'bg-gradient-to-t from-rose-500/40 to-amber-500/60 border border-amber-500/30'
+                              ? 'bg-linear-to-t from-rose-500/40 to-amber-500/60 border border-amber-500/30'
                               : 'bg-white/5 border border-white/5'
                           }`}
                           style={{ height: `${hasAmount ? heightPercent : 6}%` }}
@@ -245,7 +245,7 @@ export function InstallmentsForecastModal({
                   .map((m) => (
                     <div
                       key={m.yearMonth}
-                      className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-all space-y-2"
+                      className="p-3.5 rounded-2xl bg-white/2 border border-white/5 hover:border-white/15 transition-all space-y-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -310,8 +310,8 @@ export function InstallmentsForecastModal({
                     key={group.id}
                     className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
                       group.isCompleted
-                        ? 'border-white/5 bg-white/[0.01] opacity-75'
-                        : 'border-white/10 bg-white/[0.02] hover:border-white/20'
+                        ? 'border-white/5 bg-white/1 opacity-75'
+                        : 'border-white/10 bg-white/2 hover:border-white/20'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -349,7 +349,7 @@ export function InstallmentsForecastModal({
                     <div className="space-y-1">
                       <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
+                          className="h-full rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
                           style={{ width: `${group.progressPercent}%` }}
                         />
                       </div>

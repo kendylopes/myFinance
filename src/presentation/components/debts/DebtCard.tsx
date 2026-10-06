@@ -197,7 +197,7 @@ export function DebtCard({
         </div>
 
         {/* Saldo Devedor em Destaque */}
-        <div className="mt-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+        <div className="mt-4 p-4 rounded-2xl bg-white/2 border border-white/5 space-y-3">
           <div className="flex items-end justify-between">
             <div>
               <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
@@ -230,7 +230,7 @@ export function DebtCard({
             </div>
             <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
+                className="h-full rounded-full bg-linear-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
                 style={{ width: `${paidPercent}%` }}
               />
             </div>
@@ -239,7 +239,7 @@ export function DebtCard({
 
         {/* Informações de Juros e Vencimento */}
         <div className="grid grid-cols-2 gap-2 mt-3">
-          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+          <div className="p-3 rounded-2xl bg-white/2 border border-white/5">
             <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium">
               <Percent className="w-3.5 h-3.5 text-amber-400" />
               <span>Juros Combinados</span>
@@ -263,7 +263,7 @@ export function DebtCard({
                 ? 'bg-rose-500/10 border-rose-500/30'
                 : isDueToday
                   ? 'bg-amber-500/10 border-amber-500/30'
-                  : 'bg-white/[0.02] border border-white/5'
+                  : 'bg-white/2 border border-white/5'
             }`}
           >
             <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium">
@@ -317,7 +317,7 @@ export function DebtCard({
                 soundFX.playClick()
                 onOpenPaymentModal(debt)
               }}
-              className="flex-1 min-w-[120px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-bold shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+              className="flex-1 min-w-30 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-linear-to-r from-emerald-500 to-teal-500 text-black text-xs font-bold shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Dar Baixa / Rolar</span>

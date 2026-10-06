@@ -86,7 +86,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
 
         {/* Resumo Consolidado do que já foi pago */}
         <div className="grid grid-cols-3 gap-2 my-4">
-          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-center">
+          <div className="p-3 rounded-2xl bg-white/3 border border-white/5 text-center">
             <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold block">
               Total Pago
             </span>
@@ -129,7 +129,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
               return (
                 <div
                   key={p.id}
-                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-all space-y-2"
+                  className="p-3.5 rounded-2xl bg-white/2 border border-white/5 hover:border-white/15 transition-all space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
                   )}
 
                   {p.notes && (
-                    <p className="text-[11px] text-zinc-400 italic bg-white/[0.01] p-1.5 rounded">
+                    <p className="text-[11px] text-zinc-400 italic bg-white/1 p-1.5 rounded">
                       &quot;{p.notes}&quot;
                     </p>
                   )}

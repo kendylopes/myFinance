@@ -348,7 +348,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
         </div>
 
         {/* Input de Busca */}
-        <div className="relative min-w-[200px]">
+        <div className="relative min-w-50">
           <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
           <input
             type="text"
@@ -416,7 +416,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
       )}
 
       {/* 6. Dica Estratégica na Base */}
-      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
+      <div className="p-4 rounded-2xl bg-white/2 border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
         <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
         <p>
           <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}

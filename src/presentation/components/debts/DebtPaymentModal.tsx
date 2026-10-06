@@ -318,7 +318,7 @@ export function DebtPaymentModal({
         </div>
 
         {/* Informações de Juros Calculados */}
-        <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 mt-4 flex items-center justify-between">
+        <div className="p-3.5 rounded-2xl bg-white/3 border border-white/5 mt-4 flex items-center justify-between">
           <div>
             <span className="text-[11px] text-zinc-400 block uppercase tracking-wider font-semibold">
               Juros do Período ({debt.interestType === 'fixed' ? 'Fixo' : `${debt.interestRate}%`})
@@ -433,7 +433,7 @@ export function DebtPaymentModal({
           )}
 
           {/* Opção para lançar como despesa no fluxo de caixa */}
-          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-white/2 border border-white/5 flex items-center justify-between">
             <div className="space-y-0.5">
               <span className="text-xs font-semibold text-white block">
                 Lançar Despesa no Extrato do myFinance
@@ -449,7 +449,7 @@ export function DebtPaymentModal({
                 onChange={(e) => setRegisterAsExpense(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500" />
+              <div className="w-11 h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500" />
             </label>
           </div>
 

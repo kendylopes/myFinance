@@ -282,7 +282,7 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
           </div>
 
           {/* Juros: Tipo e Taxa */}
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-3">
             <span className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">
               Regra de Juros Combinada
             </span>
@@ -441,7 +441,7 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
           </div>
 
           {/* Parcelamento Opcional */}
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+          <div className="p-3.5 rounded-2xl bg-white/2 border border-white/5 space-y-3">
             <label className="flex items-center gap-2 text-xs font-medium text-zinc-300 cursor-pointer">
               <input
                 type="checkbox"
