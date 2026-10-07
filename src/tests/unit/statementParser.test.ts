@@ -136,6 +136,9 @@ describe('statementParser (Parser de Extratos Bancários OFX e CSV)', () => {
       const processed = detectDuplicates(parsedItems, existing)
       expect(processed[0].isDuplicate).toBe(true)
       expect(processed[0].selected).toBe(false) // Desmarcado por precaução
+      expect(processed[0].matchedExistingTitle).toBe('Posto Shell Gasolina')
+      expect(processed[0].matchedExistingDate).toBe('2026-10-02')
+      expect(processed[0].duplicateReason).toContain('Posto Shell Gasolina')
 
       expect(processed[1].isDuplicate).toBeFalsy()
       expect(processed[1].selected).toBe(true)

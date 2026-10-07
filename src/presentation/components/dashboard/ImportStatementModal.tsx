@@ -1,4 +1,14 @@
-import { AlertTriangle, CheckCircle2, FileSpreadsheet, Sparkles, Upload, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  FileSpreadsheet,
+  Search,
+  ShieldAlert,
+  Sparkles,
+  Upload,
+  X,
+} from 'lucide-react'
 import { useId, useMemo, useRef, useState } from 'react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
@@ -33,6 +43,7 @@ export function ImportStatementModal({
   const [parseResult, setParseResult] = useState<StatementParseResult | null>(null)
   const [items, setItems] = useState<ParsedStatementItem[]>([])
   const [filterView, setFilterView] = useState<FilterView>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Métricas de conferência memorizadas (definidas antes de qualquer retorno)
@@ -49,16 +60,25 @@ export function ImportStatementModal({
   )
   const duplicateCount = useMemo(() => items.filter((i) => i.isDuplicate).length, [items])
 
-  // Filtragem da lista na visualização
+  // Filtragem da lista na visualização por abas e busca textual
   const displayedItems = useMemo(() => {
-    if (filterView === 'selected') {
-      return items.filter((i) => i.selected)
-    }
-    if (filterView === 'duplicates') {
-      return items.filter((i) => i.isDuplicate)
-    }
-    return items
-  }, [items, filterView])
+    return items.filter((item) => {
+      // Filtro de aba
+      if (filterView === 'selected' && !item.selected) return false
+      if (filterView === 'duplicates' && !item.isDuplicate) return false
+
+      // Busca textual
+      if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase().trim()
+        const matchTitle = item.title.toLowerCase().includes(query)
+        const matchCategory = item.category.toLowerCase().includes(query)
+        const matchDate = item.date.includes(query)
+        if (!matchTitle && !matchCategory && !matchDate) return false
+      }
+
+      return true
+    })
+  }, [items, filterView, searchQuery])
 
   if (!isOpen) return null
 
@@ -179,6 +199,13 @@ export function ImportStatementModal({
     setItems((prev) => prev.map((item) => ({ ...item, selected: !areAllSelected })))
   }
 
+  // Desmarcar todas as duplicatas detectadas por segurança
+  const handleDeselectDuplicates = () => {
+    soundFX.playClick()
+    setItems((prev) => prev.map((item) => (item.isDuplicate ? { ...item, selected: false } : item)))
+    toast.info('Duplicatas Desmarcadas', 'Todos os lançamentos duplicados foram desmarcados.')
+  }
+
   // Alterar categoria de um item
   const handleCategoryChange = (id: string, newCategory: string) => {
     setItems((prev) =>
@@ -189,6 +216,16 @@ export function ImportStatementModal({
   // Alterar título de um item
   const handleTitleChange = (id: string, newTitle: string) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, title: newTitle } : item)))
+  }
+
+  // Alternar tipo de receita / despesa
+  const handleToggleType = (id: string) => {
+    soundFX.playClick()
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, type: item.type === 'income' ? 'expense' : 'income' } : item,
+      ),
+    )
   }
 
   // Finalizar importação
@@ -230,6 +267,7 @@ export function ImportStatementModal({
     setParseResult(null)
     setItems([])
     setFilterView('all')
+    setSearchQuery('')
   }
 
   return (
@@ -237,21 +275,24 @@ export function ImportStatementModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in"
     >
-      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-zinc-900/95 border border-white/10 rounded-3xl shadow-2xl overflow-hidden glass-modal">
+      <div className="relative w-full max-w-4xl max-h-[94vh] flex flex-col bg-zinc-900/95 border border-white/10 rounded-3xl shadow-2xl overflow-hidden glass-modal">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/3">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 bg-white/3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <FileSpreadsheet className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
               <h2 id={titleId} className="text-base sm:text-lg font-bold text-white">
                 Importar Extrato Bancário
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-400 hidden sm:block">
                 Suporte automático para arquivos OFX e CSV de qualquer banco brasileiro
+              </p>
+              <p className="text-[11px] text-zinc-400 sm:hidden">
+                Compatível com OFX e CSV bancários
               </p>
             </div>
           </div>
@@ -266,17 +307,17 @@ export function ImportStatementModal({
         </div>
 
         {/* Conteúdo Dinâmico */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 custom-scrollbar">
           {!parseResult ? (
             /* Estado 1: Upload / Drag & Drop */
-            <div className="flex flex-col items-center justify-center py-8">
+            <div className="flex flex-col items-center justify-center py-6 sm:py-8">
               <button
                 type="button"
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
-                className={`w-full max-w-2xl p-8 sm:p-12 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                className={`w-full max-w-2xl p-6 sm:p-12 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                   isDragging
                     ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]'
                     : 'border-white/15 bg-white/2 hover:border-emerald-500/40 hover:bg-white/4'
@@ -314,7 +355,7 @@ export function ImportStatementModal({
               </button>
 
               {/* Botão de Exemplo */}
-              <div className="mt-6 flex items-center gap-3">
+              <div className="mt-6 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center">
                 <span className="text-xs text-zinc-500">Não tem um arquivo no momento?</span>
                 <button
                   type="button"
@@ -328,98 +369,145 @@ export function ImportStatementModal({
               </div>
             </div>
           ) : (
-            /* Estado 2: Conferência e Curadoria Prévia */
+            /* Estado 2: Conferência e Curadoria Prévia com Detecção de Duplicatas e Mobile Adaptativo */
             <div className="space-y-4">
               {/* Barra de Resumo */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-2xl bg-white/3 border border-white/10">
-                  <p className="text-[11px] text-zinc-400 font-medium">Lançamentos</p>
-                  <p className="text-lg font-bold text-white">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                <div className="p-3 rounded-2xl bg-white/3 border border-white/10 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] text-zinc-400 font-medium">Lançamentos</p>
+                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">
+                      {parseResult.fileType}
+                    </span>
+                  </div>
+                  <p className="text-base sm:text-lg font-bold text-white mt-1">
                     {selectedItems.length}{' '}
                     <span className="text-xs font-normal text-zinc-500">de {items.length}</span>
                   </p>
                 </div>
-                <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
-                  <p className="text-[11px] text-emerald-400 font-medium">Entradas Selecionadas</p>
-                  <p className="text-lg font-bold text-emerald-400">
+                <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col justify-between">
+                  <p className="text-[11px] text-emerald-400 font-medium truncate">
+                    Entradas Selecionadas
+                  </p>
+                  <p className="text-base sm:text-lg font-bold text-emerald-400 mt-1">
                     + {formatCurrency(totalIncomeSelected)}
                   </p>
                 </div>
-                <div className="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20">
-                  <p className="text-[11px] text-rose-400 font-medium">Saídas Selecionadas</p>
-                  <p className="text-lg font-bold text-rose-400">
+                <div className="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20 flex flex-col justify-between">
+                  <p className="text-[11px] text-rose-400 font-medium truncate">
+                    Saídas Selecionadas
+                  </p>
+                  <p className="text-base sm:text-lg font-bold text-rose-400 mt-1">
                     - {formatCurrency(totalExpenseSelected)}
                   </p>
                 </div>
-                <div className="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-                  <p className="text-[11px] text-amber-400 font-medium">Duplicatas Detectadas</p>
-                  <p className="text-lg font-bold text-amber-400">{duplicateCount}</p>
+                <div
+                  className={`p-3 rounded-2xl border flex flex-col justify-between ${
+                    duplicateCount > 0
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                      : 'bg-white/3 border-white/10 text-zinc-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-medium truncate">Duplicatas Detectadas</p>
+                    {duplicateCount > 0 && <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />}
+                  </div>
+                  <p className="text-base sm:text-lg font-bold mt-1">
+                    {duplicateCount}{' '}
+                    <span className="text-xs font-normal opacity-70">
+                      {duplicateCount === 1 ? 'item' : 'itens'}
+                    </span>
+                  </p>
                 </div>
               </div>
 
-              {/* Filtros e Ações de Lote */}
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-white/5">
-                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setFilterView('all')}
-                    className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                      filterView === 'all'
-                        ? 'bg-emerald-500 text-zinc-950 font-bold'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    Todas ({items.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFilterView('selected')}
-                    className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                      filterView === 'selected'
-                        ? 'bg-emerald-500 text-zinc-950 font-bold'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    Selecionadas ({selectedItems.length})
-                  </button>
+              {/* Barra de Filtros, Busca e Ações de Lote */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 pt-2 border-t border-white/5">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Abas de filtro */}
+                  <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/10 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setFilterView('all')}
+                      className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
+                        filterView === 'all'
+                          ? 'bg-emerald-500 text-zinc-950 font-bold'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      Todas ({items.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilterView('selected')}
+                      className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
+                        filterView === 'selected'
+                          ? 'bg-emerald-500 text-zinc-950 font-bold'
+                          : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      Selecionadas ({selectedItems.length})
+                    </button>
+                    {duplicateCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setFilterView('duplicates')}
+                        className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
+                          filterView === 'duplicates'
+                            ? 'bg-amber-500 text-zinc-950 font-bold'
+                            : 'text-amber-400/90 hover:text-amber-300'
+                        }`}
+                      >
+                        Duplicatas ({duplicateCount})
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Campo de Busca Rápida */}
+                  <div className="relative flex-1 sm:w-48">
+                    <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Buscar lançamento..."
+                      className="w-full bg-zinc-800/80 border border-white/10 rounded-xl pl-8 pr-3 py-1 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/40"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 text-xs">
                   {duplicateCount > 0 && (
                     <button
                       type="button"
-                      onClick={() => setFilterView('duplicates')}
-                      className={`px-3 py-1 rounded-lg font-medium transition cursor-pointer ${
-                        filterView === 'duplicates'
-                          ? 'bg-amber-500 text-zinc-950 font-bold'
-                          : 'text-amber-400/80 hover:text-amber-300'
-                      }`}
+                      onClick={handleDeselectDuplicates}
+                      className="text-amber-400 hover:text-amber-300 transition cursor-pointer"
                     >
-                      Duplicatas ({duplicateCount})
+                      Desmarcar Duplicatas
                     </button>
                   )}
-                </div>
-
-                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handleToggleSelectAll}
-                    className="text-xs text-zinc-400 hover:text-emerald-400 transition cursor-pointer"
+                    className="text-zinc-400 hover:text-emerald-400 transition cursor-pointer"
                   >
                     {items.every((i) => i.selected) ? 'Desmarcar Todas' : 'Marcar Todas'}
                   </button>
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="text-xs text-zinc-400 hover:text-rose-400 transition cursor-pointer"
+                    className="text-zinc-400 hover:text-rose-400 transition cursor-pointer"
                   >
                     Trocar Arquivo
                   </button>
                 </div>
               </div>
 
-              {/* Tabela de Transações */}
+              {/* Tabela de Transações com Comportamento Adaptativo Mobile & Desktop (Árvore DOM Única) */}
               <div className="border border-white/10 rounded-2xl overflow-hidden bg-white/2">
-                <div className="max-h-[46vh] overflow-y-auto custom-scrollbar">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead className="sticky top-0 bg-zinc-900 border-b border-white/10 z-10 text-[11px] uppercase tracking-wider text-zinc-400">
+                <div className="max-h-[48vh] overflow-y-auto custom-scrollbar">
+                  <table className="w-full text-left border-collapse text-xs block md:table">
+                    <thead className="hidden md:table-header-group sticky top-0 bg-zinc-900 border-b border-white/10 z-10 text-[11px] uppercase tracking-wider text-zinc-400">
                       <tr>
                         <th className="py-2.5 px-3 w-10 text-center">
                           <input
@@ -431,81 +519,159 @@ export function ImportStatementModal({
                           />
                         </th>
                         <th className="py-2.5 px-3 w-24">Data</th>
-                        <th className="py-2.5 px-3">Descrição</th>
+                        <th className="py-2.5 px-3">Descrição / Lançamento</th>
                         <th className="py-2.5 px-3 w-36">Categoria</th>
-                        <th className="py-2.5 px-3 w-28 text-right">Valor</th>
+                        <th className="py-2.5 px-3 w-32 text-right">Valor</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {displayedItems.map((item) => {
-                        const isIncome = item.type === 'income'
-
-                        return (
-                          <tr
-                            key={item.id}
-                            className={`transition-colors ${
-                              item.selected
-                                ? 'bg-white/4 hover:bg-white/6'
-                                : 'bg-transparent opacity-60 hover:opacity-80'
-                            }`}
+                    <tbody className="block md:table-row-group p-2.5 md:p-0 space-y-3 md:space-y-0 md:divide-y md:divide-white/5">
+                      {displayedItems.length === 0 ? (
+                        <tr className="block md:table-row">
+                          <td
+                            colSpan={5}
+                            className="block md:table-cell py-8 text-center text-zinc-500"
                           >
-                            <td className="py-2.5 px-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={item.selected}
-                                onChange={() => handleToggleItem(item.id)}
-                                aria-label={`Selecionar ${item.title}`}
-                                className="w-3.5 h-3.5 rounded border border-white/20 bg-white/5 text-emerald-500 focus:ring-0 accent-emerald-500 cursor-pointer"
-                              />
-                            </td>
-                            <td className="py-2.5 px-3 text-zinc-300 font-mono text-[11px]">
-                              {formatDate(item.date)}
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={item.title}
-                                  onChange={(e) => handleTitleChange(item.id, e.target.value)}
-                                  className="w-full bg-transparent hover:bg-white/5 focus:bg-zinc-800 text-white font-medium rounded px-1.5 py-0.5 border border-transparent focus:border-emerald-500/40 outline-none transition text-xs"
-                                />
-                                {item.isDuplicate && (
-                                  <span
-                                    title="Identificamos uma transação existente com a mesma data e valor"
-                                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0"
-                                  >
-                                    <AlertTriangle className="w-3 h-3" />
-                                    <span>Duplicata</span>
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <select
-                                value={item.category}
-                                onChange={(e) => handleCategoryChange(item.id, e.target.value)}
-                                className="w-full bg-zinc-800 border border-white/10 rounded-lg px-2 py-1 text-zinc-200 text-xs focus:border-emerald-500 focus:outline-none cursor-pointer"
-                              >
-                                {availableCategories.map((cat) => (
-                                  <option key={cat} value={cat}>
-                                    {cat}
-                                  </option>
-                                ))}
-                                {!availableCategories.includes(item.category) && (
-                                  <option value={item.category}>{item.category}</option>
-                                )}
-                              </select>
-                            </td>
-                            <td
-                              className={`py-2.5 px-3 text-right font-bold font-mono text-xs ${
-                                isIncome ? 'text-emerald-400' : 'text-rose-400'
-                              }`}
+                            Nenhuma movimentação corresponde aos filtros atuais.
+                          </td>
+                        </tr>
+                      ) : (
+                        displayedItems.map((item) => {
+                          const isIncome = item.type === 'income'
+
+                          return (
+                            <tr
+                              key={item.id}
+                              className={`flex flex-col md:table-row rounded-2xl md:rounded-none border md:border-0 p-3.5 md:p-0 transition-colors ${
+                                item.selected
+                                  ? 'border-emerald-500/25 bg-white/4 md:bg-white/4 hover:bg-white/6'
+                                  : 'border-white/5 bg-zinc-900/60 md:bg-transparent opacity-65 hover:opacity-90'
+                              } ${item.isDuplicate ? 'ring-1 ring-amber-500/30' : ''}`}
                             >
-                              {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
-                            </td>
-                          </tr>
-                        )
-                      })}
+                              {/* 1. Seleção / Checkbox */}
+                              <td className="flex items-center justify-between md:table-cell py-1.5 md:py-2.5 px-0 md:px-3 text-center border-b border-white/5 md:border-0 pb-2 md:pb-2.5">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={item.selected}
+                                    onChange={() => handleToggleItem(item.id)}
+                                    aria-label={`Selecionar ${item.title}`}
+                                    className="w-4 h-4 md:w-3.5 md:h-3.5 rounded border border-white/20 bg-white/5 text-emerald-500 focus:ring-0 accent-emerald-500 cursor-pointer"
+                                  />
+                                  <span className="text-xs font-semibold text-zinc-300 md:hidden">
+                                    {item.selected ? 'Selecionado' : 'Ignorar'}
+                                  </span>
+                                </label>
+
+                                {/* No mobile: mostra a data ao lado do toggle no topo do card */}
+                                <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-400 md:hidden">
+                                  <Calendar className="w-3 h-3 text-zinc-500" />
+                                  <span>{formatDate(item.date)}</span>
+                                </div>
+                              </td>
+
+                              {/* 2. Data (Desktop) */}
+                              <td className="hidden md:table-cell py-2.5 px-3 text-zinc-300 font-mono text-[11px]">
+                                {formatDate(item.date)}
+                              </td>
+
+                              {/* 3. Descrição / Input de Título e Detalhes Anti-Duplicidade */}
+                              <td className="block md:table-cell py-2 md:py-2.5 px-0 md:px-3 w-full">
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={item.title}
+                                      onChange={(e) => handleTitleChange(item.id, e.target.value)}
+                                      className="w-full bg-zinc-800/60 hover:bg-zinc-800 focus:bg-zinc-800 text-white font-medium rounded-lg px-2.5 py-1.5 md:py-0.5 border border-white/10 md:border-transparent focus:border-emerald-500/40 outline-none transition text-xs"
+                                    />
+                                    {item.isDuplicate && (
+                                      <span
+                                        title={
+                                          item.duplicateReason ||
+                                          'Identificamos uma transação existente com a mesma data e valor'
+                                        }
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0"
+                                      >
+                                        <AlertTriangle className="w-3 h-3" />
+                                        <span>Duplicata</span>
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Caixa Explicativa da Duplicidade Encontrada */}
+                                  {item.isDuplicate && (
+                                    <div className="text-[11px] bg-amber-500/10 border border-amber-500/20 rounded-xl px-2.5 py-1.5 text-amber-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5">
+                                      <div className="flex items-center gap-1.5">
+                                        <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                        <span>
+                                          Já cadastrado:{' '}
+                                          <strong className="text-white">
+                                            {item.matchedExistingTitle || item.title}
+                                          </strong>{' '}
+                                          ({formatDate(item.matchedExistingDate || item.date)})
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleItem(item.id)}
+                                        className="text-[10px] font-bold text-amber-400 hover:text-white underline cursor-pointer"
+                                      >
+                                        {item.selected ? 'Desmarcar' : 'Incluir mesmo assim'}
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* 4. Categoria */}
+                              <td className="block md:table-cell py-1.5 md:py-2.5 px-0 md:px-3 w-full md:w-36">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] text-zinc-500 font-medium md:hidden shrink-0">
+                                    Categoria:
+                                  </span>
+                                  <select
+                                    value={item.category}
+                                    onChange={(e) => handleCategoryChange(item.id, e.target.value)}
+                                    className="w-full bg-zinc-800 border border-white/10 rounded-lg px-2 py-1.5 md:py-1 text-zinc-200 text-xs focus:border-emerald-500 focus:outline-none cursor-pointer"
+                                  >
+                                    {availableCategories.map((cat) => (
+                                      <option key={cat} value={cat}>
+                                        {cat}
+                                      </option>
+                                    ))}
+                                    {!availableCategories.includes(item.category) && (
+                                      <option value={item.category}>{item.category}</option>
+                                    )}
+                                  </select>
+                                </div>
+                              </td>
+
+                              {/* 5. Valor com Alternância de Tipo (Receita/Despesa) */}
+                              <td className="flex items-center justify-between md:table-cell py-2 md:py-2.5 px-0 md:px-3 text-right font-bold font-mono text-xs border-t border-white/5 md:border-0 pt-2.5 md:pt-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleType(item.id)}
+                                  title="Clique para alternar entre Entrada e Saída"
+                                  className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border cursor-pointer transition ${
+                                    isIncome
+                                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+                                      : 'bg-rose-500/10 text-rose-400 border-rose-500/25 hover:bg-rose-500/20'
+                                  }`}
+                                >
+                                  {isIncome ? 'Entrada (+)' : 'Saída (-)'}
+                                </button>
+                                <span
+                                  className={`ml-2 text-sm md:text-xs ${
+                                    isIncome ? 'text-emerald-400' : 'text-rose-400'
+                                  }`}
+                                >
+                                  {isIncome ? '+' : '-'} {formatCurrency(item.amount)}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -515,7 +681,7 @@ export function ImportStatementModal({
         </div>
 
         {/* Rodapé de Ações */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 bg-white/3">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-t border-white/10 bg-white/3">
           <button
             type="button"
             onClick={onClose}
@@ -531,7 +697,7 @@ export function ImportStatementModal({
               onClick={handleConfirmImport}
               disabled={isSubmitting || selectedItems.length === 0}
               data-testid="confirm-import-btn"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <span>Importando...</span>

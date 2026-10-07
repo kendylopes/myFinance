@@ -272,28 +272,48 @@ export const detectDuplicates = (
   if (existingTransactions.length === 0) return items
 
   return items.map((item) => {
-    const hasMatch = existingTransactions.some((existing) => {
+    let matchedTransaction: Transaction | undefined
+
+    for (const existing of existingTransactions) {
       const sameDate = existing.date === item.date
       const sameType = existing.type === item.type
       const sameAmount = Math.abs(existing.amount - item.amount) < 0.01
 
-      if (!sameDate || !sameType || !sameAmount) return false
+      if (!sameType || !sameAmount) continue
 
-      // Verifica se há semelhança no título
+      // Verifica similaridade no título
       const normExisting = normalizeText(existing.title)
       const normItem = normalizeText(item.title)
-
-      return (
+      const titleMatches =
         normExisting === normItem ||
         normExisting.includes(normItem) ||
         normItem.includes(normExisting)
-      )
-    })
 
-    if (hasMatch) {
+      // Se for na mesma data com valor idêntico
+      if (sameDate && (titleMatches || !normItem || !normExisting)) {
+        matchedTransaction = existing
+        break
+      }
+
+      // Se a data for dentro de +- 1 dia útil e o título bater exatamente
+      if (titleMatches && normItem.length > 3) {
+        const diffMs = Math.abs(new Date(existing.date).getTime() - new Date(item.date).getTime())
+        const diffDays = diffMs / (1000 * 60 * 60 * 24)
+        if (diffDays <= 2) {
+          matchedTransaction = existing
+          break
+        }
+      }
+    }
+
+    if (matchedTransaction) {
       return {
         ...item,
         isDuplicate: true,
+        duplicateReason: `Transação idêntica já cadastrada: "${matchedTransaction.title}" em ${matchedTransaction.date}`,
+        matchedExistingTitle: matchedTransaction.title,
+        matchedExistingDate: matchedTransaction.date,
+        matchedExistingAmount: matchedTransaction.amount,
         selected: false, // Desmarcado por segurança
       }
     }

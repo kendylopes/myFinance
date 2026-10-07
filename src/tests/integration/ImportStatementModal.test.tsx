@@ -85,5 +85,18 @@ describe('<ImportStatementModal /> (Importação de Extrato Bancário)', () => {
     fireEvent.click(screen.getByTestId('load-demo-statement-btn'))
 
     expect(screen.getByText('Duplicata')).toBeInTheDocument()
+    expect(screen.getByText(/Já cadastrado:/i)).toBeInTheDocument()
+    expect(screen.getByText('Desmarcar Duplicatas')).toBeInTheDocument()
+  })
+
+  it('deve permitir buscar lançamentos pelo campo de busca rápida', () => {
+    renderModal()
+    fireEvent.click(screen.getByTestId('load-demo-statement-btn'))
+
+    const searchInput = screen.getByPlaceholderText('Buscar lançamento...')
+    fireEvent.change(searchInput, { target: { value: 'DROGASIL' } })
+
+    expect(screen.getByDisplayValue('FARMACIA DROGASIL')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('SUPERMERCADO CARREFOUR')).not.toBeInTheDocument()
   })
 })

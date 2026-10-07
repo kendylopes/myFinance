@@ -10,6 +10,10 @@ export interface ParsedStatementItem {
   category: string
   status: PaymentStatus
   isDuplicate?: boolean
+  duplicateReason?: string
+  matchedExistingTitle?: string
+  matchedExistingDate?: string
+  matchedExistingAmount?: number
   selected: boolean
 }
 
