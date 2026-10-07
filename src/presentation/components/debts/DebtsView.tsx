@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Search,
   ShieldAlert,
+  Sliders,
   Wallet,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -22,6 +23,7 @@ import { DebtCard } from './DebtCard'
 import { DebtHistoryModal } from './DebtHistoryModal'
 import { DebtModal } from './DebtModal'
 import { DebtPaymentModal } from './DebtPaymentModal'
+import { DebtSimulator } from './DebtSimulator'
 
 interface DebtsViewProps {
   onAddTransaction?: (tx: CreateTransactionDTO) => Promise<unknown>
@@ -49,6 +51,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
     payDebt,
   } = useDebts({ onAddTransaction })
 
+  const [activeTab, setActiveTab] = useState<'contracts' | 'simulator'>('contracts')
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'urgent' | 'paid'>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -130,7 +133,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div
-            className="p-2 rounded-xl border flex items-center justify-center shrink-0"
+            className="p-2.5 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg"
             style={{
               backgroundColor: `${currentTheme.primaryColor}15`,
               borderColor: `${currentTheme.primaryColor}30`,
@@ -150,7 +153,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           </div>
         </div>
 
-        {/* Botões do Topo: Modo Discreto e Nova Dívida */}
+        {/* Botões do Topo: Modo Discreto e Novo Empréstimo */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
@@ -190,242 +193,291 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
         </div>
       </div>
 
-      {/* 2. Banner de Alerta Se Houver Dívidas Atrasadas */}
-      {overdueDebts.length > 0 && (
-        <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between gap-3 shadow-lg shadow-rose-950/30 text-rose-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 animate-pulse">
-              <ShieldAlert className="w-5 h-5" />
+      {/* 2. Navegação por Abas (Contratos vs Simulador) */}
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900/80 border border-white/10 w-fit">
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playClick()
+            setActiveTab('contracts')
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'contracts'
+              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <HandCoins className="w-4 h-4" />
+          <span>Meus Contratos ({debts.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playClick()
+            setActiveTab('simulator')
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'simulator'
+              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          <span>Simulador de Quitação</span>
+        </button>
+      </div>
+
+      {activeTab === 'simulator' ? (
+        /* Aba 2: Simulador Interativo de Quitação */
+        <DebtSimulator debts={debts} isPrivacyMode={isPrivacyMode} />
+      ) : (
+        /* Aba 1: Painel de Contratos e Gestão */
+        <>
+          {/* Banner de Alerta Se Houver Dívidas Atrasadas */}
+          {overdueDebts.length > 0 && (
+            <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between gap-3 shadow-lg shadow-rose-950/30 text-rose-200">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-rose-500/20 text-rose-300 animate-pulse">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-rose-100">
+                    Atenção: Você possui {overdueDebts.length} dívida(s) em atraso!
+                  </h4>
+                  <p className="text-xs text-rose-300/80">
+                    Dívidas com juros altos ou de mora crescem rápido. Priorize a rolagem ou
+                    quitação.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFilterStatus('urgent')}
+                className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold cursor-pointer transition-colors shrink-0"
+              >
+                Ver Atrasadas
+              </button>
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-rose-100">
-                Atenção: Você possui {overdueDebts.length} dívida(s) em atraso!
-              </h4>
-              <p className="text-xs text-rose-300/80">
-                Dívidas de agiota com juros diários ou de mora crescem rápido. Priorize a rolagem ou
-                quitação.
+          )}
+
+          {/* Cards com Resumo Analítico Superior */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {/* Card 1: Saldo Devedor Total */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+                  Total em Dívidas
+                </span>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 text-rose-400">
+                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+              <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
+                {mask(formatValue(totalDebtBalance))}
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400">
+                {activeDebts.length} compromisso(s) em aberto
               </p>
             </div>
+
+            {/* Card 2: Total Pago Só em Juros */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-amber-500/20 bg-amber-950/10 space-y-2">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-400 truncate">
+                  Só em Juros Pagos
+                </span>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-amber-500/15 text-amber-400">
+                  <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+              <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
+                {mask(formatValue(totalInterestPaid))}
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400">Custo total de rolagens</p>
+            </div>
+
+            {/* Card 3: Total Geral Pago */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+                  Volume Total Pago
+                </span>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+                  <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+              <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
+                {mask(formatValue(totalAmountPaid))}
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400">
+                {payments.length} pagamento(s)
+              </p>
+            </div>
+
+            {/* Card 4: Dívidas Liquidadas */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-emerald-500/20 bg-emerald-950/10 space-y-2">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-400 truncate">
+                  Dívidas Quitadas
+                </span>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                  <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+              <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
+                {paidDebts.length}
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400">Compromissos quitados</p>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setFilterStatus('urgent')}
-            className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold cursor-pointer transition-colors"
-          >
-            Ver Atrasadas
-          </button>
-        </div>
+
+          {/* Barra de Filtros e Busca */}
+          <div className="glass-card p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Abas de Filtro em Esteira Horizontal com Scroll Suave no Mobile */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setFilterStatus('all')
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                  filterStatus === 'all'
+                    ? 'bg-white/10 border-white/20 text-white'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Todas ({debts.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setFilterStatus('active')
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                  filterStatus === 'active'
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Ativas ({activeDebts.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setFilterStatus('urgent')
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                  filterStatus === 'urgent'
+                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 font-bold'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Atrasadas ({overdueDebts.length})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setFilterStatus('paid')
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                  filterStatus === 'paid'
+                    ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Quitadas ({paidDebts.length})
+              </button>
+            </div>
+
+            {/* Input de Busca */}
+            <div className="relative min-w-50">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Buscar por credor..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Grid de Cards de Dívidas */}
+          {isLoading ? (
+            <div className="text-center py-16 text-zinc-400 space-y-2">
+              <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs">Carregando seus compromissos...</p>
+            </div>
+          ) : filteredDebts.length === 0 ? (
+            <div className="glass-card p-12 rounded-3xl border border-white/10 text-center space-y-3">
+              <div
+                className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center border"
+                style={{
+                  backgroundColor: `${currentTheme.primaryColor}15`,
+                  borderColor: `${currentTheme.primaryColor}30`,
+                  color: currentTheme.primaryColor,
+                }}
+              >
+                <HandCoins className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Nenhum empréstimo encontrado</h3>
+              <p className="text-xs text-zinc-400 max-w-md mx-auto">
+                {searchQuery.trim() || filterStatus !== 'all'
+                  ? 'Nenhum resultado corresponde aos filtros aplicados.'
+                  : 'Cadastre dívidas ou empréstimos pessoais para acompanhar vencimentos, renovações e abatimentos.'}
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleOpenNew}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-black cursor-pointer shadow-lg hover:scale-105 transition-all"
+                  style={{
+                    backgroundColor: currentTheme.primaryColor,
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Cadastrar Primeiro Empréstimo</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {filteredDebts.map((debt) => (
+                <DebtCard
+                  key={debt.id}
+                  debt={debt}
+                  payments={payments}
+                  isPrivacyMode={isPrivacyMode}
+                  onOpenPaymentModal={handleOpenPayment}
+                  onOpenHistoryModal={handleOpenHistory}
+                  onEdit={handleOpenEdit}
+                  onDelete={deleteDebt}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Dica Estratégica na Base */}
+          <div className="p-4 rounded-2xl bg-white/2 border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
+            <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <p>
+              <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}
+              <strong className="text-emerald-400">&quot;Rola a dívida&quot;</strong>, paga apenas
+              os juros do mês e o capital inicial continua idêntico. Sempre que possível, utilize a
+              opção <strong className="text-cyan-400">&quot;Amortizar&quot;</strong> para reduzir o
+              saldo do principal e diminuir o custo do próximo mês.
+            </p>
+          </div>
+        </>
       )}
-
-      {/* 3. Cards com Resumo Analítico Superior */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Saldo Devedor Total */}
-        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total em Dívidas</span>
-            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
-              <AlertCircle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">
-            {mask(formatValue(totalDebtBalance))}
-          </div>
-          <p className="text-[11px] text-zinc-400">{activeDebts.length} compromisso(s) em aberto</p>
-        </div>
-
-        {/* Card 2: Total Pago Só em Juros */}
-        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-amber-500/20 bg-amber-950/10 space-y-2">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
-              Só em Juros Pagos
-            </span>
-            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
-              <RefreshCw className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
-            {mask(formatValue(totalInterestPaid))}
-          </div>
-          <p className="text-[11px] text-zinc-400">Custo total de rolagens e encargos</p>
-        </div>
-
-        {/* Card 3: Total Geral Pago (Principal + Juros) */}
-        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Volume Total Pago
-            </span>
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
-              <History className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight">
-            {mask(formatValue(totalAmountPaid))}
-          </div>
-          <p className="text-[11px] text-zinc-400">{payments.length} pagamento(s) efetuados</p>
-        </div>
-
-        {/* Card 4: Dívidas Liquidadas */}
-        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-emerald-500/20 bg-emerald-950/10 space-y-2">
-          <div className="flex items-center justify-between text-zinc-400">
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-              Dívidas Quitadas
-            </span>
-            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
-            {paidDebts.length}
-          </div>
-          <p className="text-[11px] text-zinc-400">Compromissos 100% resolvidos</p>
-        </div>
-      </div>
-
-      {/* 4. Barra de Filtros e Busca */}
-      <div className="glass-card p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Abas de Filtro */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              setFilterStatus('all')
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-              filterStatus === 'all'
-                ? 'bg-white/10 border-white/20 text-white'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Todas ({debts.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              setFilterStatus('active')
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-              filterStatus === 'active'
-                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Ativas ({activeDebts.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              setFilterStatus('urgent')
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-              filterStatus === 'urgent'
-                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 font-bold'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Atrasadas / Urgentes ({overdueDebts.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              setFilterStatus('paid')
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-              filterStatus === 'paid'
-                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Quitadas ({paidDebts.length})
-          </button>
-        </div>
-
-        {/* Input de Busca */}
-        <div className="relative min-w-50">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Buscar por credor..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-      </div>
-
-      {/* 5. Grid de Cards de Dívidas */}
-      {isLoading ? (
-        <div className="text-center py-16 text-zinc-400 space-y-2">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs">Carregando seus compromissos...</p>
-        </div>
-      ) : filteredDebts.length === 0 ? (
-        <div className="glass-card p-12 rounded-3xl border border-white/10 text-center space-y-3">
-          <div
-            className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center border"
-            style={{
-              backgroundColor: `${currentTheme.primaryColor}15`,
-              borderColor: `${currentTheme.primaryColor}30`,
-              color: currentTheme.primaryColor,
-            }}
-          >
-            <HandCoins className="w-7 h-7" />
-          </div>
-          <h3 className="text-lg font-bold text-white">Nenhum empréstimo encontrado</h3>
-          <p className="text-xs text-zinc-400 max-w-md mx-auto">
-            {searchQuery.trim() || filterStatus !== 'all'
-              ? 'Nenhum resultado corresponde aos filtros aplicados.'
-              : 'Cadastre dívidas de agiota ou empréstimos pessoais para acompanhar vencimentos, renovações e abatimentos.'}
-          </p>
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={handleOpenNew}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-black cursor-pointer shadow-lg hover:scale-105 transition-all"
-              style={{
-                backgroundColor: currentTheme.primaryColor,
-              }}
-            >
-              <Plus className="w-4 h-4" />
-              <span>Cadastrar Primeiro Empréstimo</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredDebts.map((debt) => (
-            <DebtCard
-              key={debt.id}
-              debt={debt}
-              payments={payments}
-              isPrivacyMode={isPrivacyMode}
-              onOpenPaymentModal={handleOpenPayment}
-              onOpenHistoryModal={handleOpenHistory}
-              onEdit={handleOpenEdit}
-              onDelete={deleteDebt}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* 6. Dica Estratégica na Base */}
-      <div className="p-4 rounded-2xl bg-white/2 border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
-        <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-        <p>
-          <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}
-          <strong className="text-emerald-400">&quot;Rola a dívida&quot;</strong>, paga apenas os
-          juros do mês e o capital inicial continua idêntico. Sempre que possível, utilize a opção{' '}
-          <strong className="text-cyan-400">&quot;Amortizar&quot;</strong> para reduzir o saldo do
-          principal e diminuir o custo do próximo mês.
-        </p>
-      </div>
 
       {/* Modais */}
       <DebtModal
