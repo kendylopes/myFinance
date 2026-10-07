@@ -1,4 +1,14 @@
-import { CheckCircle2, Clock, Copy, Pencil, Repeat, Trash2 } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Copy,
+  Pencil,
+  Repeat,
+  Trash2,
+} from 'lucide-react'
+import { useState } from 'react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
@@ -32,6 +42,13 @@ export const TransactionItem = ({
   const isExpired = !isIncome && isOverdue(transaction)
   const CategoryIcon = getCategoryIcon(transaction.category)
 
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleToggleExpand = () => {
+    soundFX.playClick()
+    setIsExpanded((prev) => !prev)
+  }
+
   const handleDelete = () => {
     soundFX.playClick()
     onDelete(transaction.id)
@@ -61,6 +78,9 @@ export const TransactionItem = ({
     onToggleStatus?.(transaction.id)
   }
 
+  const installmentInfo = parseInstallment(transaction.title)
+  const isRecurring = transaction.recurrence === 'recurring'
+
   return (
     <div
       data-testid={`transaction-item-${transaction.id}`}
@@ -70,7 +90,7 @@ export const TransactionItem = ({
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         {/* Lado Esquerdo: Checkbox + Ícone + Título e Metadados */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
           {onToggleSelect && (
             <input
               type="checkbox"
@@ -78,11 +98,11 @@ export const TransactionItem = ({
               onChange={() => onToggleSelect(transaction.id)}
               aria-label={`Selecionar ${transaction.title}`}
               data-testid={`checkbox-select-${transaction.id}`}
-              className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 transition cursor-pointer accent-emerald-500 shrink-0"
+              className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 transition cursor-pointer accent-emerald-500 shrink-0 mt-1 sm:mt-0"
             />
           )}
 
-          <div className="relative shrink-0">
+          <div className="relative shrink-0 mt-0.5 sm:mt-0">
             <div
               className={`p-2 sm:p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-transform group-hover:scale-105 ${
                 isIncome
@@ -107,40 +127,50 @@ export const TransactionItem = ({
           </div>
 
           <div className="min-w-0 flex-1">
-            {(() => {
-              const installmentInfo = parseInstallment(transaction.title)
-              const isRecurring = transaction.recurrence === 'recurring'
-
-              return (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <p
-                    className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate"
-                    title={installmentInfo ? installmentInfo.baseTitle : transaction.title}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+                <p
+                  className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate"
+                  title={installmentInfo ? installmentInfo.baseTitle : transaction.title}
+                >
+                  {installmentInfo ? installmentInfo.baseTitle : transaction.title}
+                </p>
+                {installmentInfo && (
+                  <span
+                    data-testid={`installment-badge-${transaction.id}`}
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-emerald-300 border border-white/10 shrink-0"
+                    title={`Parcela ${installmentInfo.current} de ${installmentInfo.total}`}
                   >
-                    {installmentInfo ? installmentInfo.baseTitle : transaction.title}
-                  </p>
-                  {installmentInfo && (
-                    <span
-                      data-testid={`installment-badge-${transaction.id}`}
-                      className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-emerald-300 border border-white/10 shrink-0"
-                      title={`Parcela ${installmentInfo.current} de ${installmentInfo.total}`}
-                    >
-                      {installmentInfo.current}/{installmentInfo.total}
-                    </span>
-                  )}
-                  {isRecurring && (
-                    <span
-                      data-testid={`recurring-badge-${transaction.id}`}
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0"
-                      title="Lançamento Recorrente"
-                    >
-                      <Repeat className="w-2.5 h-2.5" />
-                      <span>Recorrente</span>
-                    </span>
-                  )}
-                </div>
-              )
-            })()}
+                    {installmentInfo.current}/{installmentInfo.total}
+                  </span>
+                )}
+                {isRecurring && (
+                  <span
+                    data-testid={`recurring-badge-${transaction.id}`}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0"
+                    title="Lançamento Recorrente"
+                  >
+                    <Repeat className="w-2.5 h-2.5" />
+                    <span>Recorrente</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Botão de expansão no mobile */}
+              <button
+                type="button"
+                onClick={handleToggleExpand}
+                aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+                aria-expanded={isExpanded}
+                className="sm:hidden p-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 border border-white/5 transition-colors cursor-pointer shrink-0"
+              >
+                {isExpanded ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
 
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-zinc-400 mt-1">
               <span className="glass-pill px-2 py-0.5 rounded-lg text-[11px] text-zinc-300 font-medium">
@@ -192,7 +222,7 @@ export const TransactionItem = ({
         </div>
 
         {/* Lado Direito: Valor Monetário + Ações */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t border-white/5 sm:border-t-0 pl-10 sm:pl-0">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t border-white/5 sm:border-t-0 pl-11 sm:pl-0">
           <span
             className={`font-bold font-mono text-sm sm:text-base whitespace-nowrap tracking-tight ${
               isIncome ? 'text-emerald-400' : 'text-rose-400'
@@ -244,6 +274,26 @@ export const TransactionItem = ({
           </div>
         </div>
       </div>
+
+      {/* Painel Expansível no Mobile */}
+      {isExpanded && (
+        <div className="sm:hidden pt-2.5 mt-2.5 border-t border-white/10 space-y-1.5 text-xs text-zinc-400 pl-11 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
+            <span>Data da movimentação:</span>
+            <strong className="text-zinc-200 font-medium">{formatDate(transaction.date)}</strong>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Categoria:</span>
+            <strong className="text-zinc-200 font-medium">{transaction.category}</strong>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>ID:</span>
+            <span className="font-mono text-[10px] text-zinc-500 truncate max-w-36">
+              {transaction.id}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

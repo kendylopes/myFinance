@@ -194,6 +194,24 @@ export const TransactionList = ({
     }, 0)
   }, [selectedTransactions])
 
+  // Métricas do conjunto atual de transações visíveis/filtradas
+  const filteredMetrics = useMemo(() => {
+    let income = 0
+    let expense = 0
+    for (const tx of transactions) {
+      if (tx.type === 'income') {
+        income += tx.amount
+      } else {
+        expense += tx.amount
+      }
+    }
+    return {
+      income,
+      expense,
+      balance: income - expense,
+    }
+  }, [transactions])
+
   return (
     <section
       aria-labelledby="list-title"
@@ -241,6 +259,66 @@ export const TransactionList = ({
           sortBy={sortBy}
           onSortChange={setSortBy}
         />
+      )}
+
+      {/* MINI RESUMO DO FILTRO ATUAL (QUANDO HOUVER REGISTROS) */}
+      {transactions.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
+          <div className="p-3 rounded-2xl glass-pill border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                Entradas Filtradas
+              </span>
+              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
+                {formatCurrency(filteredMetrics.income)}
+              </p>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+          </div>
+
+          <div className="p-3 rounded-2xl glass-pill border border-rose-500/20 bg-rose-500/5 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">
+                Saídas Filtradas
+              </span>
+              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
+                {formatCurrency(filteredMetrics.expense)}
+              </p>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+          </div>
+
+          <div
+            className={`p-3 rounded-2xl glass-pill border flex items-center justify-between ${
+              filteredMetrics.balance >= 0
+                ? 'border-emerald-500/20 bg-emerald-500/5'
+                : 'border-rose-500/20 bg-rose-500/5'
+            }`}
+          >
+            <div>
+              <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                Saldo Filtrado
+              </span>
+              <p
+                className={`text-sm sm:text-base font-bold font-mono mt-0.5 ${
+                  filteredMetrics.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {filteredMetrics.balance >= 0 ? '+' : ''}
+                {formatCurrency(filteredMetrics.balance)}
+              </p>
+            </div>
+            <span
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                filteredMetrics.balance >= 0
+                  ? 'bg-emerald-500/15 text-emerald-300'
+                  : 'bg-rose-500/15 text-rose-300'
+              }`}
+            >
+              {filteredMetrics.balance >= 0 ? 'Positivo' : 'Negativo'}
+            </span>
+          </div>
+        </div>
       )}
 
       {/* BARRA DE AÇÕES EM MASSA (QUANDO HOUVER ITENS SELECIONADOS) */}

@@ -59,9 +59,9 @@ export function TransactionFilters({
 
   return (
     <div data-testid="transaction-filters" className="space-y-3 pb-1">
-      {/* BARRA DE PESQUISA INTELIGENTE + SELETOR DE TIPO + ORDENAÇÃO */}
-      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-        {/* BUSCADOR TEXTUAL AMPLO (DESCRICÃO OU CATEGORIA) */}
+      {/* FAIXA 1: BUSCADOR INTELIGENTE + CATEGORIA + ORDENAÇÃO */}
+      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+        {/* BUSCADOR TEXTUAL AMPLO */}
         <div className="relative flex-1 group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10 text-emerald-400">
             <Search
@@ -89,101 +89,11 @@ export function TransactionFilters({
           )}
         </div>
 
-        {/* CONTROLES: SELETOR DE TIPO + ORDENAÇÃO */}
-        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto shrink-0">
-          {/* SELETOR DE TIPO (SEGMENTED CONTROL) */}
-          <div className="flex glass-pill p-1 rounded-2xl shadow-sm border border-white/10">
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedType === 'all'
-                  ? 'bg-white/15 text-white shadow-sm border border-white/15 font-semibold'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('income')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedType === 'income'
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm font-semibold'
-                  : 'text-zinc-400 hover:text-emerald-400'
-              }`}
-            >
-              Entradas
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('expense')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedType === 'expense'
-                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-sm font-semibold'
-                  : 'text-zinc-400 hover:text-rose-400'
-              }`}
-            >
-              Saídas
-            </button>
-          </div>
-
-          {/* SELETOR DE STATUS (TODAS, PAGAS, PENDENTES) */}
-          {onStatusChange && (
-            <div className="flex glass-pill p-1 rounded-2xl shadow-sm border border-white/10">
-              <button
-                type="button"
-                data-testid="status-filter-all"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('all')
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  selectedStatus === 'all'
-                    ? 'bg-white/15 text-white shadow-sm border border-white/15 font-semibold'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                type="button"
-                data-testid="status-filter-paid"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('paid')
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  selectedStatus === 'paid'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm font-semibold'
-                    : 'text-zinc-400 hover:text-emerald-400'
-                }`}
-              >
-                <CheckCircle2 className="w-3 h-3" />
-                <span>Pagas / Recebidas</span>
-              </button>
-              <button
-                type="button"
-                data-testid="status-filter-pending"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('pending')
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                  selectedStatus === 'pending'
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm font-semibold'
-                    : 'text-zinc-400 hover:text-amber-400'
-                }`}
-              >
-                <Clock className="w-3 h-3" />
-                <span>Pendentes</span>
-              </button>
-            </div>
-          )}
-
+        {/* CONTROLES SECUNDÁRIOS: CATEGORIA & ORDENAÇÃO */}
+        <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
           {/* SELETOR DE CATEGORIA */}
           {onCategoryChange && categories.length > 0 && (
-            <div className="flex items-center gap-1.5 glass-pill px-2.5 py-1.5 rounded-2xl border border-white/10 text-xs shadow-sm">
+            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 glass-pill px-2.5 py-2 rounded-2xl border border-white/10 text-xs shadow-xs">
               <Tag className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Filtrar por categoria"
@@ -192,7 +102,7 @@ export function TransactionFilters({
                   soundFX.playClick()
                   onCategoryChange(e.target.value)
                 }}
-                className="bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1 max-w-36 truncate"
+                className="w-full sm:w-auto bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1 max-w-36 truncate"
               >
                 <option value="all" className="bg-zinc-900 text-white">
                   Todas as categorias
@@ -208,13 +118,13 @@ export function TransactionFilters({
 
           {/* SELETOR DE ORDENAÇÃO */}
           {onSortChange && (
-            <div className="flex items-center gap-1.5 glass-pill px-2.5 py-1.5 rounded-2xl border border-white/10 text-xs shadow-sm">
+            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 glass-pill px-2.5 py-2 rounded-2xl border border-white/10 text-xs shadow-xs">
               <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Ordenar transações"
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value as TransactionSortOption)}
-                className="bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1"
+                className="w-full sm:w-auto bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1"
               >
                 <option value="date_desc" className="bg-zinc-900 text-white">
                   Mais recentes
@@ -232,6 +142,99 @@ export function TransactionFilters({
             </div>
           )}
         </div>
+      </div>
+
+      {/* FAIXA 2: ESTEIRA DE FILTROS RÁPIDOS (TIPO & STATUS & LIMPEZA) */}
+      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-0.5">
+        {/* SELETOR DE TIPO (TODOS, ENTRADAS, SAÍDAS) */}
+        <div className="flex glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+              selectedType === 'all'
+                ? 'bg-white/15 text-white shadow-xs border border-white/15 font-semibold'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('income')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+              selectedType === 'income'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
+                : 'text-zinc-400 hover:text-emerald-400'
+            }`}
+          >
+            Entradas
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('expense')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+              selectedType === 'expense'
+                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-xs font-semibold'
+                : 'text-zinc-400 hover:text-rose-400'
+            }`}
+          >
+            Saídas
+          </button>
+        </div>
+
+        {/* SELETOR DE STATUS (TODAS, PAGAS, PENDENTES) */}
+        {onStatusChange && (
+          <div className="flex glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+            <button
+              type="button"
+              data-testid="status-filter-all"
+              onClick={() => {
+                soundFX.playClick()
+                onStatusChange('all')
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                selectedStatus === 'all'
+                  ? 'bg-white/15 text-white shadow-xs border border-white/15 font-semibold'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Todas
+            </button>
+            <button
+              type="button"
+              data-testid="status-filter-paid"
+              onClick={() => {
+                soundFX.playClick()
+                onStatusChange('paid')
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                selectedStatus === 'paid'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-emerald-400'
+              }`}
+            >
+              <CheckCircle2 className="w-3 h-3" />
+              <span>Pagas / Recebidas</span>
+            </button>
+            <button
+              type="button"
+              data-testid="status-filter-pending"
+              onClick={() => {
+                soundFX.playClick()
+                onStatusChange('pending')
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                selectedStatus === 'pending'
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-amber-400'
+              }`}
+            >
+              <Clock className="w-3 h-3" />
+              <span>Pendentes</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* RODAPÉ DO FILTRO: CONTADOR DISCRETO E BOTÃO LIMPAR FILTROS */}
