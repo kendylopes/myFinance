@@ -11,6 +11,7 @@ import { AuthPage } from './presentation/components/auth/AuthPage'
 import { ToastContainer } from './presentation/components/common/ToastContainer'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { CategoryAnalysisGrid } from './presentation/components/dashboard/CategoryAnalysisGrid'
+import { DashboardSkeleton } from './presentation/components/dashboard/DashboardSkeleton'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { FinancialFlowChart } from './presentation/components/dashboard/FinancialFlowChart'
 import { FinancialInsights } from './presentation/components/dashboard/FinancialInsights'
@@ -344,143 +345,146 @@ export function AppContent() {
           )}
 
           {/* 1. TELA: DASHBOARD (Apenas Informações Principais: Resumo Financeiro, Gráfico de Categorias e Transações Recentes) */}
-          {activeSection === 'dashboard' && (
-            <div className="space-y-6">
-              {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
-              <div id="section-summary">
-                <SummaryCards
-                  summary={summary}
-                  onSelectType={(type) => {
-                    setSelectedType(type)
-                    handleSelectSection('transactions')
-                  }}
-                />
-              </div>
-
-              {/* INSIGHTS FINANCEIROS INTELIGENTES */}
-              <div id="section-insights">
-                <FinancialInsights
-                  transactions={periodTransactions}
-                  summary={summary}
-                  selectedMonth={selectedMonth}
-                />
-              </div>
-
-              {/* GRÁFICO DE FLUXO FINANCEIRO SEMESTRAL (ENTRADAS VS SAÍDAS VS SALDO) */}
-              <div id="section-flow-chart">
-                <FinancialFlowChart transactions={transactions} selectedMonth={selectedMonth} />
-              </div>
-
-              {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES (Responsivo: 1 coluna em telas compactas/médias e 2 colunas em telas amplas) */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                {/* 1. GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-                <div className="min-w-0 w-full">
-                  <ExpenseCategoryChart transactions={periodTransactions} />
+          {activeSection === 'dashboard' &&
+            (isLoading ? (
+              <DashboardSkeleton />
+            ) : (
+              <div className="space-y-6">
+                {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
+                <div id="section-summary">
+                  <SummaryCards
+                    summary={summary}
+                    onSelectType={(type) => {
+                      setSelectedType(type)
+                      handleSelectSection('transactions')
+                    }}
+                  />
                 </div>
 
-                {/* 2. CARD DE TRANSAÇÕES RECENTES */}
-                <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0 w-full">
-                  <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/8 pb-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Layers className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />
-                      <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm whitespace-nowrap">
-                        Transações Recentes
-                      </h2>
-                      <span className="text-xs text-zinc-400 whitespace-nowrap">
-                        ({periodTransactions.length} no período)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFX.playClick()
-                          setIsImportModalOpen(true)
-                        }}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
-                        title="Importar extrato bancário OFX ou CSV"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Importar Extrato</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFX.playClick()
-                          handleSelectSection('transactions')
-                        }}
-                        className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        <span>Ver todos</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                {/* INSIGHTS FINANCEIROS INTELIGENTES */}
+                <div id="section-insights">
+                  <FinancialInsights
+                    transactions={periodTransactions}
+                    summary={summary}
+                    selectedMonth={selectedMonth}
+                  />
+                </div>
+
+                {/* GRÁFICO DE FLUXO FINANCEIRO SEMESTRAL (ENTRADAS VS SAÍDAS VS SALDO) */}
+                <div id="section-flow-chart">
+                  <FinancialFlowChart transactions={transactions} selectedMonth={selectedMonth} />
+                </div>
+
+                {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES (Responsivo: 1 coluna em telas compactas/médias e 2 colunas em telas amplas) */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+                  {/* 1. GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
+                  <div className="min-w-0 w-full">
+                    <ExpenseCategoryChart transactions={periodTransactions} />
                   </div>
 
-                  {periodTransactions.length === 0 ? (
-                    <div className="text-center py-10 text-zinc-400">
-                      <p className="text-sm">Nenhuma movimentação neste período.</p>
-                      <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            soundFX.playClick()
-                            handleOpenNewTransaction()
-                          }}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105"
-                          style={{
-                            backgroundColor: `${currentTheme.primaryColor}20`,
-                            borderColor: `${currentTheme.primaryColor}40`,
-                            color: currentTheme.primaryColor,
-                          }}
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Adicionar Transação</span>
-                        </button>
-
+                  {/* 2. CARD DE TRANSAÇÕES RECENTES */}
+                  <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0 w-full">
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/8 pb-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Layers className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />
+                        <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm whitespace-nowrap">
+                          Transações Recentes
+                        </h2>
+                        <span className="text-xs text-zinc-400 whitespace-nowrap">
+                          ({periodTransactions.length} no período)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5 shrink-0">
                         <button
                           type="button"
                           onClick={() => {
                             soundFX.playClick()
                             setIsImportModalOpen(true)
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                          title="Importar extrato bancário OFX ou CSV"
                         >
-                          <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Importar Extrato</span>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Importar Extrato</span>
                         </button>
-
                         <button
                           type="button"
                           onClick={() => {
                             soundFX.playClick()
-                            setIsOnboardingOpen(true)
+                            handleSelectSection('transactions')
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                          className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
                         >
-                          <Rocket className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Guia de Início</span>
+                          <span>Ver todos</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {periodTransactions.slice(0, 5).map((tx) => (
-                        <TransactionItem
-                          key={tx.id}
-                          transaction={tx}
-                          onDelete={deleteTransaction}
-                          onEdit={handleOpenEditTransaction}
-                          onDuplicate={() => handleDuplicateTransaction(tx.id)}
-                          onToggleStatus={toggleTransactionStatus}
-                        />
-                      ))}
-                    </div>
-                  )}
+
+                    {periodTransactions.length === 0 ? (
+                      <div className="text-center py-10 text-zinc-400">
+                        <p className="text-sm">Nenhuma movimentação neste período.</p>
+                        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFX.playClick()
+                              handleOpenNewTransaction()
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105"
+                            style={{
+                              backgroundColor: `${currentTheme.primaryColor}20`,
+                              borderColor: `${currentTheme.primaryColor}40`,
+                              color: currentTheme.primaryColor,
+                            }}
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Adicionar Transação</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFX.playClick()
+                              setIsImportModalOpen(true)
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                          >
+                            <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Importar Extrato</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFX.playClick()
+                              setIsOnboardingOpen(true)
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                          >
+                            <Rocket className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Guia de Início</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {periodTransactions.slice(0, 5).map((tx) => (
+                          <TransactionItem
+                            key={tx.id}
+                            transaction={tx}
+                            onDelete={deleteTransaction}
+                            onEdit={handleOpenEditTransaction}
+                            onDuplicate={() => handleDuplicateTransaction(tx.id)}
+                            onToggleStatus={toggleTransactionStatus}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            ))}
 
           {/* 2. TELA: RELATÓRIOS (Inteligência Semanal, Mensal, Anual e Customizada) */}
           {activeSection === 'reports' && (
