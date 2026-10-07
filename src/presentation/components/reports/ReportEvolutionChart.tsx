@@ -92,7 +92,7 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
                   onPointerEnter={() => setHoveredIndex(index)}
                   onPointerLeave={() => setHoveredIndex(null)}
                   className={`flex-1 ${
-                    isManyItems ? 'min-w-[18px] sm:min-w-[24px]' : 'min-w-8 sm:min-w-10'
+                    isManyItems ? 'min-w-4.5 sm:min-w-6' : 'min-w-8 sm:min-w-10'
                   } h-full flex flex-col justify-end items-center group relative cursor-pointer`}
                 >
                   {/* Tooltip flutuante no hover */}

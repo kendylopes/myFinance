@@ -165,7 +165,7 @@ export function InstallmentsForecastModal({
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-zinc-950 shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all"
               style={{ backgroundColor: currentTheme.primaryColor }}
             >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
+              <Plus className="w-3.5 h-3.5 stroke-3" />
               <span>Nova Compra</span>
             </button>
 
