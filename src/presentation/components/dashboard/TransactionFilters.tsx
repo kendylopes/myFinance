@@ -58,14 +58,14 @@ export function TransactionFilters({
   }
 
   return (
-    <div data-testid="transaction-filters" className="space-y-3 pb-1">
-      {/* FAIXA 1: BUSCADOR INTELIGENTE + CATEGORIA + ORDENAÇÃO */}
-      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-        {/* BUSCADOR TEXTUAL AMPLO */}
+    <div data-testid="transaction-filters" className="space-y-2.5 pb-1">
+      {/* LINHA 1: BUSCADOR INTEGRADO + DROPDOWNS COMPACTOS */}
+      <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+        {/* BUSCA RÁPIDA */}
         <div className="relative flex-1 group">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10 text-emerald-400">
             <Search
-              className="w-4 h-4 text-emerald-400 group-focus-within:text-emerald-300 group-focus-within:scale-110 transition-all duration-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+              className="w-4 h-4 text-emerald-400/80 group-focus-within:text-emerald-400 transition-colors"
               aria-hidden="true"
             />
           </div>
@@ -75,25 +75,25 @@ export function TransactionFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por descrição ou categoria..."
-            className="w-full glass-input rounded-2xl pl-10 pr-10 py-2.5 text-sm placeholder:text-zinc-500 focus:border-emerald-500/80 transition-all"
+            className="w-full h-10 rounded-xl bg-white/[0.04] border border-white/10 pl-9 pr-9 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:bg-white/[0.06] transition-all"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Limpar busca"
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer z-10"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer z-10"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* CONTROLES SECUNDÁRIOS: CATEGORIA & ORDENAÇÃO */}
+        {/* SELECTS DE REFINAMENTO */}
         <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
           {/* SELETOR DE CATEGORIA */}
           {onCategoryChange && categories.length > 0 && (
-            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 glass-pill px-2.5 py-2 rounded-2xl border border-white/10 text-xs shadow-xs">
+            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
               <Tag className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Filtrar por categoria"
@@ -118,7 +118,7 @@ export function TransactionFilters({
 
           {/* SELETOR DE ORDENAÇÃO */}
           {onSortChange && (
-            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 glass-pill px-2.5 py-2 rounded-2xl border border-white/10 text-xs shadow-xs">
+            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
               <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Ordenar transações"
@@ -144,127 +144,124 @@ export function TransactionFilters({
         </div>
       </div>
 
-      {/* FAIXA 2: ESTEIRA DE FILTROS RÁPIDOS (TIPO & STATUS COM CONTEXTO CLARO) */}
-      <div className="flex items-center gap-2.5 overflow-x-auto custom-scrollbar pb-1 pt-0.5">
-        {/* GRUPO DE FLUXO / TIPO */}
-        <div className="flex items-center glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
-          <span className="text-[10px] uppercase font-bold text-zinc-500 px-2 py-0.5 tracking-wider hidden sm:inline select-none">
-            Tipo
-          </span>
-          <button
-            type="button"
-            onClick={() => handleTypeSelect('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-              selectedType === 'all'
-                ? 'bg-white/15 text-white shadow-xs border border-white/15 font-semibold'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTypeSelect('income')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-              selectedType === 'income'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
-                : 'text-zinc-400 hover:text-emerald-400'
-            }`}
-          >
-            Entradas
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTypeSelect('expense')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-              selectedType === 'expense'
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-xs font-semibold'
-                : 'text-zinc-400 hover:text-rose-400'
-            }`}
-          >
-            Saídas
-          </button>
+      {/* LINHA 2: SEGMENTED CONTROL FLUIDO (TIPO + STATUS EM UMA ÚNICA BARRA HARMONIOSA) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+        {/* TRILHO DE ABAS UNIFICADO */}
+        <div className="flex items-center p-1 rounded-xl bg-white/[0.03] border border-white/[0.08] shadow-inner overflow-x-auto custom-scrollbar gap-1 max-w-full">
+          {/* GRUPO DE FLUXO / TIPO */}
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => handleTypeSelect('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                selectedType === 'all'
+                  ? 'bg-white/15 text-white shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeSelect('income')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                selectedType === 'income'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+              }`}
+            >
+              Entradas
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeSelect('expense')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                selectedType === 'expense'
+                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-xs font-semibold'
+                  : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
+              }`}
+            >
+              Saídas
+            </button>
+          </div>
+
+          {/* DIVISOR VERTICAL SUAVE */}
+          {onStatusChange && (
+            <div className="h-4 w-px bg-white/10 mx-1 shrink-0" aria-hidden="true" />
+          )}
+
+          {/* GRUPO DE SITUAÇÃO / STATUS */}
+          {onStatusChange && (
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                data-testid="status-filter-all"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('all')
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                  selectedStatus === 'all'
+                    ? 'bg-white/15 text-white shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                data-testid="status-filter-paid"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('paid')
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                  selectedStatus === 'paid'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+                }`}
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                <span>Pagas / Recebidas</span>
+              </button>
+              <button
+                type="button"
+                data-testid="status-filter-pending"
+                onClick={() => {
+                  soundFX.playClick()
+                  onStatusChange('pending')
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                  selectedStatus === 'pending'
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-xs font-semibold'
+                    : 'text-zinc-400 hover:text-amber-400 hover:bg-white/5'
+                }`}
+              >
+                <Clock className="w-3 h-3" />
+                <span>Pendentes</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* DIVISOR VERTICAL SUAVE */}
-        {onStatusChange && (
-          <div className="h-5 w-px bg-white/10 hidden sm:block shrink-0" aria-hidden="true" />
-        )}
-
-        {/* GRUPO DE SITUAÇÃO / STATUS */}
-        {onStatusChange && (
-          <div className="flex items-center glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
-            <span className="text-[10px] uppercase font-bold text-zinc-500 px-2 py-0.5 tracking-wider hidden sm:inline select-none">
-              Status
+        {/* FEEDBACK DE FILTROS ATIVOS E BOTÃO LIMPAR */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-zinc-400 animate-fade-in shrink-0">
+            <span className="text-[11px]">
+              Exibindo <strong className="text-white font-semibold">{totalFilteredCount}</strong> de{' '}
+              <strong className="text-white font-semibold">{totalPeriodCount}</strong>
             </span>
             <button
               type="button"
-              data-testid="status-filter-all"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('all')
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedStatus === 'all'
-                  ? 'bg-white/15 text-white shadow-xs border border-white/15 font-semibold'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
+              onClick={handleClear}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 text-xs font-medium transition-colors cursor-pointer"
             >
-              Todas
-            </button>
-            <button
-              type="button"
-              data-testid="status-filter-paid"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('paid')
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedStatus === 'paid'
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
-                  : 'text-zinc-400 hover:text-emerald-400'
-              }`}
-            >
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Pagas / Recebidas</span>
-            </button>
-            <button
-              type="button"
-              data-testid="status-filter-pending"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('pending')
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                selectedStatus === 'pending'
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-xs font-semibold'
-                  : 'text-zinc-400 hover:text-amber-400'
-              }`}
-            >
-              <Clock className="w-3 h-3" />
-              <span>Pendentes</span>
+              <X className="w-3 h-3" />
+              <span>Limpar filtros</span>
             </button>
           </div>
         )}
       </div>
-
-      {/* RODAPÉ DO FILTRO: CONTADOR DISCRETO E BOTÃO LIMPAR FILTROS */}
-      {hasActiveFilters && (
-        <div className="flex items-center justify-between text-xs text-zinc-400 px-1 pt-1 animate-fade-in">
-          <span>
-            Exibindo <strong className="text-white font-semibold">{totalFilteredCount}</strong> de{' '}
-            <strong className="text-white font-semibold">{totalPeriodCount}</strong> transações
-          </span>
-
-          <button
-            type="button"
-            onClick={handleClear}
-            className="inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-medium hover:underline transition-colors cursor-pointer"
-          >
-            Limpar filtros
-          </button>
-        </div>
-      )}
     </div>
   )
 }

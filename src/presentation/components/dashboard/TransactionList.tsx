@@ -216,13 +216,18 @@ export const TransactionList = ({
       className="glass-card p-6 rounded-3xl space-y-4 shadow-xl"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/8 pb-3">
-        <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-          <h2 id="list-title" className="text-lg font-semibold text-white drop-shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <Layers className="w-4 h-4" aria-hidden="true" />
+          </div>
+          <h2
+            id="list-title"
+            className="text-base sm:text-lg font-semibold text-white tracking-tight"
+          >
             Histórico de Transações
           </h2>
-          <span className="text-xs text-slate-400 ml-1">
-            ({transactions.length} {transactions.length === 1 ? 'registro' : 'registros'})
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/5 border border-white/10 text-zinc-400">
+            {transactions.length} {transactions.length === 1 ? 'registro' : 'registros'}
           </span>
         </div>
 

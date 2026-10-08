@@ -1,4 +1,5 @@
-import { Upload } from 'lucide-react'
+import { ChevronDown, Download, FileSpreadsheet, Printer, Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { formatMonthYear } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
@@ -20,7 +21,19 @@ export function ExportActions({
   onOpenImport,
 }: ExportActionsProps) {
   const toast = useToast()
+  const [isExportOpen, setIsExportOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const hasTransactions = transactions.length > 0
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsExportOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleExportCsv = () => {
     if (!hasTransactions) return
@@ -43,56 +56,77 @@ export function ExportActions({
 
   return (
     <div data-testid="export-actions" className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={handleExportCsv}
-        disabled={!hasTransactions}
-        title={hasTransactions ? 'Baixar planilha em formato CSV' : 'Sem dados para exportar'}
-        aria-label="Exportar CSV"
-        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 shadow-sm cursor-pointer"
-      >
-        <svg
-          className="w-3.5 h-3.5 text-emerald-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
+      {/* Botão de Exportação Agrupado em Menu Dropdown */}
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => {
+            soundFX.playClick()
+            setIsExportOpen((prev) => !prev)
+          }}
+          disabled={!hasTransactions}
+          title={hasTransactions ? 'Opções de exportação' : 'Sem dados para exportar'}
+          aria-label="Exportar"
+          aria-expanded={isExportOpen}
+          aria-haspopup="true"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 shadow-xs cursor-pointer"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+          <Download className="w-3.5 h-3.5 text-zinc-400" aria-hidden="true" />
+          <span>Exportar</span>
+          <ChevronDown
+            className={`w-3 h-3 text-zinc-400 transition-transform duration-200 ${
+              isExportOpen ? 'rotate-180' : ''
+            }`}
+            aria-hidden="true"
           />
-        </svg>
-        <span>CSV</span>
-      </button>
+        </button>
 
-      <button
-        type="button"
-        onClick={handleExportPdf}
-        disabled={!hasTransactions}
-        title={hasTransactions ? 'Imprimir extrato ou salvar como PDF' : 'Sem dados para exportar'}
-        aria-label="Imprimir Extrato ou PDF"
-        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium glass-pill hover:border-white/25 hover:bg-white/10 text-zinc-300 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition-all duration-150 shadow-sm cursor-pointer"
-      >
-        <svg
-          className="w-3.5 h-3.5 text-cyan-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6.72 13.829c-.24-1.076-.673-2.023-1.28-2.829m13.12 2.829c.24-1.076.673-2.023 1.28-2.829M6 8.25V6.75A2.25 2.25 0 018.25 4.5h7.5A2.25 2.25 0 0118 6.75v1.5m-12 0h12M4.5 19.5h15a2.25 2.25 0 002.25-2.25V10.5A2.25 2.25 0 0019.5 8.25H4.5A2.25 2.25 0 002.25 10.5v6.75A2.25 2.25 0 004.5 19.5z"
-          />
-        </svg>
-        <span>Imprimir / PDF</span>
-      </button>
+        {isExportOpen && (
+          <div
+            role="menu"
+            aria-orientation="vertical"
+            className="absolute right-0 mt-1.5 w-48 rounded-2xl bg-zinc-900/95 backdrop-blur-xl border border-white/15 shadow-2xl p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100 space-y-0.5"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsExportOpen(false)
+                handleExportCsv()
+              }}
+              title="Baixar planilha em formato CSV"
+              aria-label="Exportar CSV"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
+              <div>
+                <span className="font-medium block text-white">Planilha CSV</span>
+                <span className="text-[10px] text-zinc-400 block">Para Excel ou Planilhas</span>
+              </div>
+            </button>
 
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsExportOpen(false)
+                handleExportPdf()
+              }}
+              title="Imprimir extrato ou salvar como PDF"
+              aria-label="Imprimir Extrato ou PDF"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-cyan-400 shrink-0" aria-hidden="true" />
+              <div>
+                <span className="font-medium block text-white">Imprimir / PDF</span>
+                <span className="text-[10px] text-zinc-400 block">Visualizar ou salvar</span>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Botão de Destaque: Importar Extrato */}
       {onOpenImport && (
         <button
           type="button"
@@ -103,7 +137,7 @@ export function ExportActions({
           title="Importar extrato bancário (OFX ou CSV)"
           aria-label="Importar Extrato"
           data-testid="open-import-statement-btn"
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all duration-150 shadow-sm cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all duration-150 shadow-xs cursor-pointer"
         >
           <Upload className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Importar Extrato</span>

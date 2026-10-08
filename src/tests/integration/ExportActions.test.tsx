@@ -33,7 +33,7 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
     vi.clearAllMocks()
   })
 
-  it('deve renderizar os botões de CSV e Imprimir / PDF habilitados quando houver transações', () => {
+  it('deve renderizar o menu de exportação e exibir opções de CSV e PDF ao abrir', () => {
     render(
       <ExportActions
         transactions={sampleTransactions}
@@ -42,17 +42,21 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
       />,
     )
 
-    const csvButton = screen.getByRole('button', { name: /Exportar CSV/i })
-    const pdfButton = screen.getByRole('button', { name: /Imprimir Extrato ou PDF/i })
+    const exportTrigger = screen.getByRole('button', { name: 'Exportar' })
+    expect(exportTrigger).toBeInTheDocument()
+    expect(exportTrigger).not.toBeDisabled()
+
+    // Abre o dropdown
+    fireEvent.click(exportTrigger)
+
+    const csvButton = screen.getByRole('menuitem', { name: /Exportar CSV/i })
+    const pdfButton = screen.getByRole('menuitem', { name: /Imprimir Extrato ou PDF/i })
 
     expect(csvButton).toBeInTheDocument()
-    expect(csvButton).not.toBeDisabled()
-
     expect(pdfButton).toBeInTheDocument()
-    expect(pdfButton).not.toBeDisabled()
   })
 
-  it('deve desabilitar os botões se a lista de transações for vazia', () => {
+  it('deve desabilitar o botão de exportar se a lista de transações for vazia', () => {
     render(
       <ExportActions
         transactions={[]}
@@ -61,14 +65,11 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
       />,
     )
 
-    const csvButton = screen.getByRole('button', { name: /Exportar CSV/i })
-    const pdfButton = screen.getByRole('button', { name: /Imprimir Extrato ou PDF/i })
-
-    expect(csvButton).toBeDisabled()
-    expect(pdfButton).toBeDisabled()
+    const exportTrigger = screen.getByRole('button', { name: 'Exportar' })
+    expect(exportTrigger).toBeDisabled()
   })
 
-  it('deve acionar downloadBlob ao clicar no botão de CSV', () => {
+  it('deve acionar downloadBlob ao clicar no botão de CSV dentro do menu', () => {
     render(
       <ExportActions
         transactions={sampleTransactions}
@@ -77,7 +78,10 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
       />,
     )
 
-    const csvButton = screen.getByRole('button', { name: /Exportar CSV/i })
+    // Abre o menu
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar' }))
+
+    const csvButton = screen.getByRole('menuitem', { name: /Exportar CSV/i })
     fireEvent.click(csvButton)
 
     expect(downloadBlob).toHaveBeenCalledTimes(1)
@@ -88,7 +92,7 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
     )
   })
 
-  it('deve acionar openPrintWindow ao clicar no botão de PDF', () => {
+  it('deve acionar openPrintWindow ao clicar no botão de PDF dentro do menu', () => {
     render(
       <ExportActions
         transactions={sampleTransactions}
@@ -97,7 +101,10 @@ describe('<ExportActions /> (Botões de Exportação CSV e PDF)', () => {
       />,
     )
 
-    const pdfButton = screen.getByRole('button', { name: /Imprimir Extrato ou PDF/i })
+    // Abre o menu
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar' }))
+
+    const pdfButton = screen.getByRole('menuitem', { name: /Imprimir Extrato ou PDF/i })
     fireEvent.click(pdfButton)
 
     expect(openPrintWindow).toHaveBeenCalledTimes(1)
