@@ -2,6 +2,7 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
   FolderTree,
   HandCoins,
   LayoutDashboard,
@@ -69,6 +70,12 @@ export function Sidebar({
       label: 'Transações',
       icon: Receipt,
       description: 'Entradas e Saídas',
+    },
+    {
+      id: 'cards',
+      label: 'Cartões & Faturas',
+      icon: CreditCard,
+      description: 'Faturas e Parcelas',
     },
     {
       id: 'debts',

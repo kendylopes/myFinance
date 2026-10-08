@@ -144,10 +144,13 @@ export function TransactionFilters({
         </div>
       </div>
 
-      {/* FAIXA 2: ESTEIRA DE FILTROS RÁPIDOS (TIPO & STATUS & LIMPEZA) */}
-      <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-0.5">
-        {/* SELETOR DE TIPO (TODOS, ENTRADAS, SAÍDAS) */}
-        <div className="flex glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+      {/* FAIXA 2: ESTEIRA DE FILTROS RÁPIDOS (TIPO & STATUS COM CONTEXTO CLARO) */}
+      <div className="flex items-center gap-2.5 overflow-x-auto custom-scrollbar pb-1 pt-0.5">
+        {/* GRUPO DE FLUXO / TIPO */}
+        <div className="flex items-center glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+          <span className="text-[10px] uppercase font-bold text-zinc-500 px-2 py-0.5 tracking-wider hidden sm:inline select-none">
+            Tipo
+          </span>
           <button
             type="button"
             onClick={() => handleTypeSelect('all')}
@@ -183,9 +186,17 @@ export function TransactionFilters({
           </button>
         </div>
 
-        {/* SELETOR DE STATUS (TODAS, PAGAS, PENDENTES) */}
+        {/* DIVISOR VERTICAL SUAVE */}
         {onStatusChange && (
-          <div className="flex glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+          <div className="h-5 w-px bg-white/10 hidden sm:block shrink-0" aria-hidden="true" />
+        )}
+
+        {/* GRUPO DE SITUAÇÃO / STATUS */}
+        {onStatusChange && (
+          <div className="flex items-center glass-pill p-1 rounded-2xl shadow-xs border border-white/10 shrink-0">
+            <span className="text-[10px] uppercase font-bold text-zinc-500 px-2 py-0.5 tracking-wider hidden sm:inline select-none">
+              Status
+            </span>
             <button
               type="button"
               data-testid="status-filter-all"

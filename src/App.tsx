@@ -60,6 +60,11 @@ const DebtsView = lazy(() =>
     default: m.DebtsView,
   })),
 )
+const CardsAndInvoicesView = lazy(() =>
+  import('./presentation/components/cards/CardsAndInvoicesView').then((m) => ({
+    default: m.CardsAndInvoicesView,
+  })),
+)
 const InstallmentsForecastModal = lazy(() =>
   import('./presentation/components/dashboard/InstallmentsForecastModal').then((m) => ({
     default: m.InstallmentsForecastModal,
@@ -216,6 +221,9 @@ export function AppContent() {
     } else if (section === 'transactions') {
       const el = document.getElementById('section-transactions')
       el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else if (section === 'cards') {
+      const el = document.getElementById('section-cards')
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else if (section === 'budget') {
       const el = document.getElementById('section-budget')
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -320,7 +328,6 @@ export function AppContent() {
             user={user}
             onLogout={logout}
             onOpenNewTransaction={handleOpenNewTransaction}
-            onOpenForecastModal={() => setIsForecastModalOpen(true)}
           />
 
           {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
@@ -334,15 +341,17 @@ export function AppContent() {
           )}
 
           {/* SELETOR E FILTRO POR PERÍODO / MÊS (Visível apenas nas seções com escopo mensal) */}
-          {activeSection !== 'debts' && activeSection !== 'reports' && (
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              onPreviousMonth={goToPreviousMonth}
-              onNextMonth={goToNextMonth}
-              onCurrentMonth={goToCurrentMonth}
-              onToggleAllPeriods={handleToggleAllPeriods}
-            />
-          )}
+          {activeSection !== 'debts' &&
+            activeSection !== 'reports' &&
+            activeSection !== 'cards' && (
+              <MonthSelector
+                selectedMonth={selectedMonth}
+                onPreviousMonth={goToPreviousMonth}
+                onNextMonth={goToNextMonth}
+                onCurrentMonth={goToCurrentMonth}
+                onToggleAllPeriods={handleToggleAllPeriods}
+              />
+            )}
 
           {/* 1. TELA: DASHBOARD (Apenas Informações Principais: Resumo Financeiro, Gráfico de Categorias e Transações Recentes) */}
           {activeSection === 'dashboard' &&
@@ -516,7 +525,6 @@ export function AppContent() {
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
                 onOpenImport={() => setIsImportModalOpen(true)}
-                onOpenForecastModal={() => setIsForecastModalOpen(true)}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 selectedCategory={selectedCategory}
@@ -533,6 +541,26 @@ export function AppContent() {
                 exportSummary={summary}
                 selectedMonth={selectedMonth}
               />
+            </div>
+          )}
+
+          {/* TELA: CARTÕES & FATURAS (Previsão de Parcelamentos e Faturas) */}
+          {activeSection === 'cards' && (
+            <div className="space-y-6 min-w-0" id="section-cards">
+              <Suspense
+                fallback={
+                  <div className="py-20 text-center text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Carregando faturas e compras parceladas...</p>
+                  </div>
+                }
+              >
+                <CardsAndInvoicesView
+                  transactions={transactions}
+                  onOpenNewInstallment={handleOpenNewTransaction}
+                  onToggleStatus={toggleTransactionStatus}
+                />
+              </Suspense>
             </div>
           )}
 

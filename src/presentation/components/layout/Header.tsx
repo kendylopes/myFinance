@@ -1,4 +1,4 @@
-import { CreditCard, LogOut, Plus } from 'lucide-react'
+import { LogOut, Plus } from 'lucide-react'
 import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
@@ -13,7 +13,6 @@ interface HeaderProps {
   onOpenMobileMenu?: () => void
   onOpenThemeModal?: () => void
   onOpenNewTransaction?: () => void
-  onOpenForecastModal?: () => void
 }
 
 const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
@@ -28,6 +27,10 @@ const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
   transactions: {
     title: 'Transações',
     subtitle: 'Histórico e registro de entradas e saídas',
+  },
+  cards: {
+    title: 'Cartões & Faturas',
+    subtitle: 'Acompanhamento de compras parceladas, limites e faturas futuras',
   },
   debts: {
     title: 'Dívidas & Empréstimos',
@@ -49,7 +52,6 @@ export const Header = ({
   user = null,
   onLogout,
   onOpenNewTransaction,
-  onOpenForecastModal,
 }: HeaderProps) => {
   const { currentTheme } = useTheme()
 
@@ -79,22 +81,6 @@ export const Header = ({
 
       {/* Ações e Perfil do Usuário */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {onOpenForecastModal && (
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              onOpenForecastModal()
-            }}
-            title="Ver projeção de faturas de cartão de crédito"
-            aria-label="Faturas do Cartão"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-200"
-          >
-            <CreditCard className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
-            <span className="hidden md:inline">Faturas do Cartão</span>
-          </button>
-        )}
-
         {onOpenNewTransaction && (
           <button
             type="button"

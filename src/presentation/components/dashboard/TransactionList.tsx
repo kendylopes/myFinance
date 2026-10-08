@@ -43,7 +43,6 @@ export interface TransactionListProps {
   exportSummary?: FinanceSummary
   selectedMonth?: string
   onOpenImport?: () => void
-  onOpenForecastModal?: () => void
 }
 
 export const TransactionList = ({
@@ -57,7 +56,6 @@ export const TransactionList = ({
   onOpenNewTransaction,
   onOpenOnboarding,
   onOpenImport,
-  onOpenForecastModal,
   searchQuery,
   onSearchChange,
   selectedCategory,
@@ -228,14 +226,13 @@ export const TransactionList = ({
           </span>
         </div>
 
-        {/* AÇÕES DE EXPORTAÇÃO (CSV E PDF) */}
+        {/* AÇÕES DE EXPORTAÇÃO (CSV E PDF) E IMPORTAÇÃO */}
         {exportSummary && selectedMonth && (
           <ExportActions
             transactions={transactions}
             summary={exportSummary}
             selectedMonth={selectedMonth}
             onOpenImport={onOpenImport}
-            onOpenForecastModal={onOpenForecastModal}
           />
         )}
       </div>
