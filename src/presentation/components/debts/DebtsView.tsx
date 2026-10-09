@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   Sliders,
   Wallet,
+  X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
@@ -194,7 +195,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
       </div>
 
       {/* 2. Navegação por Abas (Contratos vs Simulador) */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900/80 border border-white/10 w-fit">
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
         <button
           type="button"
           onClick={() => {
@@ -332,20 +333,20 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
             </div>
           </div>
 
-          {/* Barra de Filtros e Busca */}
-          <div className="glass-card p-3 sm:p-4 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            {/* Abas de Filtro em Esteira Horizontal com Scroll Suave no Mobile */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {/* Barra de Filtros e Busca de Contratos */}
+          <div className="glass-card p-2.5 sm:p-3 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2.5 shadow-sm">
+            {/* Abas de Filtro em Trilho Fluido */}
+            <div className="flex items-center p-1 rounded-xl bg-white/3 border border-white/8 shadow-inner overflow-x-auto custom-scrollbar gap-1">
               <button
                 type="button"
                 onClick={() => {
                   soundFX.playClick()
                   setFilterStatus('all')
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'all'
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white/15 text-white shadow-xs'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 Todas ({debts.length})
@@ -357,10 +358,10 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('active')
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'active'
-                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs'
+                    : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
                 }`}
               >
                 Ativas ({activeDebts.length})
@@ -372,10 +373,10 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('urgent')
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'urgent'
-                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 font-bold'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40 shadow-xs'
+                    : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
                 }`}
               >
                 Atrasadas ({overdueDebts.length})
@@ -387,26 +388,36 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('paid')
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'paid'
-                    ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
+                    : 'text-zinc-400 hover:text-cyan-400 hover:bg-white/5'
                 }`}
               >
                 Quitadas ({paidDebts.length})
               </button>
             </div>
 
-            {/* Input de Busca */}
-            <div className="relative min-w-50">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+            {/* Input de Busca com Botão Limpar */}
+            <div className="relative w-full md:w-64">
+              <Search className="w-4 h-4 text-emerald-400/80 absolute left-3 top-2.5 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Buscar por credor..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500"
+                className="w-full h-9 pl-9 pr-8 rounded-xl bg-white/4 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500/60 focus:bg-white/6 transition-all"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Limpar busca"
+                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -466,7 +477,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           )}
 
           {/* Dica Estratégica na Base */}
-          <div className="p-4 rounded-2xl bg-white/2 border border-white/5 flex items-start gap-3 text-xs text-zinc-400">
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/8 flex items-start gap-3 text-xs text-zinc-400">
             <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <p>
               <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}

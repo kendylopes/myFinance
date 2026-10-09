@@ -132,12 +132,34 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
             className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
           />
 
-          <div className="flex items-center justify-between text-[11px] text-zinc-500">
-            <span>R$ 100/mês</span>
-            <span>R$ {Math.round(totalBalance * 0.25).toLocaleString('pt-BR')}/mês</span>
-            <span>
-              R$ {Math.max(3000, Math.round(totalBalance * 0.5)).toLocaleString('pt-BR')}/mês
-            </span>
+          {/* Atalhos Rápidos de Aporte Extra */}
+          <div className="flex items-center gap-1.5 flex-wrap pt-1">
+            <span className="text-[10px] uppercase font-semibold text-zinc-500 mr-1">Atalhos:</span>
+            {[100, 250, 500, 1000].map((amount) => (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setMonthlyExtra((prev) => prev + amount)
+                }}
+                className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+              >
+                +R$ {amount}
+              </button>
+            ))}
+            {monthlyExtra !== defaultExtra && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setMonthlyExtra(defaultExtra)
+                }}
+                className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-colors cursor-pointer ml-auto"
+              >
+                Sugerido (R$ {defaultExtra})
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -296,7 +318,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
                 className={`p-3.5 sm:p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
                   isPriorityOne
                     ? 'bg-emerald-500/10 border-emerald-500/30 ring-1 ring-emerald-500/20'
-                    : 'bg-white/2 border-white/5'
+                    : 'bg-white/3 border-white/8'
                 }`}
               >
                 <div className="flex items-center gap-3">
