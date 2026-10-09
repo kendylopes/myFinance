@@ -110,7 +110,7 @@ export function CardsAndInvoicesView({
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Cartões & Faturas Futuras
+              Cartões & Faturas
             </h2>
             <p className="text-xs text-zinc-400">
               {activePurchasesCount} compra(s) parcelada(s) em andamento • Projeção de 12 meses
@@ -203,7 +203,7 @@ export function CardsAndInvoicesView({
       </div>
 
       {/* 3. Seletor de Abas */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900/80 border border-white/10 w-fit">
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
         <button
           type="button"
           onClick={() => {

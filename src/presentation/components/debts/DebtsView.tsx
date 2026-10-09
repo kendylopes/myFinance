@@ -145,11 +145,10 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Contratos & Compromissos
+              Dívidas & Empréstimos
             </h2>
             <p className="text-xs text-zinc-400">
-              {debts.filter((d) => d.status === 'active').length} contrato(s) ativo(s) sob
-              acompanhamento
+              {activeDebts.length} dívida(s) ativa(s) sob acompanhamento
             </p>
           </div>
         </div>
@@ -189,7 +188,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
             }}
           >
             <Plus className="w-4 h-4" />
-            <span>Novo Empréstimo</span>
+            <span>Nova Dívida</span>
           </button>
         </div>
       </div>
@@ -209,7 +208,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           }`}
         >
           <HandCoins className="w-4 h-4" />
-          <span>Meus Contratos ({debts.length})</span>
+          <span>Minhas Dívidas ({debts.length})</span>
         </button>
 
         <button
@@ -439,7 +438,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               >
                 <HandCoins className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-bold text-white">Nenhum empréstimo encontrado</h3>
+              <h3 className="text-lg font-bold text-white">Nenhuma dívida encontrada</h3>
               <p className="text-xs text-zinc-400 max-w-md mx-auto">
                 {searchQuery.trim() || filterStatus !== 'all'
                   ? 'Nenhum resultado corresponde aos filtros aplicados.'
@@ -455,7 +454,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   }}
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Cadastrar Primeiro Empréstimo</span>
+                  <span>Cadastrar Primeira Dívida</span>
                 </button>
               </div>
             </div>

@@ -42,7 +42,7 @@ describe('<CardsAndInvoicesView /> (Tela de Cartões & Faturas Futuras)', () => 
   it('deve renderizar o título principal e os cards de resumo de parcelamentos', () => {
     renderComponent()
 
-    expect(screen.getByText('Cartões & Faturas Futuras')).toBeInTheDocument()
+    expect(screen.getByText('Cartões & Faturas')).toBeInTheDocument()
     expect(screen.getByText(/Total Futuro a Pagar/i)).toBeInTheDocument()
     expect(screen.getByText(/Compras Ativas/i)).toBeInTheDocument()
     expect(screen.getByText(/Maior Fatura Prevista/i)).toBeInTheDocument()
