@@ -38,4 +38,28 @@ describe('<Header /> (Componente de Cabeçalho)', () => {
     fireEvent.click(newTxBtn)
     expect(onOpenNewTransaction).toHaveBeenCalledTimes(1)
   })
+
+  it('deve renderizar o título e subtítulo corretos quando activeSection for cards', () => {
+    render(
+      <ThemeProvider>
+        <Header activeSection="cards" />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText('Cartões & Faturas')).toBeInTheDocument()
+    expect(
+      screen.getByText('Acompanhamento de compras parceladas, limites e faturas futuras'),
+    ).toBeInTheDocument()
+  })
+
+  it('deve renderizar o título e subtítulo corretos quando activeSection for debts', () => {
+    render(
+      <ThemeProvider>
+        <Header activeSection="debts" />
+      </ThemeProvider>,
+    )
+    expect(screen.getByText('Dívidas & Empréstimos')).toBeInTheDocument()
+    expect(
+      screen.getByText('Gestão estratégica de agiotas, empréstimos pessoais e rolagem de juros'),
+    ).toBeInTheDocument()
+  })
 })

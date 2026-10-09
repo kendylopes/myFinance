@@ -76,7 +76,6 @@ describe('<DebtsView /> (Central de Dívidas & Simulador de Quitação)', () => 
   it('deve renderizar a tela de contratos com os cards de resumo e credores', () => {
     renderComponent()
 
-    expect(screen.getByText('Dívidas & Empréstimos')).toBeInTheDocument()
     expect(screen.getByText('Minhas Dívidas (2)')).toBeInTheDocument()
     expect(screen.getByText('Simulador de Quitação')).toBeInTheDocument()
     expect(screen.getByText('Agiota Zé')).toBeInTheDocument()

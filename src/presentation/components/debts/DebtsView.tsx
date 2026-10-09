@@ -130,30 +130,43 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* 1. Header de Ações da Seção */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div
-            className="p-2.5 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg"
-            style={{
-              backgroundColor: `${currentTheme.primaryColor}15`,
-              borderColor: `${currentTheme.primaryColor}30`,
-              color: currentTheme.primaryColor,
+      {/* 1. Navegação por Abas & Ações Rápidas */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('contracts')
             }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'contracts'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
           >
-            <HandCoins className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Dívidas & Empréstimos
-            </h2>
-            <p className="text-xs text-zinc-400">
-              {activeDebts.length} dívida(s) ativa(s) sob acompanhamento
-            </p>
-          </div>
+            <HandCoins className="w-4 h-4" />
+            <span>Minhas Dívidas ({debts.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('simulator')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'simulator'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Simulador de Quitação</span>
+          </button>
         </div>
 
-        {/* Botões do Topo: Modo Discreto e Novo Empréstimo */}
+        {/* Botões de Ação: Modo Discreto e Nova Dívida */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
@@ -191,41 +204,6 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
             <span>Nova Dívida</span>
           </button>
         </div>
-      </div>
-
-      {/* 2. Navegação por Abas (Contratos vs Simulador) */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
-        <button
-          type="button"
-          onClick={() => {
-            soundFX.playClick()
-            setActiveTab('contracts')
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'contracts'
-              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <HandCoins className="w-4 h-4" />
-          <span>Minhas Dívidas ({debts.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            soundFX.playClick()
-            setActiveTab('simulator')
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'simulator'
-              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <Sliders className="w-4 h-4" />
-          <span>Simulador de Quitação</span>
-        </button>
       </div>
 
       {activeTab === 'simulator' ? (

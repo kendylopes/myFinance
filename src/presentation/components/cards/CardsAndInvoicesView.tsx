@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  CreditCard,
   Flame,
   Plus,
   Search,
@@ -95,49 +94,7 @@ export function CardsAndInvoicesView({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* 1. Header da Seção de Cartões */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div
-            className="p-2.5 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg"
-            style={{
-              backgroundColor: `${currentTheme.primaryColor}15`,
-              borderColor: `${currentTheme.primaryColor}30`,
-              color: currentTheme.primaryColor,
-            }}
-          >
-            <CreditCard className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Cartões & Faturas
-            </h2>
-            <p className="text-xs text-zinc-400">
-              {activePurchasesCount} compra(s) parcelada(s) em andamento • Projeção de 12 meses
-            </p>
-          </div>
-        </div>
-
-        {onOpenNewInstallment && (
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              onOpenNewInstallment()
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-black shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
-            style={{
-              backgroundColor: currentTheme.primaryColor,
-              boxShadow: `0 4px 15px ${currentTheme.primaryColor}40`,
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            <span>Nova Compra Parcelada</span>
-          </button>
-        )}
-      </div>
-
-      {/* 2. Resumo Analítico dos Parcelamentos */}
+      {/* 1. Resumo Analítico dos Parcelamentos */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
           <div className="flex items-center justify-between text-zinc-400">
@@ -202,39 +159,59 @@ export function CardsAndInvoicesView({
         </div>
       </div>
 
-      {/* 3. Seletor de Abas */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
-        <button
-          type="button"
-          onClick={() => {
-            soundFX.playClick()
-            setActiveTab('timeline')
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'timeline'
-              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <CalendarRange className="w-4 h-4" />
-          <span>Evolução das Faturas (12 Meses)</span>
-        </button>
+      {/* 2. Seletor de Abas & Ações */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('timeline')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'timeline'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <CalendarRange className="w-4 h-4" />
+            <span>Evolução das Faturas (12 Meses)</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            soundFX.playClick()
-            setActiveTab('purchases')
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'purchases'
-              ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Compras Parceladas ({installmentGroups.length})</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('purchases')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'purchases'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4" />
+            <span>Compras Parceladas ({installmentGroups.length})</span>
+          </button>
+        </div>
+
+        {onOpenNewInstallment && (
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              onOpenNewInstallment()
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-black shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer self-start sm:self-auto"
+            style={{
+              backgroundColor: currentTheme.primaryColor,
+              boxShadow: `0 4px 15px ${currentTheme.primaryColor}40`,
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nova Compra Parcelada</span>
+          </button>
+        )}
       </div>
 
       {/* 4. Conteúdo da Aba Ativa */}
