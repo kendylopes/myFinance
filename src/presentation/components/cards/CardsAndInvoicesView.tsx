@@ -259,7 +259,7 @@ export function CardsAndInvoicesView({
 
             {/* Gráfico de Barras com rolagem suave no mobile */}
             <div className="overflow-x-auto custom-scrollbar pb-3 pt-2">
-              <div className="flex items-end justify-between gap-2.5 sm:gap-3 min-w-[680px] h-52 px-2 border-b border-white/10 pb-2">
+              <div className="flex items-end justify-between gap-2.5 sm:gap-3 min-w-170 h-52 px-2 border-b border-white/10 pb-2">
                 {monthlyForecasts.map((item) => {
                   const heightPercent =
                     maxForecastAmount > 0
@@ -289,7 +289,7 @@ export function CardsAndInvoicesView({
                       </div>
 
                       {/* Barra */}
-                      <div className="w-full max-w-[42px] flex flex-col items-center justify-end h-full">
+                      <div className="w-full max-w-10.5 flex flex-col items-center justify-end h-full">
                         <div
                           className={`w-full rounded-2xl transition-all duration-300 relative ${
                             isHighest

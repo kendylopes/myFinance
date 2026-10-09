@@ -75,7 +75,7 @@ export function TransactionFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por descrição ou categoria..."
-            className="w-full h-10 rounded-xl bg-white/[0.04] border border-white/10 pl-9 pr-9 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:bg-white/[0.06] transition-all"
+            className="w-full h-10 rounded-xl bg-white/4 border border-white/10 pl-9 pr-9 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:bg-white/6 transition-all"
           />
           {searchQuery && (
             <button
@@ -93,7 +93,7 @@ export function TransactionFilters({
         <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
           {/* SELETOR DE CATEGORIA */}
           {onCategoryChange && categories.length > 0 && (
-            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
+            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/4 border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
               <Tag className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Filtrar por categoria"
@@ -118,7 +118,7 @@ export function TransactionFilters({
 
           {/* SELETOR DE ORDENAÇÃO */}
           {onSortChange && (
-            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
+            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/4 border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
               <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Ordenar transações"
@@ -147,7 +147,7 @@ export function TransactionFilters({
       {/* LINHA 2: SEGMENTED CONTROL FLUIDO (TIPO + STATUS EM UMA ÚNICA BARRA HARMONIOSA) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
         {/* TRILHO DE ABAS UNIFICADO */}
-        <div className="flex items-center p-1 rounded-xl bg-white/[0.03] border border-white/[0.08] shadow-inner overflow-x-auto custom-scrollbar gap-1 max-w-full">
+        <div className="flex items-center p-1 rounded-xl bg-white/3 border border-white/8 shadow-inner overflow-x-auto custom-scrollbar gap-1 max-w-full">
           {/* GRUPO DE FLUXO / TIPO */}
           <div className="flex items-center gap-0.5">
             <button
