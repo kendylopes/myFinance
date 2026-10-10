@@ -1,4 +1,4 @@
-import { ArrowUpDown, CheckCircle2, Clock, Search, Tag, X } from 'lucide-react'
+import { ArrowUpDown, CheckCircle2, Search, Tag, X } from 'lucide-react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import type {
   TransactionFilterType,
@@ -90,7 +90,34 @@ export function TransactionFilters({
         </div>
 
         {/* SELECTS DE REFINAMENTO */}
-        <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0 flex-wrap">
+          {/* SELETOR DE STATUS / SITUAÇÃO */}
+          {onStatusChange && (
+            <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/4 border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+              <select
+                aria-label="Filtrar por status"
+                data-testid="status-filter-select"
+                value={selectedStatus}
+                onChange={(e) => {
+                  soundFX.playClick()
+                  onStatusChange(e.target.value as TransactionStatusFilter)
+                }}
+                className="w-full sm:w-auto bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1"
+              >
+                <option value="all" className="bg-zinc-900 text-white">
+                  Todas as situações
+                </option>
+                <option value="paid" className="bg-zinc-900 text-white">
+                  Pagas / Recebidas
+                </option>
+                <option value="pending" className="bg-zinc-900 text-white">
+                  Pendentes
+                </option>
+              </select>
+            </div>
+          )}
+
           {/* SELETOR DE CATEGORIA */}
           {onCategoryChange && categories.length > 0 && (
             <div className="flex-1 sm:flex-initial h-10 flex items-center gap-1.5 px-3 rounded-xl bg-white/4 border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs">
@@ -144,104 +171,43 @@ export function TransactionFilters({
         </div>
       </div>
 
-      {/* LINHA 2: SEGMENTED CONTROL FLUIDO (TIPO + STATUS EM UMA ÚNICA BARRA HARMONIOSA) */}
+      {/* LINHA 2: SEGMENTED CONTROL EXCLUSIVO DE TIPO DE FLUXO */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
-        {/* TRILHO DE ABAS UNIFICADO */}
-        <div className="flex items-center p-1 rounded-xl bg-white/3 border border-white/8 shadow-inner overflow-x-auto custom-scrollbar gap-1 max-w-full">
-          {/* GRUPO DE FLUXO / TIPO */}
-          <div className="flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                selectedType === 'all'
-                  ? 'bg-white/15 text-white shadow-xs font-semibold'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('income')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                selectedType === 'income'
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
-                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
-              }`}
-            >
-              Entradas
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('expense')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                selectedType === 'expense'
-                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-xs font-semibold'
-                  : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
-              }`}
-            >
-              Saídas
-            </button>
-          </div>
-
-          {/* DIVISOR VERTICAL SUAVE */}
-          {onStatusChange && (
-            <div className="h-4 w-px bg-white/10 mx-1 shrink-0" aria-hidden="true" />
-          )}
-
-          {/* GRUPO DE SITUAÇÃO / STATUS */}
-          {onStatusChange && (
-            <div className="flex items-center gap-0.5">
-              <button
-                type="button"
-                data-testid="status-filter-all"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('all')
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                  selectedStatus === 'all'
-                    ? 'bg-white/15 text-white shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Todas
-              </button>
-              <button
-                type="button"
-                data-testid="status-filter-paid"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('paid')
-                }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                  selectedStatus === 'paid'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
-                }`}
-              >
-                <CheckCircle2 className="w-3 h-3" />
-                <span>Pagas / Recebidas</span>
-              </button>
-              <button
-                type="button"
-                data-testid="status-filter-pending"
-                onClick={() => {
-                  soundFX.playClick()
-                  onStatusChange('pending')
-                }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
-                  selectedStatus === 'pending'
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-xs font-semibold'
-                    : 'text-zinc-400 hover:text-amber-400 hover:bg-white/5'
-                }`}
-              >
-                <Clock className="w-3 h-3" />
-                <span>Pendentes</span>
-              </button>
-            </div>
-          )}
+        {/* TRILHO DE ABAS UNIFICADO DE FLUXO */}
+        <div className="flex items-center p-1 rounded-xl bg-white/4 border border-white/10 shadow-inner overflow-x-auto custom-scrollbar gap-1 w-fit">
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('all')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              selectedType === 'all'
+                ? 'bg-white/15 text-white shadow-xs font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 font-medium'
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('income')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+              selectedType === 'income'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs font-bold'
+                : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+            }`}
+          >
+            Entradas
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeSelect('expense')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+              selectedType === 'expense'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-xs font-bold'
+                : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
+            }`}
+          >
+            Saídas
+          </button>
         </div>
 
         {/* FEEDBACK DE FILTROS ATIVOS E BOTÃO LIMPAR */}
