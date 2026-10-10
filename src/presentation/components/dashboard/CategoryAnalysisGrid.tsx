@@ -82,15 +82,15 @@ export function CategoryAnalysisGrid({
           </span>
         </div>
 
-        {/* ABAS SEGMENTADAS */}
-        <div className="flex glass-pill p-1 rounded-2xl self-start sm:self-auto shadow-sm border border-white/10 text-xs">
+        {/* ABAS SEGMENTADAS CANÔNICAS */}
+        <div className="flex p-1 rounded-2xl bg-white/4 border border-white/10 self-start sm:self-auto shadow-inner text-xs">
           <button
             type="button"
             onClick={() => handleTabChange('expense')}
-            className={`px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'expense'
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-sm font-semibold'
-                : 'text-zinc-400 hover:text-rose-400'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 font-medium'
             }`}
           >
             <TrendingDown className="w-3.5 h-3.5" />
@@ -99,10 +99,10 @@ export function CategoryAnalysisGrid({
           <button
             type="button"
             onClick={() => handleTabChange('income')}
-            className={`px-3.5 py-1.5 rounded-xl font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'income'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm font-semibold'
-                : 'text-zinc-400 hover:text-emerald-400'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm font-bold'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 font-medium'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />

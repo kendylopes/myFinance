@@ -10,7 +10,9 @@ import type { Transaction } from './domain/models/transaction'
 import { AuthPage } from './presentation/components/auth/AuthPage'
 import { ToastContainer } from './presentation/components/common/ToastContainer'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
+import { BudgetSummaryCards } from './presentation/components/dashboard/BudgetSummaryCards'
 import { CategoryAnalysisGrid } from './presentation/components/dashboard/CategoryAnalysisGrid'
+import { CategorySummaryCards } from './presentation/components/dashboard/CategorySummaryCards'
 import { DashboardSkeleton } from './presentation/components/dashboard/DashboardSkeleton'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { FinancialFlowChart } from './presentation/components/dashboard/FinancialFlowChart'
@@ -582,51 +584,40 @@ export function AppContent() {
 
           {/* 4. TELA: PLANEJAMENTO (Metas, Teto Mensal e Comparativos) */}
           {activeSection === 'budget' && (
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-              <div className="xl:col-span-7 space-y-6 min-w-0">
-                <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
-              </div>
+            <div className="space-y-6 min-w-0" id="section-budget">
+              {/* 1. CARDS ANALÍTICOS DE KPI DE PLANEJAMENTO */}
+              <BudgetSummaryCards progress={budgetProgress} selectedMonth={selectedMonth} />
 
-              <div className="xl:col-span-5 space-y-6 min-w-0">
-                <SummaryCards
-                  summary={summary}
-                  onSelectType={(type) => {
-                    setSelectedType(type)
-                    handleSelectSection('transactions')
-                  }}
-                />
+              {/* 2. PROGRESSO E SIMULADOR DO TETO MENSAL EM LARGURA TOTAL */}
+              <div className="space-y-6">
+                <BudgetProgressBar progress={budgetProgress} onUpdateBudget={updateBudget} />
               </div>
             </div>
           )}
 
-          {/* 4. TELA: CATEGORIAS (Distribuição de Gastos e Origens) */}
+          {/* 5. TELA: CATEGORIAS (Distribuição de Gastos e Origens) */}
           {activeSection === 'categories' && (
-            <div className="space-y-6 min-w-0">
+            <div className="space-y-6 min-w-0" id="section-categories">
+              {/* 1. CARDS ANALÍTICOS DE KPI DE CATEGORIAS */}
+              <CategorySummaryCards transactions={periodTransactions} />
+
+              {/* 2. GRID EQUILIBRADO: GRÁFICO DE DISTRIBUIÇÃO + TABELA ANALÍTICA */}
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                <div className="xl:col-span-8 space-y-6 min-w-0">
+                <div className="xl:col-span-5 space-y-6 min-w-0">
                   <ExpenseCategoryChart transactions={periodTransactions} />
                 </div>
 
-                <div className="xl:col-span-4 space-y-6 min-w-0">
-                  <SummaryCards
-                    summary={summary}
-                    onSelectType={(type) => {
-                      setSelectedType(type)
-                      handleSelectSection('transactions')
-                    }}
-                  />
+                <div className="xl:col-span-7 space-y-6 min-w-0">
+                  <div className="glass-card p-5 sm:p-6 rounded-3xl shadow-xl">
+                    <CategoryAnalysisGrid
+                      transactions={periodTransactions}
+                      onSelectCategory={(cat) => {
+                        setSelectedCategory(cat)
+                        handleSelectSection('transactions')
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* GRID ANALÍTICO COMPLETO POR CATEGORIAS */}
-              <div className="glass-card p-5 sm:p-6 rounded-3xl shadow-xl">
-                <CategoryAnalysisGrid
-                  transactions={periodTransactions}
-                  onSelectCategory={(cat) => {
-                    setSelectedCategory(cat)
-                    handleSelectSection('transactions')
-                  }}
-                />
               </div>
             </div>
           )}
