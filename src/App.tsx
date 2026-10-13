@@ -11,8 +11,6 @@ import { AuthPage } from './presentation/components/auth/AuthPage'
 import { ToastContainer } from './presentation/components/common/ToastContainer'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { BudgetSummaryCards } from './presentation/components/dashboard/BudgetSummaryCards'
-import { CategoryAnalysisGrid } from './presentation/components/dashboard/CategoryAnalysisGrid'
-import { CategorySummaryCards } from './presentation/components/dashboard/CategorySummaryCards'
 import { DashboardSkeleton } from './presentation/components/dashboard/DashboardSkeleton'
 import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
 import { FinancialFlowChart } from './presentation/components/dashboard/FinancialFlowChart'
@@ -72,6 +70,11 @@ const InstallmentsForecastModal = lazy(() =>
     default: m.InstallmentsForecastModal,
   })),
 )
+const CategoriesView = lazy(() =>
+  import('./presentation/components/categories/CategoriesView').then((m) => ({
+    default: m.CategoriesView,
+  })),
+)
 
 export function AppContent() {
   const toast = useToast()
@@ -107,6 +110,7 @@ export function AppContent() {
     availableCategories,
     categories,
     addCategory,
+    deleteCategory,
     summary,
     selectedMonth,
     setSelectedMonth,
@@ -595,30 +599,29 @@ export function AppContent() {
             </div>
           )}
 
-          {/* 5. TELA: CATEGORIAS (Distribuição de Gastos e Origens) */}
+          {/* 5. TELA: CATEGORIAS (Distribuição de Gastos, Origens e Gerenciador Completo) */}
           {activeSection === 'categories' && (
             <div className="space-y-6 min-w-0" id="section-categories">
-              {/* 1. CARDS ANALÍTICOS DE KPI DE CATEGORIAS */}
-              <CategorySummaryCards transactions={periodTransactions} />
-
-              {/* 2. GRID EQUILIBRADO: GRÁFICO DE DISTRIBUIÇÃO + TABELA ANALÍTICA */}
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                <div className="xl:col-span-5 space-y-6 min-w-0">
-                  <ExpenseCategoryChart transactions={periodTransactions} />
-                </div>
-
-                <div className="xl:col-span-7 space-y-6 min-w-0">
-                  <div className="glass-card p-5 sm:p-6 rounded-3xl shadow-xl">
-                    <CategoryAnalysisGrid
-                      transactions={periodTransactions}
-                      onSelectCategory={(cat) => {
-                        setSelectedCategory(cat)
-                        handleSelectSection('transactions')
-                      }}
-                    />
+              <Suspense
+                fallback={
+                  <div className="py-20 text-center text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Carregando categorias e distribuição...</p>
                   </div>
-                </div>
-              </div>
+                }
+              >
+                <CategoriesView
+                  transactions={transactions}
+                  periodTransactions={periodTransactions}
+                  categories={categories}
+                  onAddCategory={addCategory}
+                  onDeleteCategory={deleteCategory}
+                  onSelectCategory={(cat) => {
+                    setSelectedCategory(cat)
+                    handleSelectSection('transactions')
+                  }}
+                />
+              </Suspense>
             </div>
           )}
         </main>

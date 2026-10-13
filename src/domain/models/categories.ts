@@ -4,24 +4,35 @@
  */
 
 import {
+  Baby,
+  BookOpen,
   Briefcase,
   Car,
   Coffee,
+  CreditCard,
+  Dog,
+  Dumbbell,
   Film,
   Gift,
   GraduationCap,
+  Heart,
   HeartPulse,
   Home,
   Laptop,
   type LucideIcon,
+  Music,
+  PiggyBank,
   Plane,
   Receipt,
   Shield,
   ShoppingBag,
+  Smartphone,
   Sparkles,
   Tag,
   TrendingUp,
+  Tv,
   Utensils,
+  Wrench,
   Zap,
 } from 'lucide-react'
 
@@ -68,6 +79,17 @@ export const AVAILABLE_CATEGORY_ICONS: Record<string, LucideIcon> = {
   Shield,
   Zap,
   Sparkles,
+  CreditCard,
+  PiggyBank,
+  Smartphone,
+  BookOpen,
+  Dumbbell,
+  Music,
+  Heart,
+  Tv,
+  Baby,
+  Dog,
+  Wrench,
 }
 
 export const DEFAULT_EXPENSE_CATEGORIES: PredefinedCategory[] = [
