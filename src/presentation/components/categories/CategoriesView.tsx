@@ -309,7 +309,7 @@ export function CategoriesView({
                       <div className="flex items-center gap-1.5">
                         {/* Badge de Tipo */}
                         <span
-                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
+                          className={`px-2 py-0.5 rounded-lg text-2xs font-bold border ${
                             isExpense
                               ? 'bg-rose-500/10 text-rose-300 border-rose-500/20'
                               : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
@@ -320,12 +320,12 @@ export function CategoriesView({
 
                         {/* Badge de Origem */}
                         {cat.isCustom ? (
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-lg text-2xs font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center gap-1">
                             <Sparkles className="w-2.5 h-2.5" />
                             <span>Minha</span>
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-white/5 text-zinc-400 border border-white/10">
+                          <span className="px-2 py-0.5 rounded-lg text-2xs font-medium bg-white/5 text-zinc-400 border border-white/10">
                             Padrão
                           </span>
                         )}

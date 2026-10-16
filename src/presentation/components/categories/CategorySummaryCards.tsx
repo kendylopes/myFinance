@@ -66,7 +66,7 @@ export function CategorySummaryCards({ transactions }: CategorySummaryCardsProps
         <div className="text-lg sm:text-2xl font-black text-rose-300 font-mono tracking-tight">
           {formatValue(summary.totalExpense)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           Saídas categorizadas do mês
         </p>
       </div>
@@ -84,7 +84,7 @@ export function CategorySummaryCards({ transactions }: CategorySummaryCardsProps
         <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
           {formatValue(summary.totalIncome)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           Entradas categorizadas do mês
         </p>
       </div>
@@ -102,7 +102,7 @@ export function CategorySummaryCards({ transactions }: CategorySummaryCardsProps
         <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight truncate">
           {summary.topCategory}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           {summary.topCategoryAmount > 0
             ? `${formatValue(summary.topCategoryAmount)} (${summary.topCategoryPercent.toFixed(1)}% do total)`
             : 'Sem lançamentos no período'}
@@ -122,9 +122,7 @@ export function CategorySummaryCards({ transactions }: CategorySummaryCardsProps
         <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
           {summary.activeCategoriesCount}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
-          Com movimentação neste mês
-        </p>
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">Com movimentação neste mês</p>
       </div>
     </div>
   )

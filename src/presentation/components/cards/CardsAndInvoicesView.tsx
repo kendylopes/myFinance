@@ -108,7 +108,7 @@ export function CardsAndInvoicesView({
           <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
             {formatValue(totalPendingAmount)}
           </div>
-          <p className="text-[10px] sm:text-[11px] text-zinc-400">Soma de parcelas em aberto</p>
+          <p className="text-2xs sm:text-[11px] text-zinc-400">Soma de parcelas em aberto</p>
         </div>
 
         <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
@@ -123,9 +123,7 @@ export function CardsAndInvoicesView({
           <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
             {activePurchasesCount}
           </div>
-          <p className="text-[10px] sm:text-[11px] text-zinc-400">
-            Contratos com parcelas pendentes
-          </p>
+          <p className="text-2xs sm:text-[11px] text-zinc-400">Contratos com parcelas pendentes</p>
         </div>
 
         <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
@@ -140,7 +138,7 @@ export function CardsAndInvoicesView({
           <div className="text-lg sm:text-2xl font-black text-rose-400 font-mono tracking-tight">
             {formatValue(maxForecastAmount)}
           </div>
-          <p className="text-[10px] sm:text-[11px] text-zinc-400">Mês de maior peso no orçamento</p>
+          <p className="text-2xs sm:text-[11px] text-zinc-400">Mês de maior peso no orçamento</p>
         </div>
 
         <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
@@ -155,7 +153,7 @@ export function CardsAndInvoicesView({
           <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
             {completedPurchasesCount}
           </div>
-          <p className="text-[10px] sm:text-[11px] text-zinc-400">100% liquidadas e finalizadas</p>
+          <p className="text-2xs sm:text-[11px] text-zinc-400">100% liquidadas e finalizadas</p>
         </div>
       </div>
 
@@ -259,7 +257,7 @@ export function CardsAndInvoicesView({
                           isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                         }`}
                       >
-                        <span className="text-[10px] text-zinc-400 block">{item.monthLabel}</span>
+                        <span className="text-2xs text-zinc-400 block">{item.monthLabel}</span>
                         <span className="text-xs font-bold font-mono text-emerald-400">
                           {formatValue(item.totalAmount)}
                         </span>
@@ -278,7 +276,7 @@ export function CardsAndInvoicesView({
                           style={{ height: `${heightPercent}%` }}
                         >
                           {isHighest && (
-                            <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1 rounded bg-rose-500 text-white">
+                            <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-3xs font-bold px-1 rounded bg-rose-500 text-white">
                               Pico
                             </span>
                           )}
@@ -289,7 +287,7 @@ export function CardsAndInvoicesView({
                       <span className="text-[11px] font-medium text-zinc-400 group-hover:text-white mt-2 truncate max-w-14 text-center">
                         {item.monthLabel.split(' ')[0]}
                       </span>
-                      <span className="text-[10px] font-mono text-zinc-500 group-hover:text-emerald-400">
+                      <span className="text-2xs font-mono text-zinc-500 group-hover:text-emerald-400">
                         {formatValue(item.totalAmount).split(',')[0]}
                       </span>
                     </div>
@@ -395,11 +393,11 @@ export function CardsAndInvoicesView({
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-white">{group.title}</span>
                             {group.isCompleted ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                                 Concluída
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
                                 {group.paidCount}/{group.totalInstallments} pagas
                               </span>
                             )}
@@ -417,7 +415,7 @@ export function CardsAndInvoicesView({
                       <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
                         {/* Barra de Progresso */}
                         <div className="w-28 hidden md:block">
-                          <div className="flex items-center justify-between text-[10px] text-zinc-400 mb-1">
+                          <div className="flex items-center justify-between text-2xs text-zinc-400 mb-1">
                             <span>Progresso</span>
                             <span className="font-bold text-emerald-400">{percentDone}%</span>
                           </div>
@@ -430,7 +428,7 @@ export function CardsAndInvoicesView({
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs text-zinc-400 block text-[10px] uppercase">
+                          <span className="text-2xs text-zinc-400 block uppercase">
                             Total da Compra
                           </span>
                           <span className="text-sm font-bold font-mono text-white">
@@ -471,7 +469,7 @@ export function CardsAndInvoicesView({
                                   <span className="font-semibold text-white block truncate max-w-36">
                                     {tx.title}
                                   </span>
-                                  <span className="text-[10px] font-mono text-zinc-400">
+                                  <span className="text-2xs font-mono text-zinc-400">
                                     {tx.date.split('-').reverse().join('/')}
                                   </span>
                                 </div>
@@ -488,7 +486,7 @@ export function CardsAndInvoicesView({
                                         onToggleStatus(tx.id)
                                       }}
                                       title={isPaid ? 'Marcar como Pendente' : 'Marcar como Paga'}
-                                      className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
+                                      className={`px-2 py-0.5 rounded text-2xs font-bold cursor-pointer transition ${
                                         isPaid
                                           ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
                                           : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
