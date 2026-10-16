@@ -87,7 +87,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
         {/* Resumo Consolidado do que já foi pago */}
         <div className="grid grid-cols-3 gap-2 my-4">
           <div className="p-3 rounded-2xl bg-white/3 border border-white/5 text-center">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold block">
+            <span className="text-2xs uppercase tracking-wider text-zinc-400 font-semibold block">
               Total Pago
             </span>
             <span className="text-sm font-bold text-white font-mono mt-0.5 block">
@@ -96,7 +96,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
           </div>
 
           <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center">
-            <span className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold block">
+            <span className="text-2xs uppercase tracking-wider text-amber-400 font-semibold block">
               Só em Juros
             </span>
             <span className="text-sm font-bold text-amber-300 font-mono mt-0.5 block">
@@ -105,7 +105,7 @@ export function DebtHistoryModal({ isOpen, debt, payments, onClose }: DebtHistor
           </div>
 
           <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-            <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold block">
+            <span className="text-2xs uppercase tracking-wider text-emerald-400 font-semibold block">
               Abatido da Dívida
             </span>
             <span className="text-sm font-bold text-emerald-300 font-mono mt-0.5 block">

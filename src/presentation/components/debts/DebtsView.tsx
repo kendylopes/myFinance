@@ -254,7 +254,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
                 {mask(formatValue(totalDebtBalance))}
               </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400">
+              <p className="text-2xs sm:text-[11px] text-zinc-400">
                 {activeDebts.length} compromisso(s) em aberto
               </p>
             </div>
@@ -272,7 +272,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
                 {mask(formatValue(totalInterestPaid))}
               </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400">Custo total de rolagens</p>
+              <p className="text-2xs sm:text-[11px] text-zinc-400">Custo total de rolagens</p>
             </div>
 
             {/* Card 3: Total Geral Pago */}
@@ -288,7 +288,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
                 {mask(formatValue(totalAmountPaid))}
               </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400">
+              <p className="text-2xs sm:text-[11px] text-zinc-400">
                 {payments.length} pagamento(s)
               </p>
             </div>
@@ -306,7 +306,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
                 {paidDebts.length}
               </div>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400">Compromissos quitados</p>
+              <p className="text-2xs sm:text-[11px] text-zinc-400">Compromissos quitados</p>
             </div>
           </div>
 

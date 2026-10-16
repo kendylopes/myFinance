@@ -268,7 +268,7 @@ export const TransactionList = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
           <div className="p-3 rounded-2xl glass-pill border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+              <span className="text-2xs uppercase font-bold text-emerald-400 tracking-wider">
                 Entradas Filtradas
               </span>
               <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
@@ -280,7 +280,7 @@ export const TransactionList = ({
 
           <div className="p-3 rounded-2xl glass-pill border border-rose-500/20 bg-rose-500/5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">
+              <span className="text-2xs uppercase font-bold text-rose-400 tracking-wider">
                 Saídas Filtradas
               </span>
               <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
@@ -298,7 +298,7 @@ export const TransactionList = ({
             }`}
           >
             <div>
-              <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              <span className="text-2xs uppercase font-bold text-zinc-400 tracking-wider">
                 Saldo Filtrado
               </span>
               <p
@@ -311,7 +311,7 @@ export const TransactionList = ({
               </p>
             </div>
             <span
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+              className={`text-2xs font-semibold px-2 py-0.5 rounded-md ${
                 filteredMetrics.balance >= 0
                   ? 'bg-emerald-500/15 text-emerald-300'
                   : 'bg-rose-500/15 text-rose-300'

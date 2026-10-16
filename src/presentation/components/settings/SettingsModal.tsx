@@ -175,12 +175,12 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
                         </div>
                         <div>
                           <span className="font-bold text-sm text-white block">Tema Dark</span>
-                          <span className="text-[10px] text-zinc-400">Modo escuro noturno</span>
+                          <span className="text-2xs text-zinc-400">Modo escuro noturno</span>
                         </div>
                       </div>
                       {isDarkMode && (
                         <span
-                          className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
+                          className="text-2xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
                           style={{
                             backgroundColor: currentTheme.primaryColor,
                             color: '#090a0f',
@@ -220,11 +220,11 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
                           <span className="font-bold text-sm text-white block">
                             Tema Branco Normal
                           </span>
-                          <span className="text-[10px] text-zinc-400">Modo claro clean</span>
+                          <span className="text-2xs text-zinc-400">Modo claro clean</span>
                         </div>
                       </div>
                       {!isDarkMode && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 bg-emerald-600 text-white">
+                        <span className="text-2xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 bg-emerald-600 text-white">
                           <Check className="w-3 h-3 stroke-3" />
                           Ativo
                         </span>
@@ -284,7 +284,7 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
                               <span className="font-bold text-sm text-white block leading-tight">
                                 {curr.code}
                               </span>
-                              <span className="text-[10px] text-zinc-400 font-medium block truncate max-w-28">
+                              <span className="text-2xs text-zinc-400 font-medium block truncate max-w-28">
                                 {curr.name}
                               </span>
                             </div>
@@ -292,7 +292,7 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
 
                           {isSelected && (
                             <span
-                              className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-0.5"
+                              className="text-3xs px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-0.5"
                               style={{
                                 backgroundColor: currentTheme.primaryColor,
                                 color: '#090a0f',
@@ -360,7 +360,7 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
                             <span className="font-bold text-sm text-white">{theme.name}</span>
                             {isSelected && (
                               <span
-                                className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
+                                className="text-2xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
                                 style={{
                                   backgroundColor: theme.primaryColor,
                                   color: '#090a0f',
@@ -371,7 +371,7 @@ export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: Setti
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
+                          <span className="text-2xs text-zinc-400 font-mono block mt-0.5">
                             {theme.tag}
                           </span>
                         </div>

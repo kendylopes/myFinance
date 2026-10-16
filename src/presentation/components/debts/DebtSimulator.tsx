@@ -134,7 +134,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
 
           {/* Atalhos Rápidos de Aporte Extra */}
           <div className="flex items-center gap-1.5 flex-wrap pt-1">
-            <span className="text-[10px] uppercase font-semibold text-zinc-500 mr-1">Atalhos:</span>
+            <span className="text-2xs uppercase font-semibold text-zinc-500 mr-1">Atalhos:</span>
             {[100, 250, 500, 1000].map((amount) => (
               <button
                 key={amount}
@@ -180,7 +180,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               <Zap className="w-3 h-3" />
               Mais Econômico
             </span>
@@ -198,7 +198,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
 
           <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-white/5">
             <div>
-              <span className="text-[10px] uppercase text-zinc-500 block font-semibold">
+              <span className="text-2xs uppercase text-zinc-500 block font-semibold">
                 Prazo Estimado
               </span>
               <span className="text-lg font-black font-mono text-white">
@@ -208,7 +208,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
               </span>
             </div>
             <div>
-              <span className="text-[10px] uppercase text-zinc-500 block font-semibold">
+              <span className="text-2xs uppercase text-zinc-500 block font-semibold">
                 Total de Juros
               </span>
               <span className="text-lg font-black font-mono text-emerald-400">
@@ -232,7 +232,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
               <Sparkles className="w-3 h-3" />
               Mais Motivacional
             </span>
@@ -251,7 +251,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
 
           <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-white/5">
             <div>
-              <span className="text-[10px] uppercase text-zinc-500 block font-semibold">
+              <span className="text-2xs uppercase text-zinc-500 block font-semibold">
                 Prazo Estimado
               </span>
               <span className="text-lg font-black font-mono text-white">
@@ -261,7 +261,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
               </span>
             </div>
             <div>
-              <span className="text-[10px] uppercase text-zinc-500 block font-semibold">
+              <span className="text-2xs uppercase text-zinc-500 block font-semibold">
                 Total de Juros
               </span>
               <span className="text-lg font-black font-mono text-cyan-400">
@@ -337,7 +337,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
                         {isPrivacyMode ? 'Credor Confidencial' : step.lenderName}
                       </span>
                       {isPriorityOne && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="px-2 py-0.5 rounded text-2xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                           Alvo Atual
                         </span>
                       )}
@@ -364,7 +364,7 @@ export function DebtSimulator({ debts, isPrivacyMode }: DebtSimulatorProps) {
                     <span className="text-xs sm:text-sm font-bold font-mono text-emerald-400 block">
                       ~ Mês {step.estimatedMonthsToPayoff}
                     </span>
-                    <span className="text-[10px] text-zinc-500 hidden sm:block">
+                    <span className="text-2xs text-zinc-500 hidden sm:block">
                       Quitação estimada
                     </span>
                   </div>

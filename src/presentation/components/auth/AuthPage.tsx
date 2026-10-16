@@ -244,7 +244,7 @@ export const AuthPage = ({ onLogin, onRegister }: AuthPageProps) => {
                         <h4 className="text-xs font-semibold text-zinc-100">{title}</h4>
                         <div className="flex items-center gap-1.5">
                           {isExplicitUserNotFound && (
-                            <span className="text-[10px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            <span className="text-2xs font-medium text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                               Novo por aqui?
                             </span>
                           )}

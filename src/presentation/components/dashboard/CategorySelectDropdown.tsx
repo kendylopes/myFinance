@@ -134,7 +134,7 @@ export function CategorySelectDropdown({
             Categoria <span className="text-rose-400">*</span>
           </span>
           {autoSuggested && !isCustomCategory && (
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full animate-fade-in shadow-xs">
+            <span className="inline-flex items-center gap-1 text-2xs text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full animate-fade-in shadow-xs">
               <Sparkles className="w-2.5 h-2.5 text-emerald-400" aria-hidden="true" />
               Sugerido
             </span>
@@ -215,7 +215,7 @@ export function CategorySelectDropdown({
                     <ItemIcon className="w-4 h-4 opacity-80 shrink-0" aria-hidden="true" />
                     <span className="truncate">{item.name}</span>
                     {item.isCustom && (
-                      <span className="text-[10px] bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-1.5 py-0.5 rounded-md font-mono">
+                      <span className="text-2xs bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 px-1.5 py-0.5 rounded-md font-mono">
                         Sua
                       </span>
                     )}

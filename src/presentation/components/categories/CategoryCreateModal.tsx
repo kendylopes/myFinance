@@ -300,13 +300,13 @@ export function CategoryCreateModal({
                 <span className="text-xs font-bold text-white block">
                   {name.trim() || 'Nome da Categoria'}
                 </span>
-                <span className="text-[10px] text-zinc-400">
+                <span className="text-2xs text-zinc-400">
                   {type === 'expense' ? 'Despesa' : 'Receita'} • Ícone: {selectedIconName}
                 </span>
               </div>
             </div>
 
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-zinc-300 border border-white/15">
+            <span className="px-2 py-0.5 rounded-md text-2xs font-bold bg-white/10 text-zinc-300 border border-white/15">
               Personalizada
             </span>
           </div>

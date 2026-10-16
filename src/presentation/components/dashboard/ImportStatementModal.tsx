@@ -376,7 +376,7 @@ export function ImportStatementModal({
                 <div className="p-3 rounded-2xl bg-white/3 border border-white/10 flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <p className="text-[11px] text-zinc-400 font-medium">Lançamentos</p>
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">
+                    <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">
                       {parseResult.fileType}
                     </span>
                   </div>
@@ -590,7 +590,7 @@ export function ImportStatementModal({
                                           item.duplicateReason ||
                                           'Identificamos uma transação existente com a mesma data e valor'
                                         }
-                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0"
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0"
                                       >
                                         <AlertTriangle className="w-3 h-3" />
                                         <span>Duplicata</span>
@@ -614,7 +614,7 @@ export function ImportStatementModal({
                                       <button
                                         type="button"
                                         onClick={() => handleToggleItem(item.id)}
-                                        className="text-[10px] font-bold text-amber-400 hover:text-white underline cursor-pointer"
+                                        className="text-2xs font-bold text-amber-400 hover:text-white underline cursor-pointer"
                                       >
                                         {item.selected ? 'Desmarcar' : 'Incluir mesmo assim'}
                                       </button>
@@ -652,7 +652,7 @@ export function ImportStatementModal({
                                   type="button"
                                   onClick={() => handleToggleType(item.id)}
                                   title="Clique para alternar entre Entrada e Saída"
-                                  className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border cursor-pointer transition ${
+                                  className={`text-2xs font-bold uppercase px-2 py-0.5 rounded border cursor-pointer transition ${
                                     isIncome
                                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
                                       : 'bg-rose-500/10 text-rose-400 border-rose-500/25 hover:bg-rose-500/20'

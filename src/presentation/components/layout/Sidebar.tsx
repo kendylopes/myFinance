@@ -224,7 +224,7 @@ export function Sidebar({
                   {!isCollapsed && (
                     <div className="text-left overflow-hidden">
                       <span className="block truncate">{item.label}</span>
-                      <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                      <span className="text-2xs text-zinc-500 font-normal block truncate">
                         {item.description}
                       </span>
                     </div>
@@ -268,7 +268,7 @@ export function Sidebar({
               {!isCollapsed && (
                 <div className="text-left overflow-hidden flex-1">
                   <span className="block truncate text-emerald-300 font-bold">Instalar App</span>
-                  <span className="text-[10px] text-emerald-400/80 font-normal block truncate">
+                  <span className="text-2xs text-emerald-400/80 font-normal block truncate">
                     Tela cheia nativa
                   </span>
                 </div>
@@ -308,7 +308,7 @@ export function Sidebar({
                 <span className="block truncate text-zinc-300 group-hover:text-white">
                   Configurações
                 </span>
-                <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                <span className="text-2xs text-zinc-500 font-normal block truncate">
                   Preferências do App
                 </span>
               </div>
@@ -340,7 +340,7 @@ export function Sidebar({
                   <span className="block truncate text-zinc-300 group-hover:text-rose-300">
                     Sair da conta
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-normal block truncate">
+                  <span className="text-2xs text-zinc-500 font-normal block truncate">
                     Encerrar sessão
                   </span>
                 </div>

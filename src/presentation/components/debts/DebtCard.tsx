@@ -213,7 +213,7 @@ export function DebtCard({
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block">
+              <span className="text-2xs font-semibold text-zinc-500 uppercase tracking-wider block">
                 Valor Original
               </span>
               <span className="text-xs font-semibold text-zinc-400 font-mono">
@@ -250,7 +250,7 @@ export function DebtCard({
                 : `${debt.interestRate}% ao mês`}
             </div>
             {!isPaid && (
-              <div className="text-[10px] text-zinc-400 mt-0.5">
+              <div className="text-2xs text-zinc-400 mt-0.5">
                 Custo rolagem:{' '}
                 <strong className="text-amber-400">{mask(formatValue(interestAmount))}</strong>
               </div>
@@ -281,7 +281,7 @@ export function DebtCard({
             >
               {debt.dueDate.split('-').reverse().join('/')}
             </div>
-            <div className="text-[10px] text-zinc-400 mt-0.5">
+            <div className="text-2xs text-zinc-400 mt-0.5">
               {isPaid
                 ? 'Totalmente liquidada'
                 : isOverdue

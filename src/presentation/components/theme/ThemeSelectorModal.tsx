@@ -111,7 +111,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
                       <span className="font-bold text-sm text-white">{theme.name}</span>
                       {isSelected && (
                         <span
-                          className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
+                          className="text-2xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1"
                           style={{
                             backgroundColor: theme.primaryColor,
                             color: '#090a0f',
@@ -122,7 +122,7 @@ export function ThemeSelectorModal({ isOpen, onClose }: ThemeSelectorModalProps)
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
+                    <span className="text-2xs text-zinc-400 font-mono block mt-0.5">
                       {theme.tag}
                     </span>
                   </div>

@@ -347,7 +347,7 @@ export const FinancialFlowChart = ({ transactions, selectedMonth }: FinancialFlo
                     {activeItem.label} {activeItem.year}
                   </span>
                   {activeItem.isCurrentPeriod && (
-                    <span className="text-[10px] text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-md">
+                    <span className="text-2xs text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-md">
                       Mês Ativo
                     </span>
                   )}

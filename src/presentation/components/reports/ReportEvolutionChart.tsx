@@ -126,7 +126,7 @@ export function ReportEvolutionChart({ report }: ReportEvolutionChartProps) {
                   {/* Rótulo inferior */}
                   <span
                     className={`text-zinc-400 mt-2 truncate w-full text-center font-mono ${
-                      isManyItems ? 'text-[9px] sm:text-[10px]' : 'text-[10px]'
+                      isManyItems ? 'text-3xs sm:text-2xs' : 'text-2xs'
                     }`}
                   >
                     {displayBottomLabel}

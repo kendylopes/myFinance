@@ -101,7 +101,7 @@ export function ExportActions({
               <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
               <div>
                 <span className="font-medium block text-white">Planilha CSV</span>
-                <span className="text-[10px] text-zinc-400 block">Para Excel ou Planilhas</span>
+                <span className="text-2xs text-zinc-400 block">Para Excel ou Planilhas</span>
               </div>
             </button>
 
@@ -119,7 +119,7 @@ export function ExportActions({
               <Printer className="w-4 h-4 text-cyan-400 shrink-0" aria-hidden="true" />
               <div>
                 <span className="font-medium block text-white">Imprimir / PDF</span>
-                <span className="text-[10px] text-zinc-400 block">Visualizar ou salvar</span>
+                <span className="text-2xs text-zinc-400 block">Visualizar ou salvar</span>
               </div>
             </button>
           </div>

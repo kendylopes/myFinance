@@ -116,7 +116,7 @@ export const Header = ({
               <span className="text-xs font-semibold text-white block leading-tight truncate max-w-32">
                 {user.name || user.email}
               </span>
-              <span className="text-[10px] text-zinc-400 block leading-tight">Online</span>
+              <span className="text-2xs text-zinc-400 block leading-tight">Online</span>
             </div>
             {onLogout && (
               <button

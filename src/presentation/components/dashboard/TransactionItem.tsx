@@ -114,7 +114,7 @@ export const TransactionItem = ({
             </div>
             {/* Mini-badge discreto indicando tipo (+ para entrada, - para saída) */}
             <div
-              className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border text-[9px] font-bold shadow-xs ${
+              className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border text-3xs font-bold shadow-xs ${
                 isIncome
                   ? 'bg-emerald-500 text-zinc-950 border-zinc-900'
                   : 'bg-rose-500 text-white border-zinc-900'
@@ -138,7 +138,7 @@ export const TransactionItem = ({
                 {installmentInfo && (
                   <span
                     data-testid={`installment-badge-${transaction.id}`}
-                    className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-emerald-300 border border-white/10 shrink-0"
+                    className="px-1.5 py-0.5 rounded-md text-2xs font-bold bg-white/10 text-emerald-300 border border-white/10 shrink-0"
                     title={`Parcela ${installmentInfo.current} de ${installmentInfo.total}`}
                   >
                     {installmentInfo.current}/{installmentInfo.total}
@@ -147,7 +147,7 @@ export const TransactionItem = ({
                 {isRecurring && (
                   <span
                     data-testid={`recurring-badge-${transaction.id}`}
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-2xs font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0"
                     title="Lançamento Recorrente"
                   >
                     <Repeat className="w-2.5 h-2.5" />
@@ -195,7 +195,7 @@ export const TransactionItem = ({
                       ? 'Recebido. Clique para marcar como pendente.'
                       : 'Pago. Clique para marcar como pendente.'
                 }
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0 ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-2xs font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0 ${
                   isPending
                     ? isExpired
                       ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 animate-pulse ring-1 ring-rose-500/30'
@@ -288,7 +288,7 @@ export const TransactionItem = ({
           </div>
           <div className="flex items-center justify-between">
             <span>ID:</span>
-            <span className="font-mono text-[10px] text-zinc-500 truncate max-w-36">
+            <span className="font-mono text-2xs text-zinc-500 truncate max-w-36">
               {transaction.id}
             </span>
           </div>

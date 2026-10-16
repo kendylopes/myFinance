@@ -141,7 +141,7 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                     <span className="font-bold text-slate-300 font-mono whitespace-nowrap">
                       {formatCurrency(item.amount)}
                     </span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-slate-800/80 text-slate-400 font-mono text-[10px] shrink-0 border border-white/5">
+                    <span className="px-1.5 py-0.5 rounded-md bg-slate-800/80 text-slate-400 font-mono text-2xs shrink-0 border border-white/5">
                       {item.percentage}%
                     </span>
                   </div>

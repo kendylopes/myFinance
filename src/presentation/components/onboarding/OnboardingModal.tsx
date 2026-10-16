@@ -253,7 +253,7 @@ export function OnboardingModal({
                     className="w-full glass-input rounded-xl pl-11 pr-3.5 py-2.5 text-sm placeholder:text-zinc-500"
                   />
                 </div>
-                <span className="text-[10px] text-zinc-500 block mt-1">
+                <span className="text-2xs text-zinc-500 block mt-1">
                   Se informado, este valor será lançado como seu saldo inicial deste mês.
                 </span>
               </div>
@@ -282,7 +282,7 @@ export function OnboardingModal({
                     className="w-full glass-input rounded-xl pl-11 pr-3.5 py-2.5 text-sm placeholder:text-zinc-500"
                   />
                 </div>
-                <span className="text-[10px] text-zinc-500 block mt-1">
+                <span className="text-2xs text-zinc-500 block mt-1">
                   Você poderá ajustar esse valor a qualquer momento no painel de Planejamento.
                 </span>
               </div>

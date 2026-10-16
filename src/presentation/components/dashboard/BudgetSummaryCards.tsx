@@ -42,7 +42,7 @@ export function BudgetSummaryCards({ progress, selectedMonth }: BudgetSummaryCar
         <div className="text-lg sm:text-2xl font-black text-cyan-300 font-mono tracking-tight">
           {formatValue(budgetAmount)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">Meta de gastos definida</p>
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">Meta de gastos definida</p>
       </div>
 
       {/* 2. Total Gasto no Mês */}
@@ -58,7 +58,7 @@ export function BudgetSummaryCards({ progress, selectedMonth }: BudgetSummaryCar
         <div className="text-lg sm:text-2xl font-black text-rose-300 font-mono tracking-tight">
           {formatValue(totalExpense)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           {spentPercentage.toFixed(1)}% do teto consumido
         </p>
       </div>
@@ -92,7 +92,7 @@ export function BudgetSummaryCards({ progress, selectedMonth }: BudgetSummaryCar
         >
           {formatValue(Math.abs(remainingAmount))}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           {isExceeded ? 'Gastos além da meta estipulada' : 'Saldo restante para não estourar'}
         </p>
       </div>
@@ -110,7 +110,7 @@ export function BudgetSummaryCards({ progress, selectedMonth }: BudgetSummaryCar
         <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
           {formatValue(dailyBudget)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+        <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
           {isExceeded
             ? 'Orçamento já ultrapassado'
             : `Média/dia para ${remainingDays} dia(s) restante(s)`}

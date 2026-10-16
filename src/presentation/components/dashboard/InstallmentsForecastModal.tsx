@@ -285,7 +285,7 @@ export function InstallmentsForecastModal({
               >
                 <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Minhas Compras Parceladas</span>
-                <span className="px-1.5 py-0.2 rounded-md bg-white/10 text-[10px] font-mono text-zinc-300">
+                <span className="px-1.5 py-0.2 rounded-md bg-white/10 text-2xs font-mono text-zinc-300">
                   {installmentGroups.length}
                 </span>
               </button>
@@ -353,13 +353,13 @@ export function InstallmentsForecastModal({
                         >
                           {/* Mini indicador no topo da barra com valor */}
                           {hasAmount && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono font-bold text-white whitespace-nowrap bg-zinc-900/90 px-1 rounded border border-white/10 pointer-events-none z-20">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 left-1/2 -translate-x-1/2 text-3xs font-mono font-bold text-white whitespace-nowrap bg-zinc-900/90 px-1 rounded border border-white/10 pointer-events-none z-20">
                               {formatValue(m.totalAmount)}
                             </div>
                           )}
                         </div>
                         <span
-                          className={`text-[10px] font-mono truncate max-w-full ${
+                          className={`text-2xs font-mono truncate max-w-full ${
                             isFirstMonth ? 'text-emerald-400 font-bold' : 'text-zinc-400'
                           }`}
                         >
@@ -404,7 +404,7 @@ export function InstallmentsForecastModal({
                                   Fatura de {m.monthLabel}
                                 </span>
                                 {isFirstMonth && (
-                                  <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                  <span className="text-2xs font-bold px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                     Próxima Fatura
                                   </span>
                                 )}
@@ -420,7 +420,7 @@ export function InstallmentsForecastModal({
                             <span className="text-base sm:text-lg font-black text-rose-300 font-mono tracking-tight block">
                               {formatValue(m.totalAmount)}
                             </span>
-                            <span className="text-[10px] text-zinc-500">Total previsto</span>
+                            <span className="text-2xs text-zinc-500">Total previsto</span>
                           </div>
                         </div>
 
@@ -437,7 +437,7 @@ export function InstallmentsForecastModal({
                                 <span className="text-zinc-200 font-medium truncate">
                                   {p.title}
                                 </span>
-                                <span className="text-[10px] font-bold font-mono text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shrink-0">
+                                <span className="text-2xs font-bold font-mono text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shrink-0">
                                   {p.installment}
                                 </span>
                               </div>
@@ -609,7 +609,7 @@ export function InstallmentsForecastModal({
                               ) : (
                                 <>
                                   <div className="text-left sm:text-right">
-                                    <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-semibold">
+                                    <span className="text-2xs text-zinc-400 uppercase tracking-wider block font-semibold">
                                       Resta Pagar
                                     </span>
                                     <span className="text-sm sm:text-base font-black text-rose-300 font-mono">
@@ -716,7 +716,7 @@ export function InstallmentsForecastModal({
                                         {formatValue(item.amount)}
                                       </span>
                                       <span
-                                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                        className={`px-2 py-0.5 rounded-md text-2xs font-bold border ${
                                           isItemPaid
                                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                             : 'bg-amber-500/10 text-amber-400 border-amber-500/20'

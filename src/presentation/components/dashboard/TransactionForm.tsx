@@ -608,7 +608,7 @@ export const TransactionForm = ({
                         </>
                       )}
                     </span>
-                    <span className="text-[10px] text-zinc-400">1 por mês</span>
+                    <span className="text-2xs text-zinc-400">1 por mês</span>
                   </div>
                 )}
               </div>
