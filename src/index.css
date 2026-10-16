@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --text-2xs: 10px;
+  --text-3xs: 9px;
+}
+
 /* ==========================================================================
    5 Temas de Desenvolvedor (Emerald Matrix, Dracula, Tokyo Night, Catppuccin, One Dark)
    ========================================================================== */

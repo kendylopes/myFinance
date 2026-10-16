@@ -14,12 +14,12 @@ import { useMemo, useState } from 'react'
 import { useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
-import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
 import {
   getInstallmentGroups,
   getMonthlyInstallmentForecast,
 } from '../../../domain/services/installmentForecast'
+import { getCategoryIcon } from '../categories/categoryIcons'
 
 export interface CardsAndInvoicesViewProps {
   transactions: Transaction[]

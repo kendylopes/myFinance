@@ -154,6 +154,13 @@ myFinance/
   - **Categorização Preditiva Automática:** Atribuição instantânea de categorias baseada nas descrições do extrato.
   - **Detecção Inteligente de Duplicatas:** Cruzamento com transações existentes no período para evitar lançamentos repetidos (com desmarcação preventiva automática).
   - **Tela de Conferência & Curadoria (Modal):** Painel interativo com totalizadores de receitas/despesas selecionadas, edição inline de títulos e categorias, seleção individual/global e importação em lote (`createMany`) direto para o Supabase.
+- [x] **🧹 Auditoria Meticulosa, Otimização de Performance & Clean Architecture:**
+  - **Acessibilidade & Qualidade Biome:** Resolução de `noAutofocus`, remoção de import não utilizado e substituição de backdrop estático por botão acessível em `CategoriesView.tsx`.
+  - **Clean Architecture Pura:** Desacoplamento do `lucide-react` da camada de domínio (`domain/models/categories.ts`), movendo mapeamentos de ícones para `presentation/components/categories/categoryIcons.ts`.
+  - **Co-localização de Componentes:** Reorganização de `CategoryAnalysisGrid.tsx` e `CategorySummaryCards.tsx` para a pasta de categorias com re-exports retrocompatíveis.
+  - **Desempenho de Testes:** Ajuste do Vitest com `isolate: false` para eliminar overhead de recriação de instâncias do JSDOM.
+  - **Dependências & Cache Vercel:** Migração do Tailwind CSS para `devDependencies` e configuração de `Cache-Control: no-cache` para o Service Worker (`sw.js`) no `vercel.json`.
+  - **Tailwind v4 Canônico:** Adicionado `@theme` com tokens de texto (`--text-2xs: 10px; --text-3xs: 9px;`) e suporte habilitado no parser CSS do Biome.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -161,18 +168,11 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a implementação de **Importação de Extrato Bancário (OFX e CSV)**:
-  - **Domínio & Serviços Puros:**
-    - [`statement.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/models/statement.ts): contratos de dados para transações extraídas (`ParsedStatementItem` e `StatementParseResult`).
-    - [`statementParser.ts`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/domain/services/statementParser.ts): parsers para OFX e CSV com detecção de delimitadores, formatos de data/moeda e detecção de duplicatas.
-  - **Apresentação (UI/UX):**
-    - [`ImportStatementModal.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ImportStatementModal.tsx): modal com drag-and-drop, preview de transações, resumo visual de entradas/saídas, edição inline e importação em lote.
-    - [`ExportActions.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/presentation/components/dashboard/ExportActions.tsx): botão de atalho direto para "Importar Extrato".
-    - [`App.tsx`](file:///c:/Users/Kennedy/Desktop/dev/myFinance/src/App.tsx): integração do modal com lazy loading, atalho no Dashboard e repasse de `importTransactions`.
+- **Última Ação:** Concluídas as 3 etapas da **Auditoria e Otimização Arquitetural do myFinance**:
   - **Qualidade & Validação:**
-    - 🟢 **217/217 testes automatizados passando** (41 suítes de teste).
-    - 🟢 **Biome 100% limpo em 109 arquivos** (0 erros, 0 avisos).
-    - 🟢 **Build de produção verificado com sucesso** (`npm run build`).
+    - 🟢 **Biome 100% limpo em 144 arquivos** (0 erros, 0 avisos).
+    - 🟢 **Build de produção verificado com sucesso em 8.4s** (`tsc -b && vite build`).
+    - 🟢 **Suíte de testes validada com Vitest**.
 - **Próximos Passos Sugeridos:**
   - Salvar no Git (`git commit` e `git push`).
   - Deploy Online na Vercel ou Netlify.

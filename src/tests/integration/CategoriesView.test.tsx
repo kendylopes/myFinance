@@ -79,13 +79,15 @@ const mockTransactions: Transaction[] = [
 
 describe('<CategoriesView /> (Gerenciador e Análise de Categorias)', () => {
   const renderComponent = (props: Partial<React.ComponentProps<typeof CategoriesView>> = {}) => {
-    const handleAddCategory = props.onAddCategory || vi.fn().mockResolvedValue({
-      id: 'custom-cat-new',
-      name: 'Academia',
-      type: 'expense',
-      icon: 'Dumbbell',
-      isCustom: true,
-    })
+    const handleAddCategory =
+      props.onAddCategory ||
+      vi.fn().mockResolvedValue({
+        id: 'custom-cat-new',
+        name: 'Academia',
+        type: 'expense',
+        icon: 'Dumbbell',
+        isCustom: true,
+      })
     const handleDeleteCategory = props.onDeleteCategory || vi.fn().mockResolvedValue(true)
     const handleSelectCategory = props.onSelectCategory || vi.fn()
 
@@ -138,7 +140,9 @@ describe('<CategoriesView /> (Gerenciador e Análise de Categorias)', () => {
     fireEvent.change(searchInput, { target: { value: 'Streaming' } })
 
     expect(screen.getByTestId('category-card-custom-cat-1')).toBeInTheDocument()
-    expect(screen.queryByTestId('category-card-default-expense-alimentacao')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('category-card-default-expense-alimentacao'),
+    ).not.toBeInTheDocument()
     expect(screen.queryByTestId('category-card-default-expense-transporte')).not.toBeInTheDocument()
   })
 

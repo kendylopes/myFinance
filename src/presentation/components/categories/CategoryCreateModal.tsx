@@ -1,21 +1,10 @@
-import {
-  FolderPlus,
-  Search,
-  Sparkles,
-  TrendingDown,
-  TrendingUp,
-  X,
-} from 'lucide-react'
+import { FolderPlus, Search, Sparkles, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
 import { useToast } from '../../../core/toast/toastContext'
-import {
-  AVAILABLE_CATEGORY_ICONS,
-  type Category,
-  type CategoryType,
-  type CreateCategoryDTO,
-} from '../../../domain/models/categories'
+import type { Category, CategoryType, CreateCategoryDTO } from '../../../domain/models/categories'
+import { AVAILABLE_CATEGORY_ICONS } from './categoryIcons'
 
 export interface CategoryCreateModalProps {
   isOpen: boolean
@@ -76,7 +65,8 @@ export function CategoryCreateModal({
 
   if (!isOpen) return null
 
-  const SelectedIconComponent = AVAILABLE_CATEGORY_ICONS[selectedIconName] || AVAILABLE_CATEGORY_ICONS.Tag
+  const SelectedIconComponent =
+    AVAILABLE_CATEGORY_ICONS[selectedIconName] || AVAILABLE_CATEGORY_ICONS.Tag
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,7 +85,9 @@ export function CategoryCreateModal({
     )
 
     if (alreadyExists) {
-      setErrorMessage(`Já existe uma categoria de ${type === 'expense' ? 'despesa' : 'receita'} com o nome "${trimmedName}".`)
+      setErrorMessage(
+        `Já existe uma categoria de ${type === 'expense' ? 'despesa' : 'receita'} com o nome "${trimmedName}".`,
+      )
       soundFX.playError?.()
       return
     }
@@ -151,7 +143,10 @@ export function CategoryCreateModal({
               <FolderPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 id="category-modal-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
+              <h2
+                id="category-modal-title"
+                className="text-base sm:text-lg font-bold text-white tracking-tight"
+              >
                 Nova Categoria
               </h2>
               <p className="text-xs text-zinc-400">
@@ -190,7 +185,6 @@ export function CategoryCreateModal({
               data-testid="input-category-name"
               type="text"
               required
-              autoFocus
               maxLength={40}
               placeholder="Ex: Streaming, Pet Shop, Cursos, Academia..."
               value={name}
@@ -204,9 +198,7 @@ export function CategoryCreateModal({
 
           {/* 2. Tipo: Despesa ou Receita */}
           <div className="space-y-1.5">
-            <span className="text-xs font-semibold text-zinc-300 block">
-              Tipo de Movimentação
-            </span>
+            <span className="text-xs font-semibold text-zinc-300 block">Tipo de Movimentação</span>
             <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/4 border border-white/10 text-xs font-semibold">
               <button
                 type="button"

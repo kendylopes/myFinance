@@ -13,9 +13,9 @@ import { formatCurrency } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
-import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
 import { isOverdue, parseInstallment } from '../../../domain/services/financeCalculations'
+import { getCategoryIcon } from '../categories/categoryIcons'
 
 interface TransactionItemProps {
   transaction: Transaction

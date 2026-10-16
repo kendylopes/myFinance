@@ -1,8 +1,8 @@
 import { Flame } from 'lucide-react'
 import { formatBRL } from '../../../core/formatters/currency'
 import { formatDate } from '../../../core/formatters/date'
-import { getCategoryIcon } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
+import { getCategoryIcon } from '../categories/categoryIcons'
 
 interface ReportTopExpensesProps {
   expenses: Transaction[]

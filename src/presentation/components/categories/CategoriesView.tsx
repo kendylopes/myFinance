@@ -13,17 +13,13 @@ import { useMemo, useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
 import { useToast } from '../../../core/toast/toastContext'
-import {
-  type Category,
-  type CategoryType,
-  type CreateCategoryDTO,
-  getCategoryIcon,
-} from '../../../domain/models/categories'
+import type { Category, CreateCategoryDTO } from '../../../domain/models/categories'
 import type { Transaction } from '../../../domain/models/transaction'
-import { CategoryAnalysisGrid } from '../dashboard/CategoryAnalysisGrid'
-import { CategorySummaryCards } from '../dashboard/CategorySummaryCards'
 import { ExpenseCategoryChart } from '../dashboard/ExpenseCategoryChart'
+import { CategoryAnalysisGrid } from './CategoryAnalysisGrid'
 import { CategoryCreateModal } from './CategoryCreateModal'
+import { CategorySummaryCards } from './CategorySummaryCards'
+import { getCategoryIcon } from './categoryIcons'
 
 export interface CategoriesViewProps {
   transactions: Transaction[]
@@ -393,7 +389,8 @@ export function CategoriesView({
                 Nenhuma categoria encontrada
               </h3>
               <p className="text-xs text-zinc-400 max-w-md mx-auto">
-                Não localizamos nenhuma categoria com os filtros aplicados. Crie uma nova categoria personalizada ou ajuste sua busca.
+                Não localizamos nenhuma categoria com os filtros aplicados. Crie uma nova categoria
+                personalizada ou ajuste sua busca.
               </p>
               <button
                 type="button"
@@ -427,8 +424,10 @@ export function CategoriesView({
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
+          <button
+            type="button"
+            aria-label="Cancelar exclusão e fechar modal"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in w-full h-full cursor-default"
             onClick={() => setCategoryToDelete(null)}
           />
           <div className="relative z-10 max-w-sm w-full glass-card border border-rose-500/30 p-5 rounded-3xl space-y-4 animate-scale-in">
@@ -437,18 +436,15 @@ export function CategoriesView({
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-white">
-                  Excluir Categoria?
-                </h3>
-                <p className="text-xs text-zinc-400">
-                  Esta ação não pode ser desfeita.
-                </p>
+                <h3 className="text-sm sm:text-base font-bold text-white">Excluir Categoria?</h3>
+                <p className="text-xs text-zinc-400">Esta ação não pode ser desfeita.</p>
               </div>
             </div>
 
             <p className="text-xs text-zinc-300">
               Tem certeza que deseja remover a categoria{' '}
-              <strong className="text-white font-semibold">"{categoryToDelete.name}"</strong>? Suas transações antigas ainda manterão o registro do nome.
+              <strong className="text-white font-semibold">"{categoryToDelete.name}"</strong>? Suas
+              transações antigas ainda manterão o registro do nome.
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-2">

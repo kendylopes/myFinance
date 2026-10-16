@@ -1,40 +1,8 @@
 /**
  * Categorias padronizadas e personalizadas do myFinance para receitas e despesas.
  * Suporta categorias padrão pré-definidas e categorias customizadas criadas pelo usuário.
+ * Camada de Domínio Pura (Zero dependências de UI / React).
  */
-
-import {
-  Baby,
-  BookOpen,
-  Briefcase,
-  Car,
-  Coffee,
-  CreditCard,
-  Dog,
-  Dumbbell,
-  Film,
-  Gift,
-  GraduationCap,
-  Heart,
-  HeartPulse,
-  Home,
-  Laptop,
-  type LucideIcon,
-  Music,
-  PiggyBank,
-  Plane,
-  Receipt,
-  Shield,
-  ShoppingBag,
-  Smartphone,
-  Sparkles,
-  Tag,
-  TrendingUp,
-  Tv,
-  Utensils,
-  Wrench,
-  Zap,
-} from 'lucide-react'
 
 export type CategoryType = 'income' | 'expense'
 
@@ -60,38 +28,6 @@ export interface PredefinedCategory {
   icon: string
 }
 
-export const AVAILABLE_CATEGORY_ICONS: Record<string, LucideIcon> = {
-  Tag,
-  Utensils,
-  Car,
-  Home,
-  HeartPulse,
-  Film,
-  GraduationCap,
-  ShoppingBag,
-  Receipt,
-  Briefcase,
-  Laptop,
-  TrendingUp,
-  Gift,
-  Coffee,
-  Plane,
-  Shield,
-  Zap,
-  Sparkles,
-  CreditCard,
-  PiggyBank,
-  Smartphone,
-  BookOpen,
-  Dumbbell,
-  Music,
-  Heart,
-  Tv,
-  Baby,
-  Dog,
-  Wrench,
-}
-
 export const DEFAULT_EXPENSE_CATEGORIES: PredefinedCategory[] = [
   { id: 'alimentacao', name: 'Alimentação', icon: 'Utensils' },
   { id: 'transporte', name: 'Transporte', icon: 'Car' },
@@ -111,44 +47,3 @@ export const DEFAULT_INCOME_CATEGORIES: PredefinedCategory[] = [
   { id: 'presentes', name: 'Presentes / Extras', icon: 'Gift' },
   { id: 'outros', name: 'Outros', icon: 'Tag' },
 ]
-
-export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  Alimentação: Utensils,
-  Transporte: Car,
-  Moradia: Home,
-  Saúde: HeartPulse,
-  Lazer: Film,
-  Educação: GraduationCap,
-  Compras: ShoppingBag,
-  'Contas Fixas': Receipt,
-  Salário: Briefcase,
-  'Freelance / Bico': Laptop,
-  Investimentos: TrendingUp,
-  'Presentes / Extras': Gift,
-  Outros: Tag,
-}
-
-/**
- * Retorna o ícone do Lucide apropriado para o nome ou identificador de ícone da categoria.
- * Suporta busca exata por nome, chave de ícone ou fallback inteligente.
- */
-export function getCategoryIcon(categoryNameOrIcon: string): LucideIcon {
-  if (!categoryNameOrIcon) return Tag
-  const trimmed = categoryNameOrIcon.trim()
-
-  // Se for o nome de um ícone disponível diretamente
-  if (AVAILABLE_CATEGORY_ICONS[trimmed]) {
-    return AVAILABLE_CATEGORY_ICONS[trimmed]
-  }
-
-  // Se corresponder exatamente ao mapa de nomes de categorias
-  if (CATEGORY_ICON_MAP[trimmed]) {
-    return CATEGORY_ICON_MAP[trimmed]
-  }
-
-  const lower = trimmed.toLowerCase()
-  const foundKey = Object.keys(CATEGORY_ICON_MAP).find(
-    (key) => key.toLowerCase() === lower || lower.includes(key.toLowerCase()),
-  )
-  return foundKey ? CATEGORY_ICON_MAP[foundKey] : Tag
-}

@@ -8,14 +8,6 @@ import { SupabaseDebtRepository } from './SupabaseDebtRepository'
 import { SupabaseTransactionRepository } from './SupabaseTransactionRepository'
 
 /**
- * Retorna qual fonte de dados está ativa no momento.
- * O myFinance agora opera exclusivamente na nuvem via Supabase.
- */
-export function getActiveDataSource(): 'supabase' {
-  return 'supabase'
-}
-
-/**
  * Cria a instância do repositório de transações em nuvem (Supabase).
  */
 export function createTransactionRepository(): ITransactionRepository {

@@ -7,9 +7,9 @@ import {
   type CreateCategoryDTO,
   DEFAULT_EXPENSE_CATEGORIES,
   DEFAULT_INCOME_CATEGORIES,
-  getCategoryIcon,
 } from '../../../domain/models/categories'
 import type { TransactionType } from '../../../domain/models/transaction'
+import { getCategoryIcon } from '../categories/categoryIcons'
 
 export interface CategorySelectDropdownProps {
   category: string
