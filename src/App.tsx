@@ -436,6 +436,7 @@ export function AppContent() {
                     transactions={periodTransactions}
                     summary={summary}
                     selectedMonth={selectedMonth}
+                    budgetProgress={budgetProgress}
                   />
                 </div>
 
