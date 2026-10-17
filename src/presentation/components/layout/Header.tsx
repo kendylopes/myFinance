@@ -96,6 +96,9 @@ export const Header = ({
           >
             <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span className="hidden sm:inline">Nova Transação</span>
+            <kbd className="hidden lg:inline-flex items-center text-3xs font-mono px-1.5 py-0.5 rounded border border-current/25 opacity-70">
+              N
+            </kbd>
           </button>
         )}
 

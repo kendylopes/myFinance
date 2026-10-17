@@ -189,7 +189,7 @@ export function Sidebar({
         {/* Links de Navegação */}
         <nav className="flex-1 p-2.5 space-y-1 overflow-y-auto custom-scrollbar">
           <div className="space-y-1">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon
               const isActive = activeSection === item.id
 
@@ -198,7 +198,7 @@ export function Sidebar({
                   key={item.id}
                   type="button"
                   onClick={() => handleNavClick(item.id)}
-                  title={item.label}
+                  title={`${item.label} (Atalho: ${index + 1})`}
                   className={`flex items-center transition-all cursor-pointer group ${
                     isCollapsed
                       ? 'w-8 h-8 mx-auto justify-center rounded-xl'
@@ -222,12 +222,17 @@ export function Sidebar({
                     aria-hidden="true"
                   />
                   {!isCollapsed && (
-                    <div className="text-left overflow-hidden">
+                    <div className="text-left overflow-hidden flex-1">
                       <span className="block truncate">{item.label}</span>
                       <span className="text-2xs text-zinc-500 font-normal block truncate">
                         {item.description}
                       </span>
                     </div>
+                  )}
+                  {!isCollapsed && (
+                    <kbd className="hidden sm:inline-flex text-3xs font-mono text-zinc-500 group-hover:text-zinc-300 opacity-60 px-1 py-0.5 rounded border border-white/5">
+                      {index + 1}
+                    </kbd>
                   )}
                 </button>
               )

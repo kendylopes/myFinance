@@ -23,6 +23,8 @@ import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
 import { useAuth } from './presentation/hooks/useAuth'
 import { useFinance } from './presentation/hooks/useFinance'
+import { useGlobalShortcuts } from './presentation/hooks/useGlobalShortcuts'
+import { usePwaUpdate } from './presentation/hooks/usePwaUpdate'
 
 // Lazy Loading dos modais e visões pesadas para code-splitting e performance otimizada
 const ReportsView = lazy(() =>
@@ -220,26 +222,78 @@ export function AppContent() {
     setEditingTransaction(null)
   }
 
-  const handleSelectSection = (section: string) => {
-    setActiveSection(section)
-    if (section === 'dashboard') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else if (section === 'transactions') {
-      const el = document.getElementById('section-transactions')
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else if (section === 'cards') {
-      const el = document.getElementById('section-cards')
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else if (section === 'budget') {
-      const el = document.getElementById('section-budget')
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    } else if (section === 'categories') {
-      const el = document.getElementById('section-transactions')
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      const catBtn = document.getElementById('category-select-btn')
-      catBtn?.focus()
+  // Monitoramento de nova versão PWA e disparo de toast amigável
+  usePwaUpdate()
+
+  const handleCloseAllModals = () => {
+    if (
+      isTxModalOpen ||
+      isImportModalOpen ||
+      isForecastModalOpen ||
+      isThemeModalOpen ||
+      isSettingsModalOpen ||
+      isOnboardingOpen
+    ) {
+      soundFX.playClick()
+      setIsTxModalOpen(false)
+      setEditingTransaction(null)
+      setIsImportModalOpen(false)
+      setIsForecastModalOpen(false)
+      setIsThemeModalOpen(false)
+      setIsSettingsModalOpen(false)
+      setIsOnboardingOpen(false)
     }
   }
+
+  const handleShowShortcutsHelp = () => {
+    toast.info(
+      'Atalhos de Teclado Rápidos',
+      'N ou Ctrl+K: Nova transação • 1-7: Alternar telas • I: Importar • T: Temas • S: Configurações • ESC: Fechar',
+      { duration: 6000 },
+    )
+  }
+
+  const handleSelectSection = (section: string) => {
+    const update = () => {
+      setActiveSection(section)
+      if (section === 'dashboard') {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else if (section === 'transactions') {
+        const el = document.getElementById('section-transactions')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else if (section === 'cards') {
+        const el = document.getElementById('section-cards')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else if (section === 'budget') {
+        const el = document.getElementById('section-budget')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else if (section === 'categories') {
+        const el = document.getElementById('section-transactions')
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const catBtn = document.getElementById('category-select-btn')
+        catBtn?.focus()
+      }
+    }
+
+    // Suporte nativo à View Transitions API com fallback gracioso
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      // biome-ignore lint/suspicious/noExplicitAny: View Transitions API standard
+      ;(document as any).startViewTransition(update)
+    } else {
+      update()
+    }
+  }
+
+  // Atalhos Globais de Teclado para produtividade
+  useGlobalShortcuts({
+    onOpenNewTransaction: handleOpenNewTransaction,
+    onOpenImport: () => setIsImportModalOpen(true),
+    onOpenSettings: () => setIsSettingsModalOpen(true),
+    onOpenThemes: () => setIsThemeModalOpen(true),
+    onSelectSection: handleSelectSection,
+    onCloseModals: handleCloseAllModals,
+    onShowShortcutsHelp: handleShowShortcutsHelp,
+  })
 
   // 1. Tela de Carregamento Inicial da Sessão na Nuvem
   if (isAuthLoading) {

@@ -29,6 +29,13 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+// Tratamento de mensagem para atualização imediata solicitada pelo usuário
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  }
+})
+
 // Estratégia de fetch:
 // 1. Requisições Supabase / Auth / API -> Sempre Network First (dados sempre frescos)
 // 2. Assets estáticos (JS, CSS, Imagens, Fontes) -> Stale-While-Revalidate
