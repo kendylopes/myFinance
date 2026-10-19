@@ -47,3 +47,8 @@ export const DEFAULT_INCOME_CATEGORIES: PredefinedCategory[] = [
   { id: 'presentes', name: 'Presentes / Extras', icon: 'Gift' },
   { id: 'outros', name: 'Outros', icon: 'Tag' },
 ]
+
+export const DEFAULT_CATEGORIES: PredefinedCategory[] = [
+  ...DEFAULT_EXPENSE_CATEGORIES,
+  ...DEFAULT_INCOME_CATEGORIES,
+]
