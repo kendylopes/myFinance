@@ -7,6 +7,7 @@ import {
   HandCoins,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Receipt,
   Settings,
   Smartphone,
@@ -70,6 +71,13 @@ export function Sidebar({
       label: 'Transações',
       icon: Receipt,
       description: 'Entradas e Saídas',
+    },
+    {
+      id: 'whatsapp',
+      label: 'WhatsApp (IA)',
+      icon: MessageSquare,
+      description: 'Lançamentos via Chat',
+      badge: 'IA',
     },
     {
       id: 'cards',
@@ -201,7 +209,7 @@ export function Sidebar({
                   title={`${item.label} (Atalho: ${index + 1})`}
                   className={`flex items-center transition-all cursor-pointer group ${
                     isCollapsed
-                      ? 'w-8 h-8 mx-auto justify-center rounded-xl'
+                      ? 'w-8 h-8 mx-auto justify-center rounded-xl relative'
                       : 'w-full gap-2 px-2 py-2 rounded-xl text-xs font-semibold'
                   } ${
                     isActive
@@ -221,9 +229,19 @@ export function Sidebar({
                     }}
                     aria-hidden="true"
                   />
+                  {isCollapsed && 'badge' in item && item.badge && (
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
                   {!isCollapsed && (
                     <div className="text-left overflow-hidden flex-1">
-                      <span className="block truncate">{item.label}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="block truncate">{item.label}</span>
+                        {'badge' in item && item.badge && (
+                          <span className="px-1.5 py-0.5 rounded text-3xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-2xs text-zinc-500 font-normal block truncate">
                         {item.description}
                       </span>

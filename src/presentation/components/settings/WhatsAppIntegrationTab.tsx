@@ -2,14 +2,16 @@ import {
   Bot,
   Check,
   Copy,
+  ExternalLink,
   Loader2,
   MessageSquare,
   QrCode,
+  RefreshCw,
   Send,
   ShieldCheck,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { processFinanceAgentMessage } from '../../../core/ai/financeAgentService'
 import {
   disconnectWhatsApp,
@@ -32,6 +34,28 @@ export function WhatsAppIntegrationTab({ userId, onAddTransaction }: WhatsAppInt
   const [isLoading, setIsLoading] = useState(false)
   const [activationCode, setActivationCode] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null)
+  const [loadingQr, setLoadingQr] = useState(false)
+
+  const fetchEvolutionQrCode = useCallback(async () => {
+    setLoadingQr(true)
+    try {
+      const res = await fetch('http://localhost:8080/instance/connect/myfinance', {
+        headers: {
+          apikey: 'myfinance_secret_key_123456',
+        },
+      })
+      if (!res.ok) throw new Error('Falha ao conectar')
+      const data = await res.json()
+      if (data?.base64) {
+        setQrCodeBase64(data.base64)
+      }
+    } catch {
+      // Ignora falha silenciosamente caso o container esteja indisponível
+    } finally {
+      setLoadingQr(false)
+    }
+  }, [])
 
   // Estados do Simulador de IA
   const [simMessage, setSimMessage] = useState('')
@@ -50,6 +74,10 @@ export function WhatsAppIntegrationTab({ userId, onAddTransaction }: WhatsAppInt
       time: 'Agora',
     },
   ])
+
+  useEffect(() => {
+    fetchEvolutionQrCode()
+  }, [fetchEvolutionQrCode])
 
   useEffect(() => {
     if (!userId) return
@@ -76,6 +104,7 @@ export function WhatsAppIntegrationTab({ userId, onAddTransaction }: WhatsAppInt
     try {
       const code = await generateActivationCode(userId)
       setActivationCode(code)
+      fetchEvolutionQrCode()
       toast.success('Código Gerado!', `Envie "ATIVAR ${code}" no WhatsApp oficial do myFinance.`)
     } catch {
       toast.error('Erro', 'Não foi possível gerar o código. Tente novamente.')
@@ -208,9 +237,9 @@ export function WhatsAppIntegrationTab({ userId, onAddTransaction }: WhatsAppInt
           )}
         </div>
 
-        {/* Exibição do Código de Ativação Seguro */}
+        {/* Exibição do Código de Ativação Seguro e QR Code do WhatsApp */}
         {activationCode && !integration?.isActive && (
-          <div className="p-3.5 rounded-xl bg-black/40 border border-emerald-500/30 space-y-3">
+          <div className="p-4 rounded-xl bg-black/40 border border-emerald-500/30 space-y-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-xs text-zinc-300 font-medium flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -238,8 +267,84 @@ export function WhatsAppIntegrationTab({ userId, onAddTransaction }: WhatsAppInt
             <p className="text-2xs text-zinc-400 leading-relaxed">
               👉 Envie a mensagem{' '}
               <strong className="text-white font-mono">ATIVAR {activationCode}</strong> para o
-              WhatsApp oficial do myFinance para vincular com segurança.
+              número do bot myFinance para vincular com segurança.
             </p>
+
+            {/* PAINEL DO QR CODE DA EVOLUTION API */}
+            <div className="p-3.5 rounded-xl bg-white/3 border border-white/8 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-semibold text-zinc-200">
+                    Aparelho WhatsApp (Evolution API)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={fetchEvolutionQrCode}
+                    disabled={loadingQr}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-3xs font-medium text-zinc-300 border border-white/10 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${loadingQr ? 'animate-spin' : ''}`} />
+                    <span>Atualizar QR</span>
+                  </button>
+                  <a
+                    href="http://localhost:8080/manager"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-3xs font-bold transition-all"
+                  >
+                    <span>Abrir Painel Evolution</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+
+              {qrCodeBase64 ? (
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/50 p-3.5 rounded-xl border border-white/5">
+                  <img
+                    src={qrCodeBase64}
+                    alt="QR Code WhatsApp"
+                    className="w-36 h-36 rounded-lg bg-white p-1.5 shadow-md shrink-0"
+                  />
+                  <div className="text-left space-y-2">
+                    <p className="text-2xs font-bold text-emerald-400">
+                      1. Escaneie este QR Code com seu WhatsApp:
+                    </p>
+                    <p className="text-3xs text-zinc-400 leading-relaxed">
+                      No celular, acesse <strong>Aparelhos Conectados</strong> &gt;{' '}
+                      <strong>Conectar um aparelho</strong> e aponte a câmera para o QR Code ao
+                      lado.
+                    </p>
+                    <p className="text-2xs font-bold text-cyan-400 pt-1">
+                      2. Em seguida, envie seu comando de ativação:
+                    </p>
+                    <p className="text-3xs text-zinc-400">
+                      Envie{' '}
+                      <strong className="text-white font-mono">ATIVAR {activationCode}</strong> no
+                      WhatsApp para autenticar.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-3 space-y-2">
+                  <p className="text-3xs text-zinc-400">
+                    O QR Code não carregou automaticamente? Clique abaixo para abrir o painel visual
+                    da Evolution API em uma nova aba:
+                  </p>
+                  <a
+                    href="http://localhost:8080/manager"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md"
+                  >
+                    <span>Abrir Gerenciador Evolution (localhost:8080/manager)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

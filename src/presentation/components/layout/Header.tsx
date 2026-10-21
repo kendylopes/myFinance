@@ -44,6 +44,10 @@ const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
     title: 'Categorias',
     subtitle: 'Distribuição de despesas por origem e destino',
   },
+  whatsapp: {
+    title: 'WhatsApp Inteligente (IA)',
+    subtitle: 'Lance despesas, receitas e consulte seu saldo via áudio e texto no WhatsApp',
+  },
 }
 
 export const Header = ({

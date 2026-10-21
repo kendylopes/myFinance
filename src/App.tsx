@@ -77,6 +77,11 @@ const CategoriesView = lazy(() =>
     default: m.CategoriesView,
   })),
 )
+const WhatsAppView = lazy(() =>
+  import('./presentation/components/whatsapp/WhatsAppView').then((m) => ({
+    default: m.WhatsAppView,
+  })),
+)
 
 export function AppContent() {
   const toast = useToast()
@@ -676,6 +681,22 @@ export function AppContent() {
                     handleSelectSection('transactions')
                   }}
                 />
+              </Suspense>
+            </div>
+          )}
+
+          {/* 6. TELA: WHATSAPP INTELIGENTE (IA) */}
+          {activeSection === 'whatsapp' && (
+            <div className="space-y-6 min-w-0" id="section-whatsapp">
+              <Suspense
+                fallback={
+                  <div className="py-20 text-center text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Carregando WhatsApp Inteligente (IA)...</p>
+                  </div>
+                }
+              >
+                <WhatsAppView userId={user?.id} onAddTransaction={addTransaction} />
               </Suspense>
             </div>
           )}
