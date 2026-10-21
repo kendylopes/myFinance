@@ -1,12 +1,38 @@
+import fs from 'node:fs'
 import http from 'node:http'
+import path from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = 'https://ehdlpxpciarxnfgymbtx.supabase.co'
+// Carrega variáveis do arquivo .env
+function loadEnv() {
+  try {
+    const envPath = path.resolve('.env')
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8')
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) continue
+        const [key, ...rest] = trimmed.split('=')
+        const val = rest.join('=').trim()
+        if (key && !process.env[key]) {
+          process.env[key] = val.replace(/^["']|["']$/g, '')
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Env] Não foi possível ler .env:', e.message)
+  }
+}
+loadEnv()
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://ehdlpxpciarxnfgymbtx.supabase.co'
 const SUPABASE_ANON_KEY =
+  process.env.VITE_SUPABASE_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoZGxweHBjaWFyeG5mZ3ltYnR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODA0NjcsImV4cCI6MjEwNTY1NjQ2N30.Ev_hMWGIj4dPpiacu60cGOvMMfED9uQRCvdEDW3YkzU'
 
 const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || 'http://localhost:8080'
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || 'myfinance_secret_key_123456'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || ''
 const PORT = 3001
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -34,10 +60,85 @@ async function sendWhatsAppMessage(remoteJid, text) {
       const errBody = await res.text()
       console.error(`[WhatsApp Send Error ${res.status}]:`, errBody)
     } else {
-      console.log(`[WhatsApp Enviado para ${cleanNumber}]: ${text.slice(0, 40)}...`)
+      console.log(`[WhatsApp Enviado para ${cleanNumber}]: ${text.slice(0, 50).replace(/\n/g, ' ')}...`)
     }
   } catch (err) {
     console.error('[WhatsApp Send Exception]:', err.message)
+  }
+}
+
+// Baixa o base64 do áudio recebido via Evolution API
+async function downloadAudioBase64(msgData) {
+  try {
+    console.log('[Audio] Baixando base64 do áudio na Evolution API...')
+    const endpoint = `${EVOLUTION_API_URL}/chat/getBase64FromMediaMessage/myfinance`
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: EVOLUTION_API_KEY,
+      },
+      body: JSON.stringify({
+        message: msgData,
+        convertToMp4: false,
+      }),
+    })
+
+    if (!res.ok) {
+      console.error('[Audio Download Error]:', await res.text())
+      return null
+    }
+
+    const data = await res.json()
+    return data?.base64 || null
+  } catch (err) {
+    console.error('[Audio Download Exception]:', err.message)
+    return null
+  }
+}
+
+// Transcreve e processa o áudio usando o Gemini 2.0 Flash
+async function transcribeAudioWithGemini(base64Audio, apiKey) {
+  try {
+    console.log('[Gemini] Transcrevendo áudio com Gemini 2.0 Flash...')
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: 'audio/ogg',
+                  data: base64Audio,
+                },
+              },
+              {
+                text: 'Transcreva exatamente o que foi dito neste áudio em português do Brasil. Retorne apenas e estritamente o texto falado, sem comentários adicionais.',
+              },
+            ],
+          },
+        ],
+      }),
+    })
+
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error('[Gemini API Error]:', errText)
+      return null
+    }
+
+    const data = await res.json()
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+    return text ? text.trim() : null
+  } catch (err) {
+    console.error('[Gemini API Exception]:', err.message)
+    return null
   }
 }
 
@@ -58,7 +159,7 @@ async function setupWebhook() {
           enabled: true,
           url: webhookUrl,
           byEvents: false,
-          base64: false,
+          base64: true,
           events: ['MESSAGES_UPSERT'],
         },
       }),
@@ -71,7 +172,7 @@ async function setupWebhook() {
   }
 }
 
-// Extrator simples de lançamentos financeiros
+// Extrator inteligente de lançamentos financeiros
 function parseFinancialMessage(text) {
   const clean = text.trim()
 
@@ -89,7 +190,7 @@ function parseFinancialMessage(text) {
 
   // 3. Categoria inteligente
   let category = isIncome ? 'Trabalho' : 'Alimentação'
-  if (/mercado|supermercado|almoço|almoco|jantar|lanche|padaria|pizza|comida|ifood|restaurante/i.test(clean)) {
+  if (/mercado|supermercado|almoço|almoco|jantar|lanche|padaria|pizza|comida|ifood|restaurante|ovo|ovos/i.test(clean)) {
     category = 'Alimentação'
   } else if (/gasolina|uber|posto|combustivel|combustível|passagem|onibus|ônibus|metro|metrô|estacionamento/i.test(clean)) {
     category = 'Transporte'
@@ -105,16 +206,16 @@ function parseFinancialMessage(text) {
     category = 'Compras'
   }
 
-  // 4. Descrição (remove o valor para extrair o título)
+  // 4. Descrição (remove termos operacionais para deixar nome limpo)
   let title = clean
-    .replace(/(?:gastei|paguei|comprei|recebi|ganhei|pix de|com|no|na|de)\s*/gi, '')
-    .replace(/(?:r\$|reais)?\s*\d+(?:[.,]\d{1,2})?/gi, '')
+    .replace(/(?:gastei|paguei|comprei|recebi|ganhei|pix de|com|no|na|de|reais|r\$)\s*/gi, ' ')
+    .replace(/\b\d+(?:[.,]\d{1,2})?\b/g, '')
+    .replace(/\s+/g, ' ')
     .trim()
 
   if (!title || title.length < 2) {
     title = category
   } else {
-    // Primeira letra maiúscula
     title = title.charAt(0).toUpperCase() + title.slice(1)
   }
 
@@ -129,11 +230,17 @@ function parseFinancialMessage(text) {
   }
 }
 
-// Cria o servidor HTTP
+// Cria o servidor HTTP do Webhook
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' })
-    return res.end(JSON.stringify({ status: 'healthy', service: 'myfinance-whatsapp-bridge' }))
+    return res.end(
+      JSON.stringify({
+        status: 'healthy',
+        service: 'myfinance-whatsapp-bridge',
+        hasGeminiKey: Boolean(GEMINI_API_KEY),
+      }),
+    )
   }
 
   if (req.method === 'POST' && req.url === '/webhook') {
@@ -149,7 +256,6 @@ const server = http.createServer(async (req, res) => {
       try {
         const payload = JSON.parse(body)
         const event = payload.event
-        console.log(`[Webhook Evento Recebido]: ${event}`)
 
         if (event !== 'messages.upsert') return
 
@@ -159,57 +265,63 @@ const server = http.createServer(async (req, res) => {
         const fromMe = msgData.key?.fromMe
         const remoteJid = msgData.key?.remoteJid || ''
 
-        // Ignora grupos e mensagens enviadas pelo próprio bot
+        // 1. Ignora grupos e mensagens enviadas pelo próprio bot
         if (fromMe || remoteJid.includes('@g.us')) return
 
         const cleanSender = remoteJid.replace('@s.whatsapp.net', '').replace(/\D/g, '')
-        const messageText =
+        if (!cleanSender) return
+
+        // 2. Extrai texto ou detecta áudio
+        const isAudio =
+          msgData.messageType === 'audioMessage' ||
+          Boolean(msgData.message?.audioMessage)
+
+        let messageText =
           msgData.message?.conversation ||
           msgData.message?.extendedTextMessage?.text ||
           ''
 
-        if (!cleanSender || !messageText.trim()) return
+        // 3. Checa se o usuário enviou comando de ativação por texto: ATIVAR 123456
+        if (!isAudio && messageText.trim()) {
+          const trimmed = messageText.trim()
+          const activationMatch = trimmed.match(/^ATIVAR\s+(\d{6})/i)
 
-        const trimmed = messageText.trim()
-        console.log(`[Mensagem de ${cleanSender}]: "${trimmed}"`)
+          if (activationMatch) {
+            const code = activationMatch[1]
+            console.log(`[Ativação] Tentando ativar número ${cleanSender} com código: ${code}`)
 
-        // 1. Checa se é mensagem de ativação: ATIVAR 123456
-        const activationMatch = trimmed.match(/^ATIVAR\s+(\d{6})/i)
-        if (activationMatch) {
-          const code = activationMatch[1]
-          console.log(`[Ativação] Tentando ativar com código: ${code}`)
+            const { data: actResult, error: actError } = await supabase.rpc(
+              'activate_whatsapp_number',
+              {
+                p_code: code,
+                p_phone: cleanSender,
+              },
+            )
 
-          const { data: actResult, error: actError } = await supabase.rpc(
-            'activate_whatsapp_number',
-            {
-              p_code: code,
-              p_phone: cleanSender,
-            },
-          )
+            if (actError || !actResult?.success) {
+              console.warn('[Ativação Falhou]:', actError?.message || actResult?.error)
+              await sendWhatsAppMessage(
+                cleanSender,
+                '❌ *Código Inválido ou Expirado!*\n\nPor favor, gere um novo código de 6 dígitos no myFinance no menu *WhatsApp* e envie aqui:\n\n👉 *ATIVAR [SEU_CODIGO]*',
+              )
+              return
+            }
 
-          if (actError || !actResult?.success) {
-            console.warn('[Ativação Falhou]:', actError?.message || actResult?.error)
+            console.log(`[Ativação Concluída] Usuário ${actResult.user_id} ativado!`)
             await sendWhatsAppMessage(
               cleanSender,
-              '❌ *Código Inválido ou Expirado!*\n\nPor favor, gere um novo código de 6 dígitos no myFinance no menu *WhatsApp* e envie aqui:\n\n👉 *ATIVAR [SEU_CODIGO]*',
+              `🎉 *WhatsApp Conectado com Sucesso!*\n\nOlá! Sua conta do *myFinance* foi vinculada a este número com sucesso.\n\nA partir de agora você pode gerenciar suas finanças diretamente por aqui!\n\n*Experimente enviar:*\n• *"Gastei 45 no almoço"*\n• *"Recebi 1.200 de um freela"*\n• *"Qual meu saldo deste mês?"*\n\nPode mandar texto ou áudios a qualquer momento! 🚀`,
             )
             return
           }
-
-          console.log(`[Ativação Concluída] Usuário ${actResult.user_id} ativado!`)
-          await sendWhatsAppMessage(
-            cleanSender,
-            `🎉 *WhatsApp Conectado com Sucesso!*\n\nOlá! Sua conta do *myFinance* foi vinculada a este número com sucesso.\n\nA partir de agora você pode gerenciar suas finanças diretamente por aqui!\n\n*Experimente enviar:*\n• *"Gastei 45 no almoço"*\n• *"Recebi 1.200 de um freela"*\n• *"Qual meu saldo deste mês?"*\n\nPode mandar texto ou áudios a qualquer momento! 🚀`,
-          )
-          return
         }
 
-        // 2. Verifica se o número já está vinculado a um usuário do myFinance
+        // 4. Verifica se o remetente já é um usuário ativado no myFinance
         const { data: userResult } = await supabase.rpc('get_whatsapp_user', {
           p_phone: cleanSender,
         })
 
-        // Se o número não está vinculado e não enviou o código de ativação, IGNORA completamente (silêncio total para não perturbar contatos pessoais)
+        // SILÊNCIO TOTAL para contatos desconhecidos (não perturba amigos, família ou trabalho)
         if (!userResult?.found) {
           console.log(`[Silencioso] Mensagem de número não vinculado ${cleanSender} ignorada.`)
           return
@@ -217,7 +329,49 @@ const server = http.createServer(async (req, res) => {
 
         const userId = userResult.user_id
 
-        // 3. Consulta de Saldo / Resumo
+        // 5. PROCESSAMENTO DE ÁUDIO
+        let audioTranscribedNotice = ''
+        if (isAudio) {
+          console.log(`[Audio Recebido de ${cleanSender}]: Processando áudio...`)
+
+          if (!GEMINI_API_KEY) {
+            console.warn('[Audio Alerta]: GEMINI_API_KEY ausente para transcrever áudio.')
+            await sendWhatsAppMessage(
+              cleanSender,
+              `🎙️ *Áudio Recebido!*\n\nPara que o myFinance possa ouvir e transcrever seus áudios com inteligência artificial, adicione sua chave *GEMINI_API_KEY* no arquivo *.env*.\n\n👉 A chave é gratuita no Google AI Studio: https://aistudio.google.com/apikey\n\n_Enquanto isso, você pode me enviar mensagens por texto normalmente que já estão funcionando 100%!_ 📱`,
+            )
+            return
+          }
+
+          const base64Audio = await downloadAudioBase64(msgData)
+          if (!base64Audio) {
+            await sendWhatsAppMessage(
+              cleanSender,
+              '⚠️ Não consegui baixar o áudio enviado. Por favor, tente enviar novamente.',
+            )
+            return
+          }
+
+          const transcribed = await transcribeAudioWithGemini(base64Audio, GEMINI_API_KEY)
+          if (!transcribed) {
+            await sendWhatsAppMessage(
+              cleanSender,
+              '⚠️ Não consegui transcrever o áudio com clareza. Tente falar um pouco mais perto do microfone ou enviar por texto.',
+            )
+            return
+          }
+
+          messageText = transcribed
+          audioTranscribedNotice = `🎙️ *Áudio Ouvido:* _"${transcribed}"_\n\n`
+          console.log(`[Audio Transcrito]: "${transcribed}"`)
+        }
+
+        const trimmed = messageText.trim()
+        if (!trimmed) return
+
+        console.log(`[Mensagem Processada de ${cleanSender}]: "${trimmed}"`)
+
+        // 6. Consulta de Saldo / Resumo Financeiro
         if (/saldo|quanto tenho|extrato|resumo|gastei quanto|quanto gastei/i.test(trimmed)) {
           const currentYM = new Date().toISOString().slice(0, 7)
           const { data: summary } = await supabase.rpc('get_whatsapp_summary', {
@@ -234,7 +388,7 @@ const server = http.createServer(async (req, res) => {
 
           await sendWhatsAppMessage(
             cleanSender,
-            `📊 *Resumo Financeiro do Mês (${currentYM})*\n\n` +
+            `${audioTranscribedNotice}📊 *Resumo Financeiro do Mês (${currentYM})*\n\n` +
               `🟢 *Receitas:* ${formatBRL(income)}\n` +
               `🔴 *Despesas:* ${formatBRL(expense)}\n` +
               `━━━━━━━━━━━━━━━━\n` +
@@ -244,7 +398,7 @@ const server = http.createServer(async (req, res) => {
           return
         }
 
-        // 4. Extração e Registro de Transação
+        // 7. Extração e Registro de Transação (Receita ou Despesa)
         const parsedTx = parseFinancialMessage(trimmed)
 
         if (parsedTx) {
@@ -278,7 +432,7 @@ const server = http.createServer(async (req, res) => {
 
           await sendWhatsAppMessage(
             cleanSender,
-            `✅ *${icon} Registrada com Sucesso!*\n\n` +
+            `${audioTranscribedNotice}✅ *${icon} Registrada com Sucesso!*\n\n` +
               `📝 *Descrição:* ${parsedTx.title}\n` +
               `💰 *Valor:* ${formattedAmount}\n` +
               `🏷️ *Categoria:* ${parsedTx.category}\n` +
@@ -288,11 +442,19 @@ const server = http.createServer(async (req, res) => {
           return
         }
 
-        // 5. Resposta apenas quando expressamente solicitado ou se for pedido de ajuda/saudação
+        // 8. Resposta quando expressamente solicitado ou saudação direta
         if (/^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)\b/i.test(trimmed)) {
           await sendWhatsAppMessage(
             cleanSender,
             `🤖 *myFinance Inteligente*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como usar:*\n• *"Almoço 45 reais"*\n• *"Gasolina 120"*\n• *"Recebi 2500 salário"*\n• *"Qual meu saldo?"*`,
+          )
+          return
+        }
+
+        if (isAudio) {
+          await sendWhatsAppMessage(
+            cleanSender,
+            `${audioTranscribedNotice}🤖 Não consegui identificar um valor ou comando financeiro no que você falou.\n\n*Tente falar algo como:*\n• _"Gastei trinta reais na padaria"_\n• _"Recebi quinhentos de um freela"_`,
           )
           return
         }
@@ -313,6 +475,7 @@ server.listen(PORT, '0.0.0.0', async () => {
   console.log(`\n======================================================`)
   console.log(`🚀 [myFinance WhatsApp Bridge] Rodando na porta ${PORT}`)
   console.log(`🌐 Endpoint do Webhook: http://0.0.0.0:${PORT}/webhook`)
+  console.log(`🤖 IA Gemini: ${GEMINI_API_KEY ? 'Ativa ✅' : 'Chave Pendente no .env ⚠️'}`)
   console.log(`======================================================\n`)
 
   await setupWebhook()
