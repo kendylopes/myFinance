@@ -1,37 +1,17 @@
-import {
-  Check,
-  Coins,
-  MessageSquare,
-  Moon,
-  Palette,
-  Settings,
-  Sparkles,
-  Sun,
-  X,
-} from 'lucide-react'
+import { Check, Coins, Moon, Palette, Settings, Sparkles, Sun, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { type CurrencyCode, useCurrency } from '../../../core/currency/currencyContext'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { type ThemeId, useTheme } from '../../../core/theme/themeContext'
-import type { CreateTransactionDTO } from '../../../domain/models/transaction'
-import { WhatsAppIntegrationTab } from './WhatsAppIntegrationTab'
 
 export interface SettingsModalProps {
   isOpen: boolean
   onClose: () => void
-  initialTab?: 'general' | 'themes' | 'whatsapp'
-  userId?: string | null
-  onAddTransaction?: (dto: CreateTransactionDTO) => Promise<boolean>
+  initialTab?: 'general' | 'themes'
 }
 
-export function SettingsModal({
-  isOpen,
-  onClose,
-  initialTab = 'general',
-  userId = null,
-  onAddTransaction,
-}: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'themes' | 'whatsapp'>(initialTab)
+export function SettingsModal({ isOpen, onClose, initialTab = 'general' }: SettingsModalProps) {
+  const [activeTab, setActiveTab] = useState<'general' | 'themes'>(initialTab)
 
   const { currentTheme, setTheme, availableThemes, isDarkMode, setThemeMode } = useTheme()
 
@@ -151,22 +131,6 @@ export function SettingsModal({
           >
             <Palette className="w-4 h-4" />
             <span>Temas Dev ({availableThemes.length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              soundFX.playClick()
-              setActiveTab('whatsapp')
-            }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'whatsapp'
-                ? 'bg-white/15 text-white shadow-sm border border-white/10'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4 text-emerald-400" />
-            <span>WhatsApp (IA)</span>
           </button>
         </div>
 
@@ -438,11 +402,6 @@ export function SettingsModal({
                 })}
               </div>
             </div>
-          )}
-
-          {/* Aba 3: Integração WhatsApp (IA) e Simulador */}
-          {activeTab === 'whatsapp' && (
-            <WhatsAppIntegrationTab userId={userId} onAddTransaction={onAddTransaction} />
           )}
         </div>
 

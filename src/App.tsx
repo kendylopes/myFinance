@@ -718,8 +718,6 @@ export function AppContent() {
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
             initialTab={settingsInitialTab}
-            userId={user?.id}
-            onAddTransaction={addTransaction}
           />
         )}
 
