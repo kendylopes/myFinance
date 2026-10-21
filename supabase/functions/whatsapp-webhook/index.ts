@@ -244,11 +244,8 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ status: 'invalid_code' }))
       }
 
-      await sendWhatsAppMessage(
-        cleanSender,
-        '👋 *Olá! Sou o assistente do myFinance.*\n\nPara conectar este número à sua conta, abra o myFinance no seu navegador, vá em *Configurações > WhatsApp (IA)*, clique em *Conectar* e me envie a mensagem:\n\n👉 *ATIVAR [SEU_CODIGO]*',
-      )
-      return new Response(JSON.stringify({ status: 'unregistered' }))
+      // Número não registrado que não enviou código de ativação é ignorado para preservar a privacidade
+      return new Response(JSON.stringify({ status: 'ignored_unregistered' }))
     }
 
     // CASO 2: Usuário ATIVADO -> Processamento Inteligente com Gemini

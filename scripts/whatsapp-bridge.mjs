@@ -209,12 +209,9 @@ const server = http.createServer(async (req, res) => {
           p_phone: cleanSender,
         })
 
+        // Se o número não está vinculado e não enviou o código de ativação, IGNORA completamente (silêncio total para não perturbar contatos pessoais)
         if (!userResult?.found) {
-          console.log(`[Desconhecido] Número ${cleanSender} não vinculado.`)
-          await sendWhatsAppMessage(
-            cleanSender,
-            `👋 *Olá! Sou o assistente do myFinance.*\n\nPara vincular seu WhatsApp à sua conta:\n1. Acesse o myFinance no seu computador ou celular\n2. Clique em *WhatsApp* no menu lateral\n3. Clique em *Gerar Código*\n4. Envie aqui a mensagem:\n\n👉 *ATIVAR [SEU_CODIGO]*`,
-          )
+          console.log(`[Silencioso] Mensagem de número não vinculado ${cleanSender} ignorada.`)
           return
         }
 
@@ -291,11 +288,16 @@ const server = http.createServer(async (req, res) => {
           return
         }
 
-        // 5. Resposta para mensagens gerais
-        await sendWhatsAppMessage(
-          cleanSender,
-          `🤖 *myFinance Inteligente*\n\nNão consegui identificar um valor ou comando na sua mensagem.\n\n*Exemplos do que você pode me mandar:*\n• *"Almoço 45 reais"*\n• *"Gasolina 150"*\n• *"Recebi 2500 salário"*\n• *"Qual meu saldo?"*`,
-        )
+        // 5. Resposta apenas quando expressamente solicitado ou se for pedido de ajuda/saudação
+        if (/^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)\b/i.test(trimmed)) {
+          await sendWhatsAppMessage(
+            cleanSender,
+            `🤖 *myFinance Inteligente*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como usar:*\n• *"Almoço 45 reais"*\n• *"Gasolina 120"*\n• *"Recebi 2500 salário"*\n• *"Qual meu saldo?"*`,
+          )
+          return
+        }
+
+        console.log(`[Ignorado] Mensagem sem comando financeiro reconhecido: "${trimmed}"`)
       } catch (err) {
         console.error('[Webhook Processing Error]:', err)
       }
