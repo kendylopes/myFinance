@@ -129,22 +129,30 @@ export function useFinance(
   }, [activeTransactionRepo, refreshCategories])
 
   useEffect(() => {
-    if (user === null) {
+    if (!user) {
       setTransactions([])
       setCategories([])
+      setIsLoading(false)
+      return
     }
+
+    // Limpa o estado imediatamente para evitar vazamento visual entre contas
+    setTransactions([])
+    setCategories([])
     refresh()
   }, [refresh, user])
 
   // Carregamento reativo do orçamento para o mês selecionado
   useEffect(() => {
     let isMounted = true
-    if (user !== undefined) {
+    if (user) {
       activeBudgetRepo.getBudget(selectedMonth).then((amount) => {
         if (isMounted) {
           setBudgetAmount(amount)
         }
       })
+    } else {
+      setBudgetAmount(3000)
     }
     return () => {
       isMounted = false

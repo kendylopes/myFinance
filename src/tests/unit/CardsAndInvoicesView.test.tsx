@@ -81,4 +81,21 @@ describe('<CardsAndInvoicesView /> (Tela de Cartões & Faturas Futuras)', () => 
 
     expect(onToggleStatus).toHaveBeenCalledWith('tx-1')
   })
+
+  it('deve exibir R$ 0,00 em maior fatura prevista e aviso explicativo quando a conta não possui compras', () => {
+    render(
+      <ThemeProvider>
+        <CurrencyProvider>
+          <CardsAndInvoicesView transactions={[]} />
+        </CurrencyProvider>
+      </ThemeProvider>,
+    )
+
+    // O card de Maior Fatura Prevista deve exibir R$ 0,00 (não R$ 100,00)
+    expect(screen.getByText(/Maior Fatura Prevista/i)).toBeInTheDocument()
+    expect(screen.queryByText(/R\$ 100,00/i)).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Nenhuma fatura futura ou compra parcelada cadastrada nesta conta/i),
+    ).toBeInTheDocument()
+  })
 })

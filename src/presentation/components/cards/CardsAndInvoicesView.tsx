@@ -71,10 +71,15 @@ export function CardsAndInvoicesView({
     return installmentGroups.filter((g) => g.isCompleted).length
   }, [installmentGroups])
 
-  // Maior valor mensal para calcular a altura proporcional das barras no gráfico
-  const maxForecastAmount = useMemo(() => {
-    return Math.max(...monthlyForecasts.map((f) => f.totalAmount), 100)
+  // Maior valor real de fatura prevista nos próximos 12 meses
+  const actualMaxForecastAmount = useMemo(() => {
+    return monthlyForecasts.reduce((max, f) => Math.max(max, f.totalAmount), 0)
   }, [monthlyForecasts])
+
+  // Escala máxima para as barras do gráfico (mínimo de 100 para proporção se houver dados)
+  const maxForecastScale = useMemo(() => {
+    return Math.max(actualMaxForecastAmount, 100)
+  }, [actualMaxForecastAmount])
 
   // Filtragem de compras por busca e status
   const filteredGroups = useMemo(() => {
@@ -136,7 +141,7 @@ export function CardsAndInvoicesView({
             </div>
           </div>
           <div className="text-lg sm:text-2xl font-black text-rose-400 font-mono tracking-tight">
-            {formatValue(maxForecastAmount)}
+            {formatValue(actualMaxForecastAmount)}
           </div>
           <p className="text-2xs sm:text-[11px] text-zinc-400">Mês de maior peso no orçamento</p>
         </div>
@@ -237,10 +242,11 @@ export function CardsAndInvoicesView({
               <div className="flex items-end justify-between gap-2.5 sm:gap-3 min-w-170 h-52 px-2 border-b border-white/10 pb-2">
                 {monthlyForecasts.map((item) => {
                   const heightPercent =
-                    maxForecastAmount > 0
-                      ? Math.max(8, (item.totalAmount / maxForecastAmount) * 100)
+                    actualMaxForecastAmount > 0
+                      ? Math.max(8, (item.totalAmount / maxForecastScale) * 100)
                       : 8
-                  const isHighest = item.totalAmount === maxForecastAmount && item.totalAmount > 0
+                  const isHighest =
+                    actualMaxForecastAmount > 0 && item.totalAmount === actualMaxForecastAmount
                   const isHovered = hoveredMonth === item.yearMonth
 
                   return (
@@ -295,6 +301,24 @@ export function CardsAndInvoicesView({
                 })}
               </div>
             </div>
+
+            {installmentGroups.length === 0 && (
+              <div className="pt-3 text-center text-zinc-400 border-t border-white/5 space-y-2">
+                <p className="text-xs">
+                  Nenhuma fatura futura ou compra parcelada cadastrada nesta conta.
+                </p>
+                {onOpenNewInstallment && (
+                  <button
+                    type="button"
+                    onClick={onOpenNewInstallment}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Cadastrar primeira compra no cartão</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (

@@ -89,6 +89,12 @@ export function AppContent() {
   const { currentTheme } = useTheme()
 
   const handleLogout = async () => {
+    setActiveSection('dashboard')
+    setEditingTransaction(null)
+    setIsTxModalOpen(false)
+    setIsSettingsModalOpen(false)
+    setIsImportModalOpen(false)
+    setIsForecastModalOpen(false)
     await logout()
     toast.info('Sessão encerrada', 'Você saiu da sua conta myFinance.')
   }
@@ -338,6 +344,7 @@ export function AppContent() {
   // 3. Usuário Autenticado: Dashboard Completo com Menu Lateral e Temas Dev
   return (
     <div
+      key={user.id}
       className="relative min-h-screen text-zinc-100 antialiased overflow-x-hidden transition-colors duration-300"
       style={{
         backgroundColor: 'var(--bg-app)',
