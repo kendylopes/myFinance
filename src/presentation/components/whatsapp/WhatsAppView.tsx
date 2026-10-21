@@ -34,6 +34,7 @@ export interface WhatsAppViewProps {
 
 export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
   const toast = useToast()
+  const [activeTab, setActiveTab] = useState<'playground' | 'connection' | 'guide'>('playground')
   const [integration, setIntegration] = useState<WhatsAppIntegration | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [activationCode, setActivationCode] = useState<string | null>(null)
@@ -56,7 +57,7 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
     {
       id: 'welcome-agent',
       sender: 'agent',
-      text: 'Olá! Sou o agente do myFinance. Experimente falar comigo por aqui ou conecte seu WhatsApp real para mandar áudios no dia a dia! 🚀\n\nTente digitar: *"Gastei 45 no almoço"* ou *"Recebi 1.200 de um freela"*',
+      text: 'Olá! Sou o agente inteligente do myFinance. Você pode conversar comigo aqui ou conectar seu WhatsApp para registrar lançamentos por áudio e texto no seu dia a dia! 🚀\n\nTente enviar: *"Gastei 45 no almoço"* ou *"Recebi 1.200 de um freela"*',
       time: 'Agora',
     },
   ])
@@ -110,6 +111,7 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
     try {
       const code = await generateActivationCode(userId)
       setActivationCode(code)
+      setActiveTab('connection')
       fetchEvolutionQrCode()
       toast.success('Código Gerado!', `Envie "ATIVAR ${code}" no WhatsApp oficial do myFinance.`)
     } catch {
@@ -200,93 +202,297 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
   ]
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto" id="section-whatsapp">
-      {/* 1. CABEÇALHO HERO COM IDENTIDADE DA IA */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/4 border border-white/10 shadow-xl relative overflow-hidden backdrop-blur-md">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-start gap-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shrink-0 shadow-lg shadow-emerald-500/10">
-              <MessageSquare className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  WhatsApp Inteligente (IA)
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-3xs font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  Gemini 2.0 Flash
-                </span>
-                {integration?.isActive ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-3xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    CONECTADO
-                  </span>
-                ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-3xs font-bold bg-zinc-800 text-zinc-400 border border-white/10">
-                    NÃO CONECTADO
-                  </span>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1.5 max-w-2xl leading-relaxed">
-                Lance despesas, receitas e consulte seu saldo financeiro diretamente pelo WhatsApp
-                enviando <strong>mensagens de voz ou texto</strong>. Nosso agente inteligente
-                categoriza e registra tudo automaticamente no seu extrato.
-              </p>
+    <div className="space-y-6 animate-fade-in" id="section-whatsapp">
+      {/* 1. CARDS ANALÍTICOS DE KPI PADRONIZADOS (4 CARDS) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Card 1: Status do WhatsApp */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+              Status do WhatsApp
+            </span>
+            <div
+              className={`p-1.5 sm:p-2 rounded-xl ${
+                integration?.isActive
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'bg-zinc-800 text-zinc-400'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-
-          <div className="shrink-0 flex items-center gap-2">
-            {integration?.isActive ? (
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                disabled={isLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-semibold hover:bg-rose-500/20 transition-all cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Desconectar</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleGenerateCode}
-                disabled={isLoading}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <QrCode className="w-4 h-4" />
-                )}
-                <span>{activationCode ? 'Gerar Novo Código' : 'Conectar meu WhatsApp'}</span>
-              </button>
-            )}
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                integration?.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'
+              }`}
+            />
+            <span className="text-base sm:text-xl font-black text-white tracking-tight">
+              {integration?.isActive ? 'Conectado' : 'Desconectado'}
+            </span>
           </div>
+          <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
+            {integration?.phoneNumber ? `+${integration.phoneNumber}` : 'Aguardando pareamento'}
+          </p>
+        </div>
+
+        {/* Card 2: Motor de Inteligência Artificial */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+              Motor de IA
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+          </div>
+          <div className="text-base sm:text-xl font-black text-cyan-300 tracking-tight">
+            Gemini 2.0 Flash
+          </div>
+          <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
+            Function Calling em tempo real
+          </p>
+        </div>
+
+        {/* Card 3: Formatos de Entrada */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+              Formatos de Entrada
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-xl bg-violet-500/10 text-violet-400">
+              <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+          </div>
+          <div className="text-base sm:text-xl font-black text-white tracking-tight">
+            Áudio & Texto
+          </div>
+          <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">
+            Mensagens de voz naturais ou texto
+          </p>
+        </div>
+
+        {/* Card 4: Segurança & RLS */}
+        <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+          <div className="flex items-center justify-between text-zinc-400">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+              Segurança
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+          </div>
+          <div className="text-base sm:text-xl font-black text-emerald-400 tracking-tight">
+            100% Isolado
+          </div>
+          <p className="text-2xs sm:text-[11px] text-zinc-400 truncate">Row Level Security ativo</p>
         </div>
       </div>
 
-      {/* 2. CARD DE CONEXÃO & QR CODE (SE NÃO ESTIVER ATIVO) */}
-      {!integration?.isActive && (
-        <div className="p-5 sm:p-6 rounded-3xl bg-white/4 border border-white/10 shadow-lg space-y-4">
+      {/* 2. SELETOR DE ABAS & TOOLBAR DE AÇÕES */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Abas Segmentadas Canônicas do myFinance */}
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/4 border border-white/10 w-fit shadow-inner">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('playground')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'playground'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Bot className="w-4 h-4" />
+            <span>Simulador de IA</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('connection')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'connection'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Conexão & QR Code</span>
+            {activationCode && !integration?.isActive && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setActiveTab('guide')
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'guide'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>Como Usar</span>
+          </button>
+        </div>
+
+        {/* Botões de Ação na Toolbar */}
+        <div className="flex items-center gap-2">
+          {integration?.isActive ? (
+            <button
+              type="button"
+              onClick={handleDisconnect}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-semibold hover:bg-rose-500/20 transition-all cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Desconectar</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleGenerateCode}
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <QrCode className="w-3.5 h-3.5" />
+              )}
+              <span>{activationCode ? 'Novo Código' : 'Conectar WhatsApp'}</span>
+            </button>
+          )}
+
+          <a
+            href="http://localhost:8080/manager"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-xs font-semibold transition-colors"
+            title="Abrir painel visual da Evolution API"
+          >
+            <span>Painel Evolution</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
+
+      {/* 3. CONTEÚDO DA ABA SELECIONADA */}
+
+      {/* ABA 1: SIMULADOR DE IA (PLAYGROUND) */}
+      {activeTab === 'playground' && (
+        <div className="glass-card p-5 sm:p-6 rounded-3xl border border-white/10 shadow-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-cyan-400" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                Simulador do Agente de IA
+              </h2>
+            </div>
+            <span className="text-3xs text-cyan-300 font-mono bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+              Teste em Tempo Real
+            </span>
+          </div>
+
+          {/* Histórico do Chat */}
+          <div className="space-y-3 min-h-64 max-h-96 overflow-y-auto p-4 rounded-2xl bg-black/40 border border-white/5 custom-scrollbar">
+            {simMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] sm:max-w-md p-3.5 rounded-2xl text-xs leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-emerald-600 text-white rounded-br-none shadow-md shadow-emerald-600/10'
+                      : 'bg-white/8 text-zinc-200 border border-white/10 rounded-bl-none shadow-sm'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  <span className="text-3xs opacity-60 mt-1.5 block text-right font-mono">
+                    {msg.time}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {simLoading && (
+              <div className="flex items-center gap-2 text-zinc-400 text-xs py-1">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                <span>O Agente está pensando...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Formulário de Envio */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSendSimMessage()
+            }}
+            className="space-y-3"
+          >
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={simMessage}
+                onChange={(e) => setSimMessage(e.target.value)}
+                placeholder="Ex: Gastei 45 no almoço, ou quanto tenho de saldo?"
+                className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={simLoading || !simMessage.trim()}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Enviar</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-wrap pt-1">
+              <span className="text-3xs text-zinc-500 uppercase font-bold tracking-wider">
+                Sugestões Rápidas:
+              </span>
+              {examplePrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => handleSendSimMessage(prompt)}
+                  className="text-3xs px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors cursor-pointer"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ABA 2: CONEXÃO & QR CODE */}
+      {activeTab === 'connection' && (
+        <div className="glass-card p-5 sm:p-6 rounded-3xl border border-white/10 shadow-lg space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-emerald-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                Passo a Passo de Ativação
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                Painel de Conexão do WhatsApp
               </h2>
             </div>
-            <a
-              href="http://localhost:8080/manager"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 text-2xs font-semibold transition-colors"
-            >
-              <span>Painel Evolution</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            {integration?.isActive && (
+              <span className="px-2.5 py-0.5 rounded-full text-3xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Ativo e Vinculado
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -294,13 +500,13 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
             <div className="p-4 rounded-2xl bg-black/40 border border-white/8 flex flex-col items-center text-center justify-center space-y-3">
               <div className="flex items-center justify-between w-full">
                 <span className="text-xs font-bold text-emerald-400">
-                  1. Conectar Aparelho do Bot
+                  1. Parear Aparelho (Evolution API)
                 </span>
                 <button
                   type="button"
                   onClick={fetchEvolutionQrCode}
                   disabled={loadingQr}
-                  className="p-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                   title="Atualizar QR Code"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${loadingQr ? 'animate-spin' : ''}`} />
@@ -332,11 +538,11 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
             <div className="p-4 rounded-2xl bg-black/40 border border-white/8 flex flex-col justify-between space-y-3">
               <div>
                 <span className="text-xs font-bold text-cyan-400 block mb-2">
-                  2. Vincular com sua Conta
+                  2. Vincular sua Conta
                 </span>
                 <p className="text-2xs text-zinc-300 leading-relaxed">
-                  Para o robô saber que as mensagens são suas, você precisa enviar o comando com o
-                  código temporário abaixo:
+                  Para o robô associar as mensagens ao seu extrato, envie o comando com seu código
+                  temporário de 6 dígitos:
                 </p>
 
                 {activationCode ? (
@@ -369,7 +575,7 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
                       type="button"
                       onClick={handleGenerateCode}
                       disabled={isLoading}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all cursor-pointer"
                     >
                       Gerar Código de 6 Dígitos
                     </button>
@@ -380,8 +586,8 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
               <div className="p-3 rounded-xl bg-white/3 border border-white/8 text-2xs text-zinc-400 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <span>
-                  O código expira em 15 minutos e garante que apenas seu número tenha acesso aos
-                  seus dados financeiros.
+                  O código expira em 15 minutos e garante que apenas seu número autenticado tenha
+                  acesso aos seus dados financeiros.
                 </span>
               </div>
             </div>
@@ -389,135 +595,52 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
         </div>
       )}
 
-      {/* 3. GUIA VISUAL DE EXEMPLOS DE VOZ E TEXTO */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-white/4 border border-white/10 space-y-2">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <Mic className="w-4 h-4" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Por Áudio</h3>
-          </div>
-          <p className="text-2xs text-zinc-400 leading-relaxed">
-            Grave um áudio natural no WhatsApp dizendo o que gastou ou recebeu:
-          </p>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
-            "Almocei no restaurante da esquina e paguei 42 reais no débito"
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white/4 border border-white/10 space-y-2">
-          <div className="flex items-center gap-2 text-cyan-400">
-            <Send className="w-4 h-4" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Texto Rápido</h3>
-          </div>
-          <p className="text-2xs text-zinc-400 leading-relaxed">
-            Mensagens simples e sem burocracia, a IA entende contexto e valores:
-          </p>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
-            "Recebi 1.500 de freela de design hoje"
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white/4 border border-white/10 space-y-2">
-          <div className="flex items-center gap-2 text-amber-400">
-            <HelpCircle className="w-4 h-4" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Consultas</h3>
-          </div>
-          <p className="text-2xs text-zinc-400 leading-relaxed">
-            Pergunte pelo seu saldo e totais acumulados no período:
-          </p>
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
-            "Qual meu saldo e quanto gastei este mês?"
-          </div>
-        </div>
-      </div>
-
-      {/* 4. SIMULADOR DO AGENTE DE IA (PLAYGROUND) */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white/4 border border-white/10 shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-              Simulador do Agente de IA (Playground)
-            </h2>
-          </div>
-          <span className="text-3xs text-cyan-300 font-mono bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
-            Teste em Tempo Real
-          </span>
-        </div>
-
-        {/* Histórico do Chat */}
-        <div className="space-y-3 max-h-80 overflow-y-auto p-4 rounded-2xl bg-black/40 border border-white/5 custom-scrollbar">
-          {simMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-            >
-              <div
-                className={`max-w-[85%] sm:max-w-md p-3 rounded-2xl text-xs leading-relaxed ${
-                  msg.sender === 'user'
-                    ? 'bg-emerald-600 text-white rounded-br-none shadow-md shadow-emerald-600/10'
-                    : 'bg-white/8 text-zinc-200 border border-white/10 rounded-bl-none shadow-sm'
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{msg.text}</p>
-                <span className="text-3xs opacity-60 mt-1 block text-right font-mono">
-                  {msg.time}
-                </span>
-              </div>
+      {/* ABA 3: COMO USAR & GUIA DE COMANDOS */}
+      {activeTab === 'guide' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="glass-card p-5 rounded-3xl border border-white/10 space-y-3">
+            <div className="flex items-center gap-2 text-emerald-400">
+              <Mic className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">Por Áudio</h3>
             </div>
-          ))}
-
-          {simLoading && (
-            <div className="flex items-center gap-2 text-zinc-400 text-xs py-1">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-              <span>O Agente está pensando...</span>
+            <p className="text-2xs text-zinc-400 leading-relaxed">
+              Grave um áudio no WhatsApp dizendo o que gastou ou recebeu, exatamente como fala no
+              dia a dia:
+            </p>
+            <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
+              "Almocei no restaurante da esquina e paguei 42 reais no débito"
             </div>
-          )}
+          </div>
+
+          <div className="glass-card p-5 rounded-3xl border border-white/10 space-y-3">
+            <div className="flex items-center gap-2 text-cyan-400">
+              <Send className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                Texto Rápido
+              </h3>
+            </div>
+            <p className="text-2xs text-zinc-400 leading-relaxed">
+              Mensagens diretas e sem burocracia, a IA entende contexto, categorias e valores:
+            </p>
+            <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
+              "Recebi 1.500 de freela de design hoje"
+            </div>
+          </div>
+
+          <div className="glass-card p-5 rounded-3xl border border-white/10 space-y-3">
+            <div className="flex items-center gap-2 text-amber-400">
+              <HelpCircle className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">Consultas</h3>
+            </div>
+            <p className="text-2xs text-zinc-400 leading-relaxed">
+              Pergunte pelo seu saldo e totais acumulados no período selecionado:
+            </p>
+            <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-zinc-200 font-medium italic">
+              "Qual meu saldo e quanto gastei este mês?"
+            </div>
+          </div>
         </div>
-
-        {/* Input e Sugestões */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSendSimMessage()
-          }}
-          className="space-y-3"
-        >
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={simMessage}
-              onChange={(e) => setSimMessage(e.target.value)}
-              placeholder="Ex: Gastei 45 no almoço, ou quanto tenho de saldo?"
-              className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={simLoading || !simMessage.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Enviar</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-wrap pt-1">
-            <span className="text-3xs text-zinc-500 uppercase font-bold tracking-wider">
-              Sugestões Rápidas:
-            </span>
-            {examplePrompts.map((prompt) => (
-              <button
-                key={prompt}
-                type="button"
-                onClick={() => handleSendSimMessage(prompt)}
-                className="text-3xs px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 transition-colors cursor-pointer"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-        </form>
-      </div>
+      )}
     </div>
   )
 }

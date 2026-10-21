@@ -408,7 +408,8 @@ export function AppContent() {
           {/* SELETOR E FILTRO POR PERÍODO / MÊS (Visível apenas nas seções com escopo mensal) */}
           {activeSection !== 'debts' &&
             activeSection !== 'reports' &&
-            activeSection !== 'cards' && (
+            activeSection !== 'cards' &&
+            activeSection !== 'whatsapp' && (
               <MonthSelector
                 selectedMonth={selectedMonth}
                 onPreviousMonth={goToPreviousMonth}

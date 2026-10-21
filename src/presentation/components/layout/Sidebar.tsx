@@ -74,7 +74,7 @@ export function Sidebar({
     },
     {
       id: 'whatsapp',
-      label: 'WhatsApp (IA)',
+      label: 'WhatsApp',
       icon: MessageSquare,
       description: 'Lançamentos via Chat',
       badge: 'IA',
