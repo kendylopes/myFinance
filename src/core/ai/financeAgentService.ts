@@ -242,7 +242,7 @@ export async function processFinanceAgentMessage({
     const promptWithContext = `Data de hoje: ${currentDate}.\nCategorias válidas disponíveis: [${availableCategories.join(', ')}].\nMensagem do usuário: "${trimmed}"`
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

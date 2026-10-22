@@ -98,11 +98,11 @@ async function downloadAudioBase64(msgData) {
   }
 }
 
-// Transcreve e processa o áudio usando o Gemini 2.0 Flash
+// Transcreve e processa o áudio usando o Gemini 2.5 Flash
 async function transcribeAudioWithGemini(base64Audio, apiKey) {
   try {
-    console.log('[Gemini] Transcrevendo áudio com Gemini 2.0 Flash...')
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+    console.log('[Gemini] Transcrevendo áudio com Gemini 2.5 Flash...')
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`
 
     const res = await fetch(url, {
       method: 'POST',
