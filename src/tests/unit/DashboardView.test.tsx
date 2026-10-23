@@ -23,6 +23,7 @@ describe('<DashboardView /> (Visão Modularizada do Dashboard)', () => {
     totalExpense: 2500,
     remainingAmount: 1500,
     spentPercentage: 62.5,
+    isExceeded: false,
     status: 'safe',
   }
 
