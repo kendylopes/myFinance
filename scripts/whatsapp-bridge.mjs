@@ -282,6 +282,16 @@ const server = http.createServer(async (req, res) => {
         const cleanSender = remoteJid.replace('@s.whatsapp.net', '').replace(/\D/g, '')
         if (!cleanSender) return
 
+        // 1.1. Ignora mensagens atrasadas acumuladas em buffer da Evolution API (> 3 minutos)
+        const nowSec = Math.floor(Date.now() / 1000)
+        const msgSec = Number(msgData.messageTimestamp || nowSec)
+        if (nowSec - msgSec > 180) {
+          console.log(
+            `[Buffer Antigo Descartado]: Mensagem de ${cleanSender} com atraso de ${nowSec - msgSec}s ignorada para evitar respostas duplicadas.`,
+          )
+          return
+        }
+
         // 2. Extrai texto ou detecta áudio
         const isAudio =
           msgData.messageType === 'audioMessage' ||
@@ -292,13 +302,27 @@ const server = http.createServer(async (req, res) => {
           msgData.message?.extendedTextMessage?.text ||
           ''
 
-        // 3. Checa se o usuário enviou comando de ativação por texto: ATIVAR 123456
+        // 3. Checa se o usuário enviou comando de ativação por texto: ATIVAR 123456 (ou typo ATUVAR)
         if (!isAudio && messageText.trim()) {
           const trimmed = messageText.trim()
-          const activationMatch = trimmed.match(/^ATIVAR\s+(\d{6})/i)
+          const activationMatch = trimmed.match(/^AT[I|U]VAR\s+(\d{6})/i)
 
           if (activationMatch) {
             const code = activationMatch[1]
+
+            // Checa primeiro se este número já está ativado no myFinance
+            const { data: alreadyActive } = await supabase.rpc('get_whatsapp_user', {
+              p_phone: cleanSender,
+            })
+
+            if (alreadyActive?.found) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `✅ *Seu WhatsApp já está conectado e pronto!*\n\nNão é necessário ativar novamente. Basta me enviar mensagens começando com *Myfi*!\n\n*Exemplos:*\n• *"Myfi gastei 40 com verduras"*\n• *"Myfi comprei 55 de gasolina"*\n• *"Myfi qual meu saldo?"*`,
+              )
+              return
+            }
+
             console.log(`[Ativação] Tentando ativar número ${cleanSender} com código: ${code}`)
 
             const { data: actResult, error: actError } = await supabase.rpc(
@@ -321,7 +345,7 @@ const server = http.createServer(async (req, res) => {
             console.log(`[Ativação Concluída] Usuário ${actResult.user_id} ativado!`)
             await sendWhatsAppMessage(
               cleanSender,
-              `🎉 *WhatsApp Conectado com Sucesso!*\n\nOlá! Sua conta do *myFinance* foi vinculada a este número com sucesso.\n\nA partir de agora você pode gerenciar suas finanças diretamente por aqui!\n\n*Experimente enviar:*\n• *"Gastei 45 no almoço"*\n• *"Recebi 1.200 de um freela"*\n• *"Qual meu saldo deste mês?"*\n\nPode mandar texto ou áudios a qualquer momento! 🚀`,
+              `🎉 *WhatsApp Conectado com Sucesso!*\n\nOlá! Sua conta do *myFinance* foi vinculada a este número com sucesso.\n\n⚠️ *Importante — Como falar comigo:*\nPara que eu registre seus gastos sem responder conversas normais, sempre me chame pelo meu apelido no início:\n\n👉 *Myfi [sua mensagem]*\n\n*Exemplos para testar agora:*\n• *"Myfi gastei 45 no almoço"*\n• *"Myfi comprei 55 de gasolina"*\n• *"Myfi qual meu saldo deste mês?"*\n\nPode mandar textos ou áudios começando com *Myfi* a qualquer momento! 🚀`,
             )
             return
           }
@@ -382,9 +406,11 @@ const server = http.createServer(async (req, res) => {
 
         let textToProcess = trimmed
 
-        // 5.1. Verificação do apelido / wake word (ex: "myfi", "Myfi", "MYFI", "@myfi")
+        // 5.1. Verificação do apelido / wake word (ex: "myfi", "Myfi", "Myfy", "Myfu", "@myfi")
         if (REQUIRE_TRIGGER) {
-          const triggerRegex = new RegExp(`^(?:@?${BOT_TRIGGER_NAME})(?:[,:;!?-]|\\s|$)\\s*`, 'i')
+          const triggerVariants =
+            BOT_TRIGGER_NAME === 'myfi' ? '(?:myfi|myfy|myfu)' : BOT_TRIGGER_NAME
+          const triggerRegex = new RegExp(`^(?:@?${triggerVariants})(?:[,:;!?-]|\\s|$)\\s*`, 'i')
           const hasTrigger = triggerRegex.test(trimmed)
 
           if (!hasTrigger) {
