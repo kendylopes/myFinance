@@ -1,5 +1,5 @@
-import { ArrowRight, Layers, Plus, Rocket, Upload, Wallet } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Wallet } from 'lucide-react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { CurrencyProvider } from './core/currency/currencyContext'
 import { getCurrentYearMonth, getLocalDateString } from './core/formatters/date'
 import { DEMO_BUDGET_AMOUNT, getDemoTransactions } from './core/onboarding/demoData'
@@ -11,14 +11,10 @@ import { AuthPage } from './presentation/components/auth/AuthPage'
 import { ToastContainer } from './presentation/components/common/ToastContainer'
 import { BudgetProgressBar } from './presentation/components/dashboard/BudgetProgressBar'
 import { BudgetSummaryCards } from './presentation/components/dashboard/BudgetSummaryCards'
-import { DashboardSkeleton } from './presentation/components/dashboard/DashboardSkeleton'
-import { ExpenseCategoryChart } from './presentation/components/dashboard/ExpenseCategoryChart'
-import { FinancialFlowChart } from './presentation/components/dashboard/FinancialFlowChart'
-import { FinancialInsights } from './presentation/components/dashboard/FinancialInsights'
+import { DashboardView } from './presentation/components/dashboard/DashboardView'
 import { MonthSelector } from './presentation/components/dashboard/MonthSelector'
-import { SummaryCards } from './presentation/components/dashboard/SummaryCards'
-import { TransactionItem } from './presentation/components/dashboard/TransactionItem'
 import { TransactionList } from './presentation/components/dashboard/TransactionList'
+import { BottomNavBar } from './presentation/components/layout/BottomNavBar'
 import { Header } from './presentation/components/layout/Header'
 import { Sidebar } from './presentation/components/layout/Sidebar'
 import { useAuth } from './presentation/hooks/useAuth'
@@ -62,6 +58,11 @@ const DebtsView = lazy(() =>
     default: m.DebtsView,
   })),
 )
+const CommandPaletteModal = lazy(() =>
+  import('./presentation/components/common/CommandPaletteModal').then((m) => ({
+    default: m.CommandPaletteModal,
+  })),
+)
 const CardsAndInvoicesView = lazy(() =>
   import('./presentation/components/cards/CardsAndInvoicesView').then((m) => ({
     default: m.CardsAndInvoicesView,
@@ -83,13 +84,55 @@ const WhatsAppView = lazy(() =>
   })),
 )
 
+// Mapa de rotas via Hash para sincronização com histórico do navegador
+const SECTION_HASH_MAP: Record<string, string> = {
+  dashboard: '#/dashboard',
+  transactions: '#/transacoes',
+  cards: '#/cartoes',
+  debts: '#/dividas',
+  budget: '#/planejamento',
+  categories: '#/categorias',
+  reports: '#/relatorios',
+  whatsapp: '#/whatsapp',
+}
+
+const HASH_TO_SECTION_MAP: Record<string, string> = {
+  '#/dashboard': 'dashboard',
+  '#/': 'dashboard',
+  '#': 'dashboard',
+  '': 'dashboard',
+  '#/transacoes': 'transactions',
+  '#/transactions': 'transactions',
+  '#/cartoes': 'cards',
+  '#/cards': 'cards',
+  '#/dividas': 'debts',
+  '#/debts': 'debts',
+  '#/planejamento': 'budget',
+  '#/budget': 'budget',
+  '#/categorias': 'categories',
+  '#/categories': 'categories',
+  '#/relatorios': 'reports',
+  '#/reports': 'reports',
+  '#/whatsapp': 'whatsapp',
+}
+
+function getInitialSection(): string {
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash.toLowerCase()
+    if (HASH_TO_SECTION_MAP[hash]) {
+      return HASH_TO_SECTION_MAP[hash]
+    }
+  }
+  return 'dashboard'
+}
+
 export function AppContent() {
   const toast = useToast()
   const { user, isLoading: isAuthLoading, login, register, logout } = useAuth()
   const { currentTheme } = useTheme()
 
   const handleLogout = async () => {
-    setActiveSection('dashboard')
+    handleSelectSection('dashboard')
     setEditingTransaction(null)
     setIsTxModalOpen(false)
     setIsSettingsModalOpen(false)
@@ -99,13 +142,14 @@ export function AppContent() {
     toast.info('Sessão encerrada', 'Você saiu da sua conta myFinance.')
   }
 
-  const [activeSection, setActiveSection] = useState('dashboard')
+  const [activeSection, setActiveSection] = useState<string>(getInitialSection)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'themes'>('general')
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
   const [isTxModalOpen, setIsTxModalOpen] = useState(false)
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isForecastModalOpen, setIsForecastModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
@@ -239,6 +283,7 @@ export function AppContent() {
   const handleCloseAllModals = () => {
     if (
       isTxModalOpen ||
+      isCommandPaletteOpen ||
       isImportModalOpen ||
       isForecastModalOpen ||
       isThemeModalOpen ||
@@ -247,6 +292,7 @@ export function AppContent() {
     ) {
       soundFX.playClick()
       setIsTxModalOpen(false)
+      setIsCommandPaletteOpen(false)
       setEditingTransaction(null)
       setIsImportModalOpen(false)
       setIsForecastModalOpen(false)
@@ -264,9 +310,17 @@ export function AppContent() {
     )
   }
 
-  const handleSelectSection = (section: string) => {
+  const handleSelectSection = useCallback((section: string, updateHash = true) => {
     const update = () => {
       setActiveSection(section)
+
+      if (updateHash && typeof window !== 'undefined') {
+        const targetHash = SECTION_HASH_MAP[section] || '#/dashboard'
+        if (window.location.hash.toLowerCase() !== targetHash) {
+          window.history.pushState(null, '', targetHash)
+        }
+      }
+
       if (section === 'dashboard') {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else if (section === 'transactions') {
@@ -293,10 +347,30 @@ export function AppContent() {
     } else {
       update()
     }
-  }
+  }, [])
+
+  // Sincronização reativa de histórico e botão voltar/avançar do navegador
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (typeof window === 'undefined') return
+      const hash = window.location.hash.toLowerCase()
+      const matched = HASH_TO_SECTION_MAP[hash]
+      if (matched && matched !== activeSection) {
+        handleSelectSection(matched, false)
+      }
+    }
+
+    window.addEventListener('hashchange', handleLocationChange)
+    window.addEventListener('popstate', handleLocationChange)
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange)
+      window.removeEventListener('popstate', handleLocationChange)
+    }
+  }, [activeSection, handleSelectSection])
 
   // Atalhos Globais de Teclado para produtividade
   useGlobalShortcuts({
+    onOpenCommandPalette: () => setIsCommandPaletteOpen(true),
     onOpenNewTransaction: handleOpenNewTransaction,
     onOpenImport: () => setIsImportModalOpen(true),
     onOpenSettings: () => setIsSettingsModalOpen(true),
@@ -387,19 +461,20 @@ export function AppContent() {
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
-      {/* Área Principal de Conteúdo - Se adapta ao tamanho da tela e à sidebar expandida */}
+      {/* Área Principal de Conteúdo - Tela cheia no mobile com respiro inferior para a barra e recuo lateral no desktop */}
       <div
-        className={`relative z-10 ${
-          isSidebarCollapsed ? 'pl-14 sm:pl-16' : 'pl-48 sm:pl-52'
+        className={`relative z-10 pb-24 md:pb-8 ${
+          isSidebarCollapsed ? 'md:pl-16' : 'md:pl-52'
         } transition-all duration-300 min-w-0`}
       >
-        <main className="max-w-[1550px] mx-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-6 min-w-0">
+        <main className="max-w-387.5 mx-auto p-3 sm:p-5 md:p-6 lg:p-8 space-y-6 min-w-0">
           {/* CABEÇALHO DA TELA ATIVA */}
           <Header
             activeSection={activeSection}
             user={user}
             onLogout={logout}
             onOpenNewTransaction={handleOpenNewTransaction}
+            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           />
 
           {/* FEEDBACK DE ERRO GLOBAL (SE HOUVER) */}
@@ -426,148 +501,26 @@ export function AppContent() {
               />
             )}
 
-          {/* 1. TELA: DASHBOARD (Apenas Informações Principais: Resumo Financeiro, Gráfico de Categorias e Transações Recentes) */}
-          {activeSection === 'dashboard' &&
-            (isLoading ? (
-              <DashboardSkeleton />
-            ) : (
-              <div className="space-y-6">
-                {/* CARDS DE RESUMO DO PERÍODO SELECIONADO */}
-                <div id="section-summary">
-                  <SummaryCards
-                    summary={summary}
-                    onSelectType={(type) => {
-                      setSelectedType(type)
-                      handleSelectSection('transactions')
-                    }}
-                  />
-                </div>
-
-                {/* INSIGHTS FINANCEIROS INTELIGENTES */}
-                <div id="section-insights">
-                  <FinancialInsights
-                    transactions={periodTransactions}
-                    summary={summary}
-                    selectedMonth={selectedMonth}
-                    budgetProgress={budgetProgress}
-                  />
-                </div>
-
-                {/* GRÁFICO DE FLUXO FINANCEIRO SEMESTRAL (ENTRADAS VS SAÍDAS VS SALDO) */}
-                <div id="section-flow-chart">
-                  <FinancialFlowChart transactions={transactions} selectedMonth={selectedMonth} />
-                </div>
-
-                {/* GRID PRINCIPAL: GRÁFICO DE CATEGORIAS E TRANSAÇÕES RECENTES (Responsivo: 1 coluna em telas compactas/médias e 2 colunas em telas amplas) */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                  {/* 1. GRÁFICO DE DISTRIBUIÇÃO DE DESPESAS POR CATEGORIA */}
-                  <div className="min-w-0 w-full">
-                    <ExpenseCategoryChart transactions={periodTransactions} />
-                  </div>
-
-                  {/* 2. CARD DE TRANSAÇÕES RECENTES */}
-                  <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0 w-full">
-                    <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/8 pb-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Layers className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />
-                        <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm whitespace-nowrap">
-                          Transações Recentes
-                        </h2>
-                        <span className="text-xs text-zinc-400 whitespace-nowrap">
-                          ({periodTransactions.length} no período)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            soundFX.playClick()
-                            setIsImportModalOpen(true)
-                          }}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
-                          title="Importar extrato bancário OFX ou CSV"
-                        >
-                          <Upload className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Importar Extrato</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            soundFX.playClick()
-                            handleSelectSection('transactions')
-                          }}
-                          className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                        >
-                          <span>Ver todos</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {periodTransactions.length === 0 ? (
-                      <div className="text-center py-10 text-zinc-400">
-                        <p className="text-sm">Nenhuma movimentação neste período.</p>
-                        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFX.playClick()
-                              handleOpenNewTransaction()
-                            }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105"
-                            style={{
-                              backgroundColor: `${currentTheme.primaryColor}20`,
-                              borderColor: `${currentTheme.primaryColor}40`,
-                              color: currentTheme.primaryColor,
-                            }}
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Adicionar Transação</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFX.playClick()
-                              setIsImportModalOpen(true)
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
-                          >
-                            <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>Importar Extrato</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              soundFX.playClick()
-                              setIsOnboardingOpen(true)
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
-                          >
-                            <Rocket className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Guia de Início</span>
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {periodTransactions.slice(0, 5).map((tx) => (
-                          <TransactionItem
-                            key={tx.id}
-                            transaction={tx}
-                            onDelete={deleteTransaction}
-                            onEdit={handleOpenEditTransaction}
-                            onDuplicate={() => handleDuplicateTransaction(tx.id)}
-                            onToggleStatus={toggleTransactionStatus}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* 1. TELA: DASHBOARD (Resumo Financeiro, Gráficos e Transações Recentes Modularizados) */}
+          {activeSection === 'dashboard' && (
+            <DashboardView
+              isLoading={isLoading}
+              summary={summary}
+              periodTransactions={periodTransactions}
+              transactions={transactions}
+              selectedMonth={selectedMonth}
+              budgetProgress={budgetProgress}
+              onSelectType={setSelectedType}
+              onSelectSection={handleSelectSection}
+              onOpenNewTransaction={handleOpenNewTransaction}
+              onOpenImportModal={() => setIsImportModalOpen(true)}
+              onOpenOnboarding={() => setIsOnboardingOpen(true)}
+              onDeleteTransaction={deleteTransaction}
+              onEditTransaction={handleOpenEditTransaction}
+              onDuplicateTransaction={handleDuplicateTransaction}
+              onToggleTransactionStatus={toggleTransactionStatus}
+            />
+          )}
 
           {/* 2. TELA: RELATÓRIOS (Inteligência Semanal, Mensal, Anual e Customizada) */}
           {activeSection === 'reports' && (
@@ -771,7 +724,40 @@ export function AppContent() {
             }}
           />
         )}
+
+        {isCommandPaletteOpen && (
+          <CommandPaletteModal
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+            onSelectSection={handleSelectSection}
+            onOpenNewTransaction={handleOpenNewTransaction}
+            onOpenImport={() => setIsImportModalOpen(true)}
+            onOpenSettings={() => {
+              setSettingsInitialTab('general')
+              setIsSettingsModalOpen(true)
+            }}
+            onOpenThemes={() => {
+              setSettingsInitialTab('themes')
+              setIsSettingsModalOpen(true)
+            }}
+            transactions={transactions}
+            onSelectTransaction={(tx) => {
+              handleOpenEditTransaction(tx)
+            }}
+          />
+        )}
       </Suspense>
+
+      {/* BARRA DE NAVEGAÇÃO INFERIOR PARA DISPOSITIVOS MÓVEIS (THUMB ZONE) */}
+      <BottomNavBar
+        activeSection={activeSection}
+        onSelectSection={handleSelectSection}
+        onOpenNewTransaction={handleOpenNewTransaction}
+        onOpenSettings={() => {
+          setSettingsInitialTab('general')
+          setIsSettingsModalOpen(true)
+        }}
+      />
 
       <ToastContainer />
     </div>

@@ -6,6 +6,7 @@ describe('financeAgentService', () => {
     const res = await processFinanceAgentMessage({
       message: 'Gastei 54 reais no almoço de hoje',
       currentDate: '2026-10-19',
+      apiKey: '',
     })
 
     expect(res.action).toBe('create_transaction')
@@ -20,6 +21,7 @@ describe('financeAgentService', () => {
     const res = await processFinanceAgentMessage({
       message: 'Recebi 1500 de um freela',
       currentDate: '2026-10-19',
+      apiKey: '',
     })
 
     expect(res.action).toBe('create_transaction')
@@ -32,6 +34,7 @@ describe('financeAgentService', () => {
     const res = await processFinanceAgentMessage({
       message: 'Qual é o meu saldo atual?',
       currentDate: '2026-10-19',
+      apiKey: '',
     })
 
     expect(res.action).toBe('query_summary')
@@ -41,6 +44,7 @@ describe('financeAgentService', () => {
     const res = await processFinanceAgentMessage({
       message: 'Olá bom dia!',
       currentDate: '2026-10-19',
+      apiKey: '',
     })
 
     expect(res.action).toBe('clarification')

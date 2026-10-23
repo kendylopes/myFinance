@@ -176,12 +176,21 @@ async function setupWebhook() {
 function parseFinancialMessage(text) {
   const clean = text.trim()
 
-  // 1. Padrões de valor (ex: 45, 45.50, 45,50, 1.200, 1200)
-  const valMatch = clean.match(/(?:r\$|reais)?\s*(\d+(?:[.,]\d{1,2})?)/i)
+  // 1. Padrões de valor (ex: 45, 45.50, 45,50, 1.200, 1.200,50, 1200)
+  const valMatch = clean.match(
+    /(?:r\$\s*|reais\s*|valor\s*(?:de\s*)?)?(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?:\s*(?:reais|pila|conto))?/i,
+  )
   if (!valMatch) return null
 
-  const rawVal = valMatch[1].replace(',', '.')
-  const amount = Number.parseFloat(rawVal)
+  const rawVal = valMatch[1]
+  let amount = 0
+  if (/^\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?$/.test(rawVal)) {
+    amount = Number.parseFloat(rawVal.replace(/\./g, '').replace(',', '.'))
+  } else if (rawVal.includes(',')) {
+    amount = Number.parseFloat(rawVal.replace(/\./g, '').replace(',', '.'))
+  } else {
+    amount = Number.parseFloat(rawVal)
+  }
   if (Number.isNaN(amount) || amount <= 0) return null
 
   // 2. Tipo (Receita vs Despesa)
@@ -443,7 +452,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         // 8. Resposta quando expressamente solicitado ou saudação direta
-        if (/^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)\b/i.test(trimmed)) {
+        if (/^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)(?:\s|$|[!,?.])/i.test(trimmed)) {
           await sendWhatsAppMessage(
             cleanSender,
             `🤖 *myFinance Inteligente*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como usar:*\n• *"Almoço 45 reais"*\n• *"Gasolina 120"*\n• *"Recebi 2500 salário"*\n• *"Qual meu saldo?"*`,

@@ -75,7 +75,7 @@ export const SummaryCards = ({ summary, onSelectType }: SummaryCardsProps) => {
           </div>
         </div>
         <div
-          className={`text-2xl sm:text-3xl font-bold tracking-tight relative z-10 ${
+          className={`text-2xl sm:text-3xl font-bold font-mono tracking-tight relative z-10 ${
             isPositive ? 'text-emerald-400' : 'text-rose-400'
           }`}
         >
@@ -94,10 +94,10 @@ export const SummaryCards = ({ summary, onSelectType }: SummaryCardsProps) => {
           </div>
         </div>
         {liquidBalance !== undefined && liquidBalance !== balance && (
-          <div className="mt-3 pt-2.5 border-t border-white/8 flex items-center justify-between text-[11px] text-zinc-400 relative z-10">
+          <div className="mt-3 pt-2.5 border-t border-white/8 flex items-center justify-between text-xs text-zinc-400 relative z-10">
             <span>Saldo Realizado (pago):</span>
             <span
-              className={`font-semibold ${
+              className={`font-semibold font-mono ${
                 liquidBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >
@@ -138,16 +138,16 @@ export const SummaryCards = ({ summary, onSelectType }: SummaryCardsProps) => {
             <ArrowUpCircle className="w-6 h-6" aria-hidden="true" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight relative z-10">
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight relative z-10">
           <AnimatedCurrency value={totalIncome} />
         </div>
         <div className="flex items-center justify-between mt-3 text-xs relative z-10">
-          <div className="flex items-center gap-1.5 text-emerald-400">
+          <div className="flex items-center gap-1.5 text-emerald-400 font-mono">
             <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Recebido: {formatCurrency(paidIncome || 0)}</span>
           </div>
           {(pendingIncome ?? 0) > 0 && (
-            <span className="text-[11px] text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md font-medium">
+            <span className="text-2xs text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md font-medium font-mono">
               A receber: {formatCurrency(pendingIncome || 0)}
             </span>
           )}
@@ -185,16 +185,16 @@ export const SummaryCards = ({ summary, onSelectType }: SummaryCardsProps) => {
             <ArrowDownCircle className="w-6 h-6" aria-hidden="true" />
           </div>
         </div>
-        <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight relative z-10">
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight relative z-10">
           <AnimatedCurrency value={totalExpense} />
         </div>
         <div className="flex items-center justify-between mt-3 text-xs relative z-10">
-          <div className="flex items-center gap-1.5 text-rose-400">
+          <div className="flex items-center gap-1.5 text-rose-400 font-mono">
             <TrendingDown className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Pago: {formatCurrency(paidExpense || 0)}</span>
           </div>
           {(pendingExpense ?? 0) > 0 && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium">
+            <span className="inline-flex items-center gap-1 text-2xs text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-medium font-mono">
               <Clock className="w-2.5 h-2.5" />
               <span>A pagar: {formatCurrency(pendingExpense || 0)}</span>
             </span>

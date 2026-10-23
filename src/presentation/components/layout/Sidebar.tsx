@@ -41,7 +41,7 @@ export function Sidebar({
   onSelectSection,
   onOpenThemeModal,
   onOpenSettingsModal,
-  isMobileOpen: _isMobileOpen,
+  isMobileOpen = false,
   onCloseMobile,
   isCollapsed: controlledCollapsed,
   onToggleCollapse: controlledToggle,
@@ -122,11 +122,23 @@ export function Sidebar({
 
   return (
     <>
-      {/* Container Principal da Sidebar - Sempre visível, largura adaptável sem backdrop obstrutivo */}
+      {/* Backdrop Mobile quando Sidebar for expandida via drawer */}
+      {isMobileOpen && (
+        <button
+          type="button"
+          aria-label="Fechar menu lateral"
+          onClick={onCloseMobile}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-35 md:hidden cursor-pointer"
+        />
+      )}
+
+      {/* Container Principal da Sidebar - Oculto no mobile (substituído pela BottomNavBar) e flex no desktop/tablet */}
       <aside
         aria-label="Menu Lateral de Navegação"
-        className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-white/10 transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'w-14 sm:w-16' : 'w-48 sm:w-52'
+        className={`${
+          isMobileOpen ? 'flex w-56 sm:w-56 shadow-2xl z-50' : 'hidden md:flex z-40'
+        } fixed top-0 bottom-0 left-0 flex-col border-r border-white/10 transition-all duration-300 ease-in-out ${
+          isCollapsed && !isMobileOpen ? 'w-14 sm:w-16' : 'w-48 sm:w-52'
         }`}
         style={{
           backgroundColor: 'var(--bg-sidebar)',

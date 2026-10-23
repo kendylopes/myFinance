@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 export interface GlobalShortcutsConfig {
+  onOpenCommandPalette?: () => void
   onOpenNewTransaction: () => void
   onOpenImport?: () => void
   onOpenSettings?: () => void
@@ -15,6 +16,7 @@ export interface GlobalShortcutsConfig {
  * Permite navegação rápida, abertura de modais e ações sem necessidade do mouse.
  */
 export function useGlobalShortcuts({
+  onOpenCommandPalette,
   onOpenNewTransaction,
   onOpenImport,
   onOpenSettings,
@@ -39,10 +41,14 @@ export function useGlobalShortcuts({
         return
       }
 
-      // Atalho Ctrl+K ou Cmd+K para Nova Transação
+      // Atalho Ctrl+K ou Cmd+K para Command Palette (Paleta de Comandos Linear/Raycast)
       if ((event.ctrlKey || event.metaKey) && (event.key === 'k' || event.key === 'K')) {
         event.preventDefault()
-        onOpenNewTransaction()
+        if (onOpenCommandPalette) {
+          onOpenCommandPalette()
+        } else {
+          onOpenNewTransaction()
+        }
         return
       }
 
@@ -116,6 +122,7 @@ export function useGlobalShortcuts({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
+    onOpenCommandPalette,
     onOpenNewTransaction,
     onOpenImport,
     onOpenSettings,

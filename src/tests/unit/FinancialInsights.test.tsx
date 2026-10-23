@@ -53,6 +53,7 @@ describe('<FinancialInsights />', () => {
     expect(screen.getByText('Alimentação')).toBeInTheDocument()
     expect(screen.getByText(/80% dos gastos/)).toBeInTheDocument()
     expect(screen.getByText(/75% Poupado/)).toBeInTheDocument()
-    expect(screen.getByText(/3/)).toBeInTheDocument()
+    expect(screen.getByText('lançamentos')).toBeInTheDocument()
+    expect(screen.getByText(/1 entradas · 2 saídas/)).toBeInTheDocument()
   })
 })

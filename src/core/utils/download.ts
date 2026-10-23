@@ -8,19 +8,23 @@ export const downloadBlob = (
 ): void => {
   if (typeof window === 'undefined' || !window.document) return
 
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
+  try {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
 
-  const link = document.createElement('a')
-  link.setAttribute('href', url)
-  link.setAttribute('download', filename)
-  link.style.visibility = 'hidden'
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
 
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
 
-  URL.revokeObjectURL(url)
+    URL.revokeObjectURL(url)
+  } catch {
+    // Fallback silencioso caso ambiente JSDOM/navegador restrinja Blob ou URL.createObjectURL
+  }
 }
 
 /**

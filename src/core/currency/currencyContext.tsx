@@ -71,12 +71,18 @@ const CurrencyContext = createContext<CurrencyContextType | null>(null)
 // Variável em memória para sincronização com formatters utilitários fora do React
 let globalCurrencyCode: CurrencyCode = 'BRL'
 
+export function resetGlobalCurrency(): void {
+  globalCurrencyCode = 'BRL'
+}
+
 export function getGlobalCurrencyCode(): CurrencyCode {
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(CURRENCY_STORAGE_KEY) as CurrencyCode | null
       if (stored && CURRENCIES[stored]) {
         globalCurrencyCode = stored
+      } else {
+        globalCurrencyCode = 'BRL'
       }
     } catch {
       // Ignora erro de acesso a localStorage

@@ -1,4 +1,4 @@
-import { LogOut, Plus } from 'lucide-react'
+import { LogOut, Plus, Search } from 'lucide-react'
 import type { AuthUser } from '../../../core/auth/authService'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
@@ -13,6 +13,7 @@ interface HeaderProps {
   onOpenMobileMenu?: () => void
   onOpenThemeModal?: () => void
   onOpenNewTransaction?: () => void
+  onOpenCommandPalette?: () => void
 }
 
 const SECTION_CONFIG: Record<string, { title: string; subtitle: string }> = {
@@ -56,6 +57,7 @@ export const Header = ({
   user = null,
   onLogout,
   onOpenNewTransaction,
+  onOpenCommandPalette,
 }: HeaderProps) => {
   const { currentTheme } = useTheme()
 
@@ -85,6 +87,24 @@ export const Header = ({
 
       {/* Ações e Perfil do Usuário */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {onOpenCommandPalette && (
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              onOpenCommandPalette()
+            }}
+            aria-label="Buscar ou executar comando"
+            title="Abrir Paleta de Comandos (Ctrl+K)"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs text-zinc-300 hover:text-white glass-pill border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-xs"
+          >
+            <Search className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="hidden md:inline text-zinc-400">Buscar ou comando...</span>
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 text-3xs font-mono px-1.5 py-0.5 rounded border border-white/15 bg-white/5 text-zinc-400">
+              <span className="text-2xs">⌘</span>K
+            </kbd>
+          </button>
+        )}
         {onOpenNewTransaction && (
           <button
             type="button"

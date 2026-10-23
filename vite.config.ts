@@ -13,11 +13,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react'
-            }
             if (id.includes('lucide-react')) {
               return 'vendor-icons'
+            }
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react'
             }
             if (id.includes('@supabase')) {
               return 'vendor-supabase'
@@ -36,7 +36,5 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/tests/setup.ts',
     testTimeout: 15000,
-    isolate: false,
-    fileParallelism: false,
   },
 })

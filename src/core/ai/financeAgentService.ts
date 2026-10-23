@@ -120,8 +120,8 @@ function localRuleBasedParser(
 
   // 1. Detecção de saudações
   if (
-    /^(oi|olá|ola|bom dia|boa tarde|boa noite|opa|e ai|e aí)\b/i.test(normalized) &&
-    normalized.length < 20
+    /^(oi|olá|ola|bom dia|boa tarde|boa noite|opa|e ai|e aí)(?:\s|$|[!,?.])/i.test(normalized) &&
+    normalized.length < 25
   ) {
     return {
       action: 'clarification',
@@ -139,14 +139,20 @@ function localRuleBasedParser(
     }
   }
 
-  // 3. Extração de valor em reais (ex: R$ 45,90 ou 45.90 ou 45 reais ou 45)
+  // 3. Extração de valor em reais (ex: R$ 45,90 ou 45.90 ou 45 reais ou 1.500 ou 1.500,50)
   const amountMatch = normalized.match(
-    /(?:r\$\s*|reais\s*|valor\s*(?:de\s*)?)?(\d+(?:[.,]\d{1,2})?)(?:\s*(?:reais|pila|conto))?/i,
+    /(?:r\$\s*|reais\s*|valor\s*(?:de\s*)?)?(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?:\s*(?:reais|pila|conto))?/i,
   )
   let amount = 0
   if (amountMatch) {
-    const rawVal = amountMatch[1].replace(',', '.')
-    amount = Number.parseFloat(rawVal)
+    const rawVal = amountMatch[1]
+    if (/^\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?$/.test(rawVal)) {
+      amount = Number.parseFloat(rawVal.replace(/\./g, '').replace(',', '.'))
+    } else if (rawVal.includes(',')) {
+      amount = Number.parseFloat(rawVal.replace(/\./g, '').replace(',', '.'))
+    } else {
+      amount = Number.parseFloat(rawVal)
+    }
   }
 
   if (!amount || Number.isNaN(amount) || amount <= 0) {

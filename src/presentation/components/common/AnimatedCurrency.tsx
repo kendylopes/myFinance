@@ -70,7 +70,11 @@ export function AnimatedCurrency({
   }, [value, duration])
 
   return (
-    <span className={className} data-testid={testId} title={formatCurrencyBRL(value)}>
+    <span
+      className={`tabular-nums ${className}`}
+      data-testid={testId}
+      title={formatCurrencyBRL(value)}
+    >
       {formatCurrencyBRL(displayValue)}
     </span>
   )
