@@ -179,6 +179,11 @@ myFinance/
     - Paleta de Comandos Global (`CommandPaletteModal.tsx`) inspirada no Linear/Raycast, acionável via atalho global `Ctrl+K` / `Cmd+K` ou botão rápido no Header.
     - Busca instantânea e inteligente com navegação por teclado (`↑`, `↓`, `Enter`, `Esc`), atalhos de navegação para todas as seções, troca instantânea de temas visuais e pesquisa de transações em tempo real.
     - Gráfico Donut de Despesas por Categoria (`ExpenseCategoryChart.tsx`) elevado com fatias interativas, tooltips informativos centrais e legenda com botões semânticos 100% compatíveis com as normas de acessibilidade (a11y) e Biome.
+  - **Redesign Clean da Tela de Transações (UI Minimalista & Foco no Conteúdo):**
+    - **Barra de Ações Unificada:** Integração de busca rápida, segmented control de abas (`Todos | Entradas | Saídas`) e ordenação compacta em uma única linha harmoniosa.
+    - **Eliminação de Dropdowns Concorrentes:** Substituição dos selects redundantes por um botão inteligente `Filtros` com popover flutuante glassmorphism e chips/pills de filtros ativos para remoção imediata.
+    - **Substituição dos 3 Mini-Cards:** Troca dos blocos volumosos de Entradas/Saídas/Saldo Filtrado por uma elegante faixa de resumo de 1 linha (`Entradas` • `Saídas` • `Saldo`), liberando mais de 100px verticais para o extrato.
+    - **Ações no Hover & Acessibilidade:** Botões de ação rápida (*Duplicar*, *Editar*, *Excluir*) em `TransactionItem.tsx` configurados para surgirem suavemente no hover e foco de teclado no desktop, mantendo a leitura limpa e focada.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -186,12 +191,11 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluída a modernização completa do Frontend em 4 Fases consecutivas com 100% de qualidade e testabilidade:
+- **Última Ação:** Concluído o redesign clean e minimalista da tela de Transações (`TransactionList`, `TransactionFilters`, `TransactionItem`):
   - **Qualidade & Validação:**
     - 🟢 **Biome 100% limpo em 159 arquivos** (0 erros, 0 avisos).
-    - 🟢 **Suíte de testes 100% verde: 281/281 testes passando em 57 suítes com Vitest** (+16 novos testes unitários adicionados cobrindo `BottomNavBar`, `DashboardView`, `CommandPaletteModal` e `ExpenseCategoryChart`).
-    - 🟢 **Build de produção e tipagem TypeScript (`tsc -b && vite build`) validados sem falhas**.
-    - 🟢 **Design System & Tailwind v4:** Tipografia fintech (`Plus Jakarta Sans` + `JetBrains Mono`), tabular-nums, classes canônicas estritas e conformidade total com acessibilidade WAI-ARIA.
+    - 🟢 **Suíte de testes 100% verde: 281/281 testes passando em 57 suítes com Vitest**.
+    - 🟢 **Build de produção verificado com sucesso (`tsc -b && vite build`) em ~10s**.
+    - 🟢 **UI Clean:** Redução drástica de ruído visual, eliminação de dropdowns pesados e ganho de respiro vertical no extrato.
 - **Próximos Passos Sugeridos:**
   - Salvar no Git (`git commit` e `git push`).
-  - Deploy Online na Vercel ou Netlify.

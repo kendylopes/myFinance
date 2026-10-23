@@ -231,7 +231,7 @@ export const TransactionItem = ({
             {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
           </span>
 
-          <div className="flex items-center gap-0.5 sm:gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity duration-200">
             {onDuplicate && (
               <button
                 type="button"

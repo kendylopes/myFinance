@@ -263,63 +263,54 @@ export const TransactionList = ({
         />
       )}
 
-      {/* MINI RESUMO DO FILTRO ATUAL (QUANDO HOUVER REGISTROS) */}
+      {/* BARRA DE RESUMO DISCRETA & SELEÇÃO EM MASSA */}
       {transactions.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
-          <div className="p-3 rounded-2xl glass-pill border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
-            <div>
-              <span className="text-2xs uppercase font-bold text-emerald-400 tracking-wider">
-                Entradas Filtradas
-              </span>
-              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-white/3 border border-white/6 text-2xs text-zinc-400">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span className="text-zinc-400">Entradas:</span>
+              <span className="font-mono font-bold text-slate-200">
                 {formatCurrency(filteredMetrics.income)}
-              </p>
-            </div>
-            <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-          </div>
-
-          <div className="p-3 rounded-2xl glass-pill border border-rose-500/20 bg-rose-500/5 flex items-center justify-between">
-            <div>
-              <span className="text-2xs uppercase font-bold text-rose-400 tracking-wider">
-                Saídas Filtradas
               </span>
-              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5">
+            </div>
+            <span className="text-zinc-700 hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
+              <span className="text-zinc-400">Saídas:</span>
+              <span className="font-mono font-bold text-slate-200">
                 {formatCurrency(filteredMetrics.expense)}
-              </p>
-            </div>
-            <div className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
-          </div>
-
-          <div
-            className={`p-3 rounded-2xl glass-pill border flex items-center justify-between ${
-              filteredMetrics.balance >= 0
-                ? 'border-emerald-500/20 bg-emerald-500/5'
-                : 'border-rose-500/20 bg-rose-500/5'
-            }`}
-          >
-            <div>
-              <span className="text-2xs uppercase font-bold text-zinc-400 tracking-wider">
-                Saldo Filtrado
               </span>
-              <p
-                className={`text-sm sm:text-base font-bold font-mono mt-0.5 ${
+            </div>
+            <span className="text-zinc-700 hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-zinc-400">Saldo:</span>
+              <span
+                className={`font-mono font-bold ${
                   filteredMetrics.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >
                 {filteredMetrics.balance >= 0 ? '+' : ''}
                 {formatCurrency(filteredMetrics.balance)}
-              </p>
+              </span>
             </div>
-            <span
-              className={`text-2xs font-semibold px-2 py-0.5 rounded-md ${
-                filteredMetrics.balance >= 0
-                  ? 'bg-emerald-500/15 text-emerald-300'
-                  : 'bg-rose-500/15 text-rose-300'
-              }`}
-            >
-              {filteredMetrics.balance >= 0 ? 'Positivo' : 'Negativo'}
-            </span>
           </div>
+
+          {/* SELETOR EM MASSA DA PÁGINA INTEGRADO */}
+          {onDeleteMultiple && (
+            <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-200 transition-colors select-none shrink-0 self-end sm:self-auto">
+              <input
+                type="checkbox"
+                checked={isAllPageSelected}
+                onChange={handleToggleSelectAllPage}
+                data-testid="select-all-page-checkbox"
+                className="w-3.5 h-3.5 rounded border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 transition cursor-pointer accent-emerald-500"
+              />
+              <span className="text-2xs font-medium text-zinc-400">
+                Selecionar todos ({paginatedTransactions.length})
+              </span>
+            </label>
+          )}
         </div>
       )}
 
@@ -446,28 +437,7 @@ export const TransactionList = ({
         </div>
       ) : (
         <>
-          {/* SELETOR EM MASSA DA PÁGINA */}
-          {onDeleteMultiple && (
-            <div className="flex items-center justify-between px-1 text-xs text-zinc-400">
-              <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-200 transition-colors select-none">
-                <input
-                  type="checkbox"
-                  checked={isAllPageSelected}
-                  onChange={handleToggleSelectAllPage}
-                  data-testid="select-all-page-checkbox"
-                  className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 transition cursor-pointer accent-emerald-500"
-                />
-                <span>Selecionar todos desta página ({paginatedTransactions.length})</span>
-              </label>
-              {selectedIds.length > 0 && (
-                <span className="text-[11px] text-emerald-400 font-medium">
-                  {selectedIds.length} marcado(s)
-                </span>
-              )}
-            </div>
-          )}
-
-          <div data-testid="transaction-list" className="space-y-2.5">
+          <div data-testid="transaction-list" className="space-y-2">
             {paginatedTransactions.map((item) => (
               <TransactionItem
                 key={item.id}
