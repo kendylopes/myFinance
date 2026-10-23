@@ -104,11 +104,19 @@ export function CategorySelectDropdown({
     setIsSavingCategory(true)
     try {
       if (onAddCategory) {
-        await onAddCategory({
+        const created = await onAddCategory({
           name: trimmed,
           type,
           icon: 'Tag',
         })
+        if (!created) {
+          soundFX.playError?.()
+          toast.error(
+            'Erro ao salvar categoria',
+            'Não foi possível gravar a categoria no banco de dados. Tente novamente.',
+          )
+          return
+        }
       }
       soundFX.playSuccess()
       toast.success(
@@ -121,6 +129,11 @@ export function CategorySelectDropdown({
       setIsDropdownOpen(false)
     } catch (err) {
       console.error('Erro ao criar categoria:', err)
+      soundFX.playError?.()
+      toast.error(
+        'Erro ao criar categoria',
+        err instanceof Error ? err.message : 'Falha inesperada ao salvar categoria.',
+      )
     } finally {
       setIsSavingCategory(false)
     }

@@ -88,10 +88,24 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
       throw new Error('O nome da categoria não pode ser vazio.')
     }
 
-    const payload = {
+    // Obter user_id da sessão caso disponível
+    let userId: string | undefined
+    try {
+      const { data: authData } = await client.auth.getUser()
+      if (authData?.user?.id) {
+        userId = authData.user.id
+      }
+    } catch {
+      // Ignora erro de auth e confia no default do banco
+    }
+
+    const payload: Record<string, unknown> = {
       name: trimmedName,
       type: data.type,
       icon: data.icon || 'Tag',
+    }
+    if (userId) {
+      payload.user_id = userId
     }
 
     const { data: createdRow, error } = await client
@@ -101,6 +115,29 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
       .single()
 
     if (error || !createdRow) {
+      // Se for violação de unicidade (código 23505), buscar a categoria existente
+      if (error?.code === '23505') {
+        const query = client
+          .from('categories')
+          .select('*')
+          .eq('name', trimmedName)
+          .eq('type', data.type)
+        if (userId) {
+          query.eq('user_id', userId)
+        }
+        const { data: existingRow } = await query.maybeSingle()
+        if (existingRow) {
+          return {
+            id: String(existingRow.id),
+            name: String(existingRow.name),
+            type: existingRow.type as 'income' | 'expense',
+            icon: String(existingRow.icon || 'Tag'),
+            userId: String(existingRow.user_id),
+            isCustom: true,
+            createdAt: String(existingRow.created_at),
+          }
+        }
+      }
       console.error('[SupabaseCategoryRepository] Erro ao criar categoria:', error?.message)
       throw new Error(error?.message || 'Falha ao gravar categoria no Supabase.')
     }

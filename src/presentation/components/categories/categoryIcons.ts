@@ -10,6 +10,7 @@ import {
   Film,
   Gift,
   GraduationCap,
+  HandCoins,
   Heart,
   HeartPulse,
   Home,
@@ -52,6 +53,7 @@ export const AVAILABLE_CATEGORY_ICONS: Record<string, LucideIcon> = {
   Sparkles,
   CreditCard,
   PiggyBank,
+  HandCoins,
   Smartphone,
   BookOpen,
   Dumbbell,
@@ -76,6 +78,8 @@ export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   'Freelance / Bico': Laptop,
   Investimentos: TrendingUp,
   'Presentes / Extras': Gift,
+  Empréstimo: HandCoins,
+  Emprestimo: HandCoins,
   Outros: Tag,
 }
 
