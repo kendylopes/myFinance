@@ -183,7 +183,10 @@ myFinance/
     - **Barra de Ações Unificada:** Integração de busca rápida, segmented control de abas (`Todos | Entradas | Saídas`) e ordenação compacta em uma única linha harmoniosa.
     - **Eliminação de Dropdowns Concorrentes:** Substituição dos selects redundantes por um botão inteligente `Filtros` com popover flutuante glassmorphism e chips/pills de filtros ativos para remoção imediata.
     - **Substituição dos 3 Mini-Cards:** Troca dos blocos volumosos de Entradas/Saídas/Saldo Filtrado por uma elegante faixa de resumo de 1 linha (`Entradas` • `Saídas` • `Saldo`), liberando mais de 100px verticais para o extrato.
-    - **Ações no Hover & Acessibilidade:** Botões de ação rápida (*Duplicar*, *Editar*, *Excluir*) em `TransactionItem.tsx` configurados para surgirem suavemente no hover e foco de teclado no desktop, mantendo a leitura limpa e focada.
+  - **Integração WhatsApp & IA com Wake Word / Apelido do Robô ("Myfi"):**
+    - **Palavra de Ativação (Wake Word):** Robô configurado para responder exclusivamente quando chamado pelo apelido (ex: *"Myfi gastei 30 de gasolina"*, *"myfi, recebi 1500"*, *"Myfi: qual meu saldo?"*), permanecendo em silêncio absoluto em conversas normais.
+    - **Prevenção Total de Falsos Positivos:** Permite utilizar o bot em grupos ou conversas cotidianas sem lançamentos acidentais.
+    - **Configuração Customizável:** Variáveis `WHATSAPP_BOT_TRIGGER=myfi` e `WHATSAPP_REQUIRE_TRIGGER=true` documentadas e suportadas no `.env`.
 - [ ] **🚀 Deploy Online Gratuito (Vercel / Netlify):**
   - Publicação do projeto na web com URL pública HTTPS para acesso e uso direto no celular.
 
@@ -191,11 +194,10 @@ myFinance/
 
 ## 📍 6. Onde Paramos (Checkpoint Atual)
 
-- **Última Ação:** Concluído o redesign clean e minimalista da tela de Transações (`TransactionList`, `TransactionFilters`, `TransactionItem`):
+- **Última Ação:** Implementado o Wake Word / Apelido inteligente do robô do WhatsApp (`Myfi`) em `scripts/whatsapp-bridge.mjs`:
   - **Qualidade & Validação:**
     - 🟢 **Biome 100% limpo em 159 arquivos** (0 erros, 0 avisos).
     - 🟢 **Suíte de testes 100% verde: 281/281 testes passando em 57 suítes com Vitest**.
-    - 🟢 **Build de produção verificado com sucesso (`tsc -b && vite build`) em ~10s**.
-    - 🟢 **UI Clean:** Redução drástica de ruído visual, eliminação de dropdowns pesados e ganho de respiro vertical no extrato.
+    - 🟢 **Scripts Node.js:** Sintaxe e regex do gatilho validados com 100% de precisão (`node --check`).
 - **Próximos Passos Sugeridos:**
   - Salvar no Git (`git commit` e `git push`).

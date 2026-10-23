@@ -34,6 +34,8 @@ const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || 'http://localhost:808
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || 'myfinance_secret_key_123456'
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || ''
 const PORT = 3001
+const BOT_TRIGGER_NAME = (process.env.WHATSAPP_BOT_TRIGGER || 'myfi').trim().toLowerCase()
+const REQUIRE_TRIGGER = process.env.WHATSAPP_REQUIRE_TRIGGER !== 'false'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -378,10 +380,37 @@ const server = http.createServer(async (req, res) => {
         const trimmed = messageText.trim()
         if (!trimmed) return
 
-        console.log(`[Mensagem Processada de ${cleanSender}]: "${trimmed}"`)
+        let textToProcess = trimmed
+
+        // 5.1. Verificação do apelido / wake word (ex: "myfi", "Myfi", "MYFI", "@myfi")
+        if (REQUIRE_TRIGGER) {
+          const triggerRegex = new RegExp(`^(?:@?${BOT_TRIGGER_NAME})(?:[,:;!?-]|\\s|$)\\s*`, 'i')
+          const hasTrigger = triggerRegex.test(trimmed)
+
+          if (!hasTrigger) {
+            console.log(
+              `[WhatsApp Silenciado - sem chamada ao "${BOT_TRIGGER_NAME}"]: "${trimmed}"`,
+            )
+            return
+          }
+
+          // Remove o apelido da mensagem para processar a ação real
+          textToProcess = trimmed.replace(triggerRegex, '').trim()
+
+          // Se a pessoa só mandou "Myfi" ou "Myfi?"
+          if (!textToProcess) {
+            await sendWhatsAppMessage(
+              cleanSender,
+              `👋 *Olá! Sou o Myfi, seu assistente do myFinance.*\n\nComo posso te ajudar agora?\n• *"Myfi gastei 30 com gasolina"*\n• *"Myfi recebi 1500 de salário"*\n• *"Myfi qual meu saldo?"*`,
+            )
+            return
+          }
+        }
+
+        console.log(`[Mensagem Processada de ${cleanSender}]: "${textToProcess}"`)
 
         // 6. Consulta de Saldo / Resumo Financeiro
-        if (/saldo|quanto tenho|extrato|resumo|gastei quanto|quanto gastei/i.test(trimmed)) {
+        if (/saldo|quanto tenho|extrato|resumo|gastei quanto|quanto gastei/i.test(textToProcess)) {
           const currentYM = new Date().toISOString().slice(0, 7)
           const { data: summary } = await supabase.rpc('get_whatsapp_summary', {
             p_user_id: userId,
@@ -408,7 +437,7 @@ const server = http.createServer(async (req, res) => {
         }
 
         // 7. Extração e Registro de Transação (Receita ou Despesa)
-        const parsedTx = parseFinancialMessage(trimmed)
+        const parsedTx = parseFinancialMessage(textToProcess)
 
         if (parsedTx) {
           const { data: created, error: txError } = await supabase.rpc(
@@ -452,10 +481,14 @@ const server = http.createServer(async (req, res) => {
         }
 
         // 8. Resposta quando expressamente solicitado ou saudação direta
-        if (/^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)(?:\s|$|[!,?.])/i.test(trimmed)) {
+        if (
+          /^(ajuda|comandos|menu|bot|myfinance|como usar|ola|olá|oi|bom dia|boa tarde|boa noite)(?:\s|$|[!,?.])/i.test(
+            textToProcess,
+          )
+        ) {
           await sendWhatsAppMessage(
             cleanSender,
-            `🤖 *myFinance Inteligente*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como usar:*\n• *"Almoço 45 reais"*\n• *"Gasolina 120"*\n• *"Recebi 2500 salário"*\n• *"Qual meu saldo?"*`,
+            `🤖 *Myfi — Assistente myFinance*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como me chamar:*\n• *"Myfi almoço 45 reais"*\n• *"Myfi gasolina 120"*\n• *"Myfi recebi 2500 salário"*\n• *"Myfi qual meu saldo?"*`,
           )
           return
         }
@@ -463,12 +496,12 @@ const server = http.createServer(async (req, res) => {
         if (isAudio) {
           await sendWhatsAppMessage(
             cleanSender,
-            `${audioTranscribedNotice}🤖 Não consegui identificar um valor ou comando financeiro no que você falou.\n\n*Tente falar algo como:*\n• _"Gastei trinta reais na padaria"_\n• _"Recebi quinhentos de um freela"_`,
+            `${audioTranscribedNotice}🤖 Não consegui identificar um valor ou comando financeiro no que você falou.\n\n*Tente falar algo como:*\n• _"Myfi gastei trinta reais na padaria"_\n• _"Myfi recebi quinhentos de um freela"_`,
           )
           return
         }
 
-        console.log(`[Ignorado] Mensagem sem comando financeiro reconhecido: "${trimmed}"`)
+        console.log(`[Ignorado] Mensagem sem comando financeiro reconhecido: "${textToProcess}"`)
       } catch (err) {
         console.error('[Webhook Processing Error]:', err)
       }
@@ -485,6 +518,11 @@ server.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 [myFinance WhatsApp Bridge] Rodando na porta ${PORT}`)
   console.log(`🌐 Endpoint do Webhook: http://0.0.0.0:${PORT}/webhook`)
   console.log(`🤖 IA Gemini: ${GEMINI_API_KEY ? 'Ativa ✅' : 'Chave Pendente no .env ⚠️'}`)
+  console.log(
+    `🔔 Apelido de Ativação: ${
+      REQUIRE_TRIGGER ? `Ativo ✅ ("${BOT_TRIGGER_NAME}")` : 'Desativado (responde a tudo)'
+    }`,
+  )
   console.log(`======================================================\n`)
 
   await setupWebhook()
