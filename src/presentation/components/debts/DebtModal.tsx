@@ -1,10 +1,19 @@
-import { Calendar, DollarSign, Percent, User, X } from 'lucide-react'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Calendar,
+  DollarSign,
+  MessageSquare,
+  Percent,
+  User,
+  X,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getLocalDateString } from '../../../core/formatters/date'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
 import { useToast } from '../../../core/toast/toastContext'
-import type { CreateDebtDTO, Debt, DebtInterestType } from '../../../domain/models/debt'
+import type { CreateDebtDTO, Debt, DebtInterestType, DebtType } from '../../../domain/models/debt'
 
 interface DebtModalProps {
   isOpen: boolean
@@ -17,8 +26,10 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
   const { currentTheme } = useTheme()
   const toast = useToast()
 
+  const [debtType, setDebtType] = useState<DebtType>('receivable')
   const [lenderName, setLenderName] = useState('')
   const [description, setDescription] = useState('')
+  const [phone, setPhone] = useState('')
   const [originalAmount, setOriginalAmount] = useState('')
   const [currentBalance, setCurrentBalance] = useState('')
   const [interestType, setInterestType] = useState<DebtInterestType>('monthly')
@@ -45,8 +56,10 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
   // Preenche dados ao abrir para edição ou zera para criação
   useEffect(() => {
     if (initialData) {
+      setDebtType(initialData.type || 'payable')
       setLenderName(initialData.lenderName)
       setDescription(initialData.description || '')
+      setPhone(initialData.phone || '')
       setOriginalAmount(String(initialData.originalAmount))
       setCurrentBalance(String(initialData.currentBalance))
       setInterestType(initialData.interestType)
@@ -71,12 +84,14 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
       nextMonth.setDate(nextMonth.getDate() + 30)
       const nextMonthStr = nextMonth.toISOString().split('T')[0]
 
+      setDebtType('receivable')
       setLenderName('')
       setDescription('')
+      setPhone('')
       setOriginalAmount('')
       setCurrentBalance('')
       setInterestType('monthly')
-      setInterestRate('10')
+      setInterestRate('0')
       setFixedInterestAmount('')
       setStartDate(today)
       setDueDate(nextMonthStr)
@@ -92,7 +107,12 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!lenderName.trim()) {
-      toast.error('Campo obrigatório', 'Informe o nome do credor ou contato.')
+      toast.error(
+        'Campo obrigatório',
+        debtType === 'receivable'
+          ? 'Informe o nome de quem pegou emprestado.'
+          : 'Informe o nome do credor ou contato.',
+      )
       return
     }
 
@@ -130,8 +150,10 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
     try {
       setIsSubmitting(true)
       await onSave({
+        type: debtType,
         lenderName: lenderName.trim(),
         description: description.trim() || undefined,
+        phone: phone.trim() || undefined,
         originalAmount: origNum,
         currentBalance: currentBalNum,
         interestRate: rateNum,
@@ -146,14 +168,22 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
 
       soundFX.playSuccess()
       toast.success(
-        initialData ? 'Dívida atualizada!' : 'Dívida registrada!',
         initialData
-          ? 'As informações do empréstimo foram salvas.'
-          : 'Novo compromisso adicionado ao seu controle.',
+          ? debtType === 'receivable'
+            ? 'Cobrança atualizada!'
+            : 'Dívida atualizada!'
+          : debtType === 'receivable'
+            ? 'Cobrança registrada!'
+            : 'Dívida registrada!',
+        initialData
+          ? 'As informações foram salvas com sucesso.'
+          : debtType === 'receivable'
+            ? 'Novo empréstimo a receber adicionado ao seu controle.'
+            : 'Novo compromisso adicionado ao seu controle.',
       )
       onClose()
     } catch {
-      toast.error('Erro ao salvar', 'Não foi possível registrar os dados da dívida.')
+      toast.error('Erro ao salvar', 'Não foi possível registrar os dados do empréstimo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -162,7 +192,7 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div
-        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 glass-card p-6 shadow-2xl relative"
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 glass-card p-6 shadow-2xl relative custom-scrollbar"
         style={{
           boxShadow: `0 20px 50px -10px ${currentTheme.primaryColor}20`,
         }}
@@ -175,10 +205,18 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: currentTheme.primaryColor }}
               />
-              {initialData ? 'Editar Dívida / Empréstimo' : 'Novo Empréstimo / Dívida'}
+              {initialData
+                ? debtType === 'receivable'
+                  ? 'Editar Cobrança / Empréstimo'
+                  : 'Editar Dívida'
+                : debtType === 'receivable'
+                  ? 'Novo Empréstimo (A Receber)'
+                  : 'Nova Dívida (A Pagar)'}
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Controle de agiotas, empréstimos pessoais e rolagem de juros
+              {debtType === 'receivable'
+                ? 'Controle de valores emprestados para amigos, parentes e clientes'
+                : 'Controle de agiotas, empréstimos bancários e rolagem de juros'}
             </p>
           </div>
           <button
@@ -194,16 +232,54 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
           </button>
         </div>
 
+        {/* Seletor do Tipo: Vou Receber vs Vou Pagar */}
+        <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-white/4 border border-white/8 mt-3">
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setDebtType('receivable')
+              if (!initialData && interestRate === '10') setInterestRate('0')
+            }}
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              debtType === 'receivable'
+                ? 'bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/4'
+            }`}
+          >
+            <ArrowDownLeft className="w-3.5 h-3.5" />
+            <span>Vou Receber (Emprestei)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              soundFX.playClick()
+              setDebtType('payable')
+            }}
+            className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              debtType === 'payable'
+                ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
+                : 'text-zinc-400 hover:text-white hover:bg-white/4'
+            }`}
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span>Vou Pagar (Minha Dívida)</span>
+          </button>
+        </div>
+
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {/* Nome do Credor e Descrição */}
+          {/* Nome e WhatsApp */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="lenderName"
                 className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5"
               >
-                Credor / Contato *
+                {debtType === 'receivable'
+                  ? 'Quem pegou emprestado (Devedor) *'
+                  : 'Credor / Contato *'}
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5" />
@@ -211,7 +287,11 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
                   id="lenderName"
                   type="text"
                   required
-                  placeholder="Ex: Agiota Zé, Carlos, Banco..."
+                  placeholder={
+                    debtType === 'receivable'
+                      ? 'Ex: Meu irmão, Carlos, Amigo...'
+                      : 'Ex: Agiota Zé, Carlos, Banco...'
+                  }
                   value={lenderName}
                   onChange={(e) => setLenderName(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
@@ -221,20 +301,40 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
 
             <div>
               <label
-                htmlFor="description"
+                htmlFor="phone"
                 className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5"
               >
-                Motivo / Identificador
+                WhatsApp para Lembrete (opcional)
               </label>
-              <input
-                id="description"
-                type="text"
-                placeholder="Ex: Emergência, Reforma, Carro..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-              />
+              <div className="relative">
+                <MessageSquare className="w-4 h-4 text-emerald-400 absolute left-3 top-3.5" />
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="Ex: (11) 99999-9999"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
             </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5"
+            >
+              Motivo / Identificador (opcional)
+            </label>
+            <input
+              id="description"
+              type="text"
+              placeholder="Ex: Empréstimo para conserto do carro, ajuda pessoal..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+            />
           </div>
 
           {/* Valores: Original e Saldo Atual */}
@@ -283,9 +383,22 @@ export function DebtModal({ isOpen, onClose, onSave, initialData }: DebtModalPro
 
           {/* Juros: Tipo e Taxa */}
           <div className="p-4 rounded-2xl bg-white/3 border border-white/5 space-y-3">
-            <span className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">
-              Regra de Juros Combinada
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                Regra de Juros Combinada
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playClick()
+                  setInterestRate('0')
+                  setFixedInterestAmount('')
+                }}
+                className="px-2.5 py-1 rounded-lg text-2xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer"
+              >
+                0% (Sem Juros)
+              </button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"

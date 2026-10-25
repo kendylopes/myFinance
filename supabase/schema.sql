@@ -121,12 +121,15 @@ CREATE TABLE IF NOT EXISTS public.debts (
     paid_installments INT NOT NULL DEFAULT 0,
     installment_amount NUMERIC(12, 2),
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paid', 'overdue', 'renewed')),
+    type TEXT NOT NULL DEFAULT 'payable' CHECK (type IN ('payable', 'receivable')),
+    phone TEXT,
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
 CREATE INDEX IF NOT EXISTS idx_debts_user_id ON public.debts (user_id);
+CREATE INDEX IF NOT EXISTS idx_debts_type ON public.debts (type);
 CREATE INDEX IF NOT EXISTS idx_debts_due_date ON public.debts (due_date ASC);
 CREATE INDEX IF NOT EXISTS idx_debts_status ON public.debts (status);
 

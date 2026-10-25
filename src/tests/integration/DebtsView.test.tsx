@@ -20,21 +20,24 @@ const mockDebts: Debt[] = [
     dueDate: '2026-10-15',
     paidInstallments: 0,
     status: 'active',
+    type: 'payable',
     createdAt: '2026-09-01',
     updatedAt: '2026-09-01',
   },
   {
     id: 'debt-2',
-    lenderName: 'Nubank Crédito',
-    description: 'Renegociação',
+    lenderName: 'Carlos Amigo',
+    description: 'Empréstimo para reforma',
     originalAmount: 1200,
     currentBalance: 600,
-    interestRate: 5,
+    interestRate: 0,
     interestType: 'monthly',
     startDate: '2026-08-01',
     dueDate: '2026-10-20',
     paidInstallments: 1,
     status: 'active',
+    type: 'receivable',
+    phone: '5511999998888',
     createdAt: '2026-08-01',
     updatedAt: '2026-08-01',
   },
@@ -47,7 +50,11 @@ vi.mock('../../presentation/hooks/useDebts', () => ({
     activeDebts: mockDebts,
     paidDebts: [],
     overdueDebts: [],
+    payableDebts: [mockDebts[0]],
+    receivableDebts: [mockDebts[1]],
     totalDebtBalance: 3100,
+    totalPayableBalance: 2500,
+    totalReceivableBalance: 600,
     totalInterestPaid: 450,
     totalAmountPaid: 1100,
     isLoading: false,
@@ -76,10 +83,11 @@ describe('<DebtsView /> (Central de Dívidas & Simulador de Quitação)', () => 
   it('deve renderizar a tela de contratos com os cards de resumo e credores', () => {
     renderComponent()
 
-    expect(screen.getByText('Minhas Dívidas (2)')).toBeInTheDocument()
+    expect(screen.getByText('Dívidas & Cobranças (2)')).toBeInTheDocument()
     expect(screen.getByText('Simulador de Quitação')).toBeInTheDocument()
     expect(screen.getByText('Agiota Zé')).toBeInTheDocument()
-    expect(screen.getByText('Nubank Crédito')).toBeInTheDocument()
+    expect(screen.getByText('Carlos Amigo')).toBeInTheDocument()
+    expect(screen.getByText('Cobrar no WhatsApp')).toBeInTheDocument()
   })
 
   it('deve alternar para a aba do Simulador de Quitação e comparar estratégias', () => {

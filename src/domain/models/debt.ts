@@ -4,11 +4,15 @@ export type DebtStatus = 'active' | 'paid' | 'overdue' | 'renewed'
 
 export type DebtPaymentType = 'renewal' | 'amortization' | 'installment' | 'full_payoff'
 
+export type DebtType = 'payable' | 'receivable'
+
 export interface Debt {
   id: string
   userId?: string
-  lenderName: string
+  type: DebtType // 'payable' (A pagar) ou 'receivable' (A receber / Empréstimo feito a terceiro)
+  lenderName: string // Nome do credor (se payable) ou devedor/amigo/irmão (se receivable)
   description?: string
+  phone?: string // WhatsApp ou telefone para envio de lembrete
   originalAmount: number
   currentBalance: number
   interestRate: number // % taxa
@@ -40,8 +44,10 @@ export interface DebtPayment {
 }
 
 export interface CreateDebtDTO {
+  type?: DebtType
   lenderName: string
   description?: string
+  phone?: string
   originalAmount: number
   currentBalance?: number
   interestRate: number
@@ -64,4 +70,5 @@ export interface RecordDebtPaymentDTO {
   newDueDate?: string
   notes?: string
   registerAsExpense?: boolean
+  registerAsTransaction?: boolean
 }

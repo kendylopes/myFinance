@@ -1,12 +1,12 @@
 import {
-  AlertCircle,
+  ArrowDownLeft,
+  ArrowUpRight,
   Eye,
   EyeOff,
   HandCoins,
-  History,
   Info,
   Plus,
-  RefreshCw,
+  Scale,
   Search,
   ShieldAlert,
   Sliders,
@@ -40,8 +40,12 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
     activeDebts,
     paidDebts,
     overdueDebts,
-    totalDebtBalance,
-    totalInterestPaid,
+    payableDebts,
+    receivableDebts,
+    totalDebtBalance: _totalDebtBalance,
+    totalPayableBalance,
+    totalReceivableBalance,
+    totalInterestPaid: _totalInterestPaid,
     totalAmountPaid,
     isLoading,
     isPrivacyMode,
@@ -53,6 +57,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
   } = useDebts({ onAddTransaction })
 
   const [activeTab, setActiveTab] = useState<'contracts' | 'simulator'>('contracts')
+  const [filterType, setFilterType] = useState<'all' | 'receivable' | 'payable'>('all')
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'urgent' | 'paid'>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -66,9 +71,16 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
   const [historyDebt, setHistoryDebt] = useState<Debt | null>(null)
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
 
+  // Saldo líquido (A Receber - A Pagar)
+  const netBalance = totalReceivableBalance - totalPayableBalance
+
   // Dívidas filtradas
   const filteredDebts = useMemo(() => {
     return debts.filter((d) => {
+      // Filtro de tipo (Cobrança a receber ou Dívida a pagar)
+      if (filterType === 'receivable' && d.type !== 'receivable') return false
+      if (filterType === 'payable' && d.type === 'receivable') return false
+
       // Filtro de status
       if (filterStatus === 'active' && d.status === 'paid') return false
       if (filterStatus === 'paid' && d.status !== 'paid') return false
@@ -83,12 +95,13 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
         const q = searchQuery.toLowerCase()
         const matchName = d.lenderName.toLowerCase().includes(q)
         const matchDesc = d.description?.toLowerCase().includes(q) || false
-        if (!matchName && !matchDesc) return false
+        const matchPhone = d.phone?.toLowerCase().includes(q) || false
+        if (!matchName && !matchDesc && !matchPhone) return false
       }
 
       return true
     })
-  }, [debts, filterStatus, searchQuery])
+  }, [debts, filterType, filterStatus, searchQuery])
 
   const mask = (val: string) => (isPrivacyMode ? '••••••' : val)
 
@@ -146,7 +159,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
             }`}
           >
             <HandCoins className="w-4 h-4" />
-            <span>Minhas Dívidas ({debts.length})</span>
+            <span>Dívidas & Cobranças ({debts.length})</span>
           </button>
 
           <button
@@ -166,7 +179,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           </button>
         </div>
 
-        {/* Botões de Ação: Modo Discreto e Nova Dívida */}
+        {/* Botões de Ação: Modo Discreto e Novo Registro */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
@@ -201,7 +214,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
             }}
           >
             <Plus className="w-4 h-4" />
-            <span>Nova Dívida</span>
+            <span>Novo Registro</span>
           </button>
         </div>
       </div>
@@ -212,7 +225,7 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
       ) : (
         /* Aba 1: Painel de Contratos e Gestão */
         <>
-          {/* Banner de Alerta Se Houver Dívidas Atrasadas */}
+          {/* Banner de Alerta Se Houver Dívidas ou Cobranças Atrasadas */}
           {overdueDebts.length > 0 && (
             <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 flex items-center justify-between gap-3 shadow-lg shadow-rose-950/30 text-rose-200">
               <div className="flex items-center gap-3">
@@ -221,11 +234,11 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-rose-100">
-                    Atenção: Você possui {overdueDebts.length} dívida(s) em atraso!
+                    Atenção: Você possui {overdueDebts.length} compromisso(s) em atraso!
                   </h4>
                   <p className="text-xs text-rose-300/80">
-                    Dívidas com juros altos ou de mora crescem rápido. Priorize a rolagem ou
-                    quitação.
+                    Verifique os pagamentos pendentes e utilize o lembrete via WhatsApp para
+                    agilizar a regularização.
                   </p>
                 </div>
               </div>
@@ -234,99 +247,184 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                 onClick={() => setFilterStatus('urgent')}
                 className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold cursor-pointer transition-colors shrink-0"
               >
-                Ver Atrasadas
+                Ver Atrasados
               </button>
             </div>
           )}
 
           {/* Cards com Resumo Analítico Superior */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {/* Card 1: Saldo Devedor Total */}
-            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+            {/* Card 1: Total a Receber (Cobranças / Empréstimos feitos a terceiros) */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-emerald-500/20 bg-emerald-950/10 space-y-2">
               <div className="flex items-center justify-between text-zinc-400">
-                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                  Total em Dívidas
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-400 truncate">
+                  Total a Receber
                 </span>
-                <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 text-rose-400">
-                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                  <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
-                {mask(formatValue(totalDebtBalance))}
+              <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
+                {mask(formatValue(totalReceivableBalance))}
               </div>
               <p className="text-2xs sm:text-[11px] text-zinc-400">
-                {activeDebts.length} compromisso(s) em aberto
+                {receivableDebts.filter((d) => d.status !== 'paid').length} cobrança(s) pendente(s)
               </p>
             </div>
 
-            {/* Card 2: Total Pago Só em Juros */}
-            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-amber-500/20 bg-amber-950/10 space-y-2">
+            {/* Card 2: Total a Pagar (Minhas Dívidas) */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-rose-500/20 bg-rose-950/10 space-y-2">
               <div className="flex items-center justify-between text-zinc-400">
-                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-amber-400 truncate">
-                  Só em Juros Pagos
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-rose-400 truncate">
+                  Total a Pagar
                 </span>
-                <div className="p-1.5 sm:p-2 rounded-xl bg-amber-500/15 text-amber-400">
-                  <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/15 text-rose-400">
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="text-lg sm:text-2xl font-black text-amber-300 font-mono tracking-tight">
-                {mask(formatValue(totalInterestPaid))}
+              <div className="text-lg sm:text-2xl font-black text-rose-300 font-mono tracking-tight">
+                {mask(formatValue(totalPayableBalance))}
               </div>
-              <p className="text-2xs sm:text-[11px] text-zinc-400">Custo total de rolagens</p>
+              <p className="text-2xs sm:text-[11px] text-zinc-400">
+                {payableDebts.filter((d) => d.status !== 'paid').length} compromisso(s) a pagar
+              </p>
             </div>
 
-            {/* Card 3: Total Geral Pago */}
+            {/* Card 3: Saldo Líquido (A Receber - A Pagar) */}
             <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-zinc-400">
                 <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                  Volume Total Pago
+                  Posição Líquida
+                </span>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-white/5 text-zinc-300">
+                  <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+              </div>
+              <div
+                className={`text-lg sm:text-2xl font-black font-mono tracking-tight ${
+                  netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                {mask(formatValue(netBalance))}
+              </div>
+              <p className="text-2xs sm:text-[11px] text-zinc-400">
+                {netBalance >= 0 ? 'Saldo a favor (superávit)' : 'Saldo devedor (déficit)'}
+              </p>
+            </div>
+
+            {/* Card 4: Volume Total Movimentado */}
+            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-white/10 space-y-2">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
+                  Total Liquidado
                 </span>
                 <div className="p-1.5 sm:p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
-                  <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
               <div className="text-lg sm:text-2xl font-black text-white font-mono tracking-tight">
                 {mask(formatValue(totalAmountPaid))}
               </div>
               <p className="text-2xs sm:text-[11px] text-zinc-400">
-                {payments.length} pagamento(s)
+                {paidDebts.length} contrato(s) concluído(s)
               </p>
-            </div>
-
-            {/* Card 4: Dívidas Liquidadas */}
-            <div className="glass-card p-4 sm:p-5 rounded-3xl border border-emerald-500/20 bg-emerald-950/10 space-y-2">
-              <div className="flex items-center justify-between text-zinc-400">
-                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-400 truncate">
-                  Dívidas Quitadas
-                </span>
-                <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
-                  <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-              </div>
-              <div className="text-lg sm:text-2xl font-black text-emerald-300 font-mono tracking-tight">
-                {paidDebts.length}
-              </div>
-              <p className="text-2xs sm:text-[11px] text-zinc-400">Compromissos quitados</p>
             </div>
           </div>
 
           {/* Barra de Filtros e Busca de Contratos */}
-          <div className="glass-card p-2.5 sm:p-3 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-2.5 shadow-sm">
-            {/* Abas de Filtro em Trilho Fluido */}
-            <div className="flex items-center p-1 rounded-xl bg-white/3 border border-white/8 shadow-inner overflow-x-auto custom-scrollbar gap-1">
+          <div className="glass-card p-3 rounded-2xl border border-white/10 space-y-3 shadow-sm">
+            {/* Linha Superior: Filtro por Tipo de Operação */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex items-center p-1 rounded-xl bg-white/3 border border-white/8 shadow-inner overflow-x-auto custom-scrollbar gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFX.playClick()
+                    setFilterType('all')
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    filterType === 'all'
+                      ? 'bg-white/15 text-white shadow-xs'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  Todos ({debts.length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFX.playClick()
+                    setFilterType('receivable')
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    filterType === 'receivable'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs'
+                      : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowDownLeft className="w-3.5 h-3.5" />
+                  <span>A Receber / Cobranças ({receivableDebts.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFX.playClick()
+                    setFilterType('payable')
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    filterType === 'payable'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 shadow-xs'
+                      : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>A Pagar / Dívidas ({payableDebts.length})</span>
+                </button>
+              </div>
+
+              {/* Input de Busca com Botão Limpar */}
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 text-emerald-400/80 absolute left-3 top-2.5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Buscar por contato, descrição ou tel..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-9 pr-8 rounded-xl bg-white/4 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500/60 focus:bg-white/6 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Limpar busca"
+                    className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Linha Inferior: Subfiltro por Status */}
+            <div className="flex items-center gap-1.5 pt-1 border-t border-white/5 overflow-x-auto custom-scrollbar">
+              <span className="text-2xs uppercase tracking-wider text-zinc-400 font-semibold pr-1 shrink-0">
+                Status:
+              </span>
               <button
                 type="button"
                 onClick={() => {
                   soundFX.playClick()
                   setFilterStatus('all')
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'all'
-                    ? 'bg-white/15 text-white shadow-xs'
+                    ? 'bg-white/10 text-white'
                     : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                Todas ({debts.length})
+                Todos
               </button>
 
               <button
@@ -335,13 +433,13 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('active')
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'active'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs'
-                    : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
                 }`}
               >
-                Ativas ({activeDebts.length})
+                Pendentes ({activeDebts.length})
               </button>
 
               <button
@@ -350,9 +448,9 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('urgent')
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-2xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'urgent'
-                    ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40 shadow-xs'
+                    ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40'
                     : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
                 }`}
               >
@@ -365,36 +463,14 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   soundFX.playClick()
                   setFilterStatus('paid')
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   filterStatus === 'paid'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
                     : 'text-zinc-400 hover:text-cyan-400 hover:bg-white/5'
                 }`}
               >
                 Quitadas ({paidDebts.length})
               </button>
-            </div>
-
-            {/* Input de Busca com Botão Limpar */}
-            <div className="relative w-full md:w-64">
-              <Search className="w-4 h-4 text-emerald-400/80 absolute left-3 top-2.5 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Buscar por credor..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-8 rounded-xl bg-white/4 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-emerald-500/60 focus:bg-white/6 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Limpar busca"
-                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           </div>
 
@@ -416,11 +492,21 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
               >
                 <HandCoins className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-bold text-white">Nenhuma dívida encontrada</h3>
-              <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              <h3 className="text-lg font-bold text-white">
+                {filterType === 'receivable'
+                  ? 'Nenhuma cobrança a receber encontrada'
+                  : filterType === 'payable'
+                    ? 'Nenhuma dívida a pagar encontrada'
+                    : 'Nenhum registro encontrado'}
+              </h3>
+              <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
                 {searchQuery.trim() || filterStatus !== 'all'
                   ? 'Nenhum resultado corresponde aos filtros aplicados.'
-                  : 'Cadastre dívidas ou empréstimos pessoais para acompanhar vencimentos, renovações e abatimentos.'}
+                  : filterType === 'receivable'
+                    ? 'Cadastre empréstimos concedidos a amigos, clientes ou familiares para controlar parcelas, juros e cobrar com 1 clique pelo WhatsApp.'
+                    : filterType === 'payable'
+                      ? 'Cadastre seus financiamentos ou empréstimos pessoais para planejar a quitação e reduzir o custo de juros.'
+                      : 'Cadastre dívidas a pagar ou valores emprestados a terceiros para acompanhar vencimentos, renovações, amortizações e cobranças no WhatsApp.'}
               </p>
               <div className="pt-2">
                 <button
@@ -432,7 +518,13 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
                   }}
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Cadastrar Primeira Dívida</span>
+                  <span>
+                    {filterType === 'receivable'
+                      ? 'Cadastrar Cobrança a Receber'
+                      : filterType === 'payable'
+                        ? 'Cadastrar Dívida a Pagar'
+                        : 'Cadastrar Primeiro Registro'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -456,13 +548,20 @@ export function DebtsView({ onAddTransaction }: DebtsViewProps) {
           {/* Dica Estratégica na Base */}
           <div className="p-4 rounded-2xl bg-white/3 border border-white/8 flex items-start gap-3 text-xs text-zinc-400">
             <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <p>
-              <strong className="text-zinc-200">Estratégia de Quitação:</strong> Sempre que você{' '}
-              <strong className="text-emerald-400">&quot;Rola a dívida&quot;</strong>, paga apenas
-              os juros do mês e o capital inicial continua idêntico. Sempre que possível, utilize a
-              opção <strong className="text-cyan-400">&quot;Amortizar&quot;</strong> para reduzir o
-              saldo do principal e diminuir o custo do próximo mês.
-            </p>
+            <div className="space-y-1">
+              <p>
+                <strong className="text-zinc-200">Estratégia de Gestão:</strong> Para cobranças a
+                terceiros, utilize o botão{' '}
+                <strong className="text-emerald-400">&quot;Cobrar no WhatsApp&quot;</strong> para
+                enviar um lembrete amigável com valor e dados prontos.
+              </p>
+              <p>
+                Para suas dívidas a pagar, opte sempre que possível por{' '}
+                <strong className="text-cyan-400">&quot;Amortizar&quot;</strong> ao invés de apenas
+                rolar os juros, reduzindo o saldo principal e diminuindo o custo das próximas
+                parcelas.
+              </p>
+            </div>
           </div>
         </>
       )}

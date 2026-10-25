@@ -85,8 +85,10 @@ export class SupabaseDebtRepository implements IDebtRepository {
             const debt: Debt = {
               id: String(row.id),
               userId: row.user_id,
+              type: (row.type as Debt['type']) || 'payable',
               lenderName: String(row.lender_name),
               description: row.description || '',
+              phone: row.phone || undefined,
               originalAmount: Number(row.original_amount),
               currentBalance: Number(row.current_balance),
               interestRate: Number(row.interest_rate || 0),
@@ -138,8 +140,10 @@ export class SupabaseDebtRepository implements IDebtRepository {
 
     const newDebt: Debt = {
       id: crypto.randomUUID ? crypto.randomUUID() : `debt_${Date.now()}`,
+      type: data.type || 'payable',
       lenderName: data.lenderName.trim(),
       description: data.description?.trim() || '',
+      phone: data.phone?.trim() || undefined,
       originalAmount,
       currentBalance,
       interestRate: Number(data.interestRate || 0),
@@ -165,8 +169,10 @@ export class SupabaseDebtRepository implements IDebtRepository {
           .from('debts')
           .insert({
             id: newDebt.id,
+            type: newDebt.type,
             lender_name: newDebt.lenderName,
             description: newDebt.description,
+            phone: newDebt.phone || null,
             original_amount: newDebt.originalAmount,
             current_balance: newDebt.currentBalance,
             interest_rate: newDebt.interestRate,
@@ -206,8 +212,10 @@ export class SupabaseDebtRepository implements IDebtRepository {
 
     const updated: Debt = {
       ...target,
+      type: data.type !== undefined ? data.type : target.type,
       lenderName: data.lenderName !== undefined ? data.lenderName.trim() : target.lenderName,
       description: data.description !== undefined ? data.description.trim() : target.description,
+      phone: data.phone !== undefined ? data.phone?.trim() : target.phone,
       originalAmount:
         data.originalAmount !== undefined ? Number(data.originalAmount) : target.originalAmount,
       currentBalance:
@@ -241,8 +249,10 @@ export class SupabaseDebtRepository implements IDebtRepository {
         await client
           .from('debts')
           .update({
+            type: updated.type,
             lender_name: updated.lenderName,
             description: updated.description,
+            phone: updated.phone || null,
             original_amount: updated.originalAmount,
             current_balance: updated.currentBalance,
             interest_rate: updated.interestRate,

@@ -1,10 +1,13 @@
 import {
   AlertCircle,
+  ArrowDownLeft,
+  ArrowUpRight,
   Calendar,
   CheckCircle2,
   Clock,
   Edit2,
   History,
+  MessageSquare,
   MoreVertical,
   Percent,
   RefreshCw,
@@ -38,6 +41,7 @@ export function DebtCard({
   const { formatValue } = useCurrency()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
+  const isReceivable = debt.type === 'receivable'
   const today = getLocalDateString()
 
   // Calcula dias para o vencimento
@@ -107,6 +111,21 @@ export function DebtCard({
 
   const mask = (val: string) => (isPrivacyMode ? '••••••' : val)
 
+  const handleWhatsAppReminder = () => {
+    soundFX.playClick()
+    const name = debt.lenderName
+    const formattedBalance = formatValue(debt.currentBalance)
+    const dueDateFormatted = debt.dueDate.split('-').reverse().join('/')
+    const message = `Olá, ${name}! Tudo bem? Passando para lembrar do acerto do empréstimo no valor de ${formattedBalance}, previsto para ${dueDateFormatted}. Qualquer dúvida ou para combinar o Pix, me avisa por aqui! Abraço.`
+
+    const cleanPhone = debt.phone?.replace(/\D/g, '') || ''
+    const url = cleanPhone
+      ? `https://wa.me/${cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`}?text=${encodeURIComponent(message)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`
+
+    window.open(url, '_blank')
+  }
+
   return (
     <div
       className={`glass-card p-5 sm:p-6 rounded-3xl border transition-all duration-300 relative flex flex-col justify-between ${
@@ -125,8 +144,29 @@ export function DebtCard({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">
-                {isPrivacyMode ? 'Credor Confidencial' : debt.lenderName}
+                {isPrivacyMode
+                  ? isReceivable
+                    ? 'Devedor Confidencial'
+                    : 'Credor Confidencial'
+                  : debt.lenderName}
               </h3>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold border uppercase tracking-wider ${
+                  isReceivable
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                    : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                }`}
+              >
+                {isReceivable ? (
+                  <>
+                    <ArrowDownLeft className="w-3 h-3 text-emerald-400" /> A Receber
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpRight className="w-3 h-3 text-rose-400" /> A Pagar
+                  </>
+                )}
+              </span>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${statusBadge.color}`}
               >
@@ -196,16 +236,20 @@ export function DebtCard({
           </div>
         </div>
 
-        {/* Saldo Devedor em Destaque */}
+        {/* Saldo Devedor / A Receber em Destaque */}
         <div className="mt-4 p-4 rounded-2xl bg-white/3 border border-white/8 space-y-3">
           <div className="flex items-end justify-between">
             <div>
               <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
-                Saldo Devedor
+                {isReceivable ? 'Saldo a Receber' : 'Saldo Devedor'}
               </span>
               <span
                 className={`text-xl sm:text-2xl font-black font-mono tracking-tight block mt-0.5 ${
-                  isPaid ? 'text-zinc-500 line-through' : 'text-white'
+                  isPaid
+                    ? 'text-zinc-500 line-through'
+                    : isReceivable
+                      ? 'text-emerald-300'
+                      : 'text-white'
                 }`}
               >
                 {mask(formatValue(debt.currentBalance))}
@@ -214,7 +258,7 @@ export function DebtCard({
 
             <div className="text-right">
               <span className="text-2xs font-semibold text-zinc-500 uppercase tracking-wider block">
-                Valor Original
+                {isReceivable ? 'Valor Emprestado' : 'Valor Original'}
               </span>
               <span className="text-xs font-semibold text-zinc-400 font-mono">
                 {mask(formatValue(debt.originalAmount))}
@@ -225,7 +269,7 @@ export function DebtCard({
           {/* Barra de Progresso de Amortização */}
           <div>
             <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1">
-              <span>Progresso de Quitação</span>
+              <span>{isReceivable ? 'Progresso de Recebimento' : 'Progresso de Quitação'}</span>
               <span className="font-semibold text-emerald-400">{paidPercent.toFixed(0)}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
@@ -247,9 +291,11 @@ export function DebtCard({
             <div className="text-xs font-bold text-amber-300 font-mono mt-1">
               {debt.interestType === 'fixed'
                 ? `${mask(formatValue(debt.fixedInterestAmount || 0))} fixo`
-                : `${debt.interestRate}% ao mês`}
+                : Number(debt.interestRate) === 0
+                  ? '0% (Sem Juros)'
+                  : `${debt.interestRate}% ao mês`}
             </div>
-            {!isPaid && (
+            {!isPaid && Number(debt.interestRate) > 0 && (
               <div className="text-2xs text-zinc-400 mt-0.5">
                 Custo rolagem:{' '}
                 <strong className="text-amber-400">{mask(formatValue(interestAmount))}</strong>
@@ -297,7 +343,7 @@ export function DebtCard({
         {totalInterestPaid > 0 && (
           <div className="mt-3 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-xs">
             <span className="text-amber-300 text-[11px] font-medium">
-              Você já pagou em juros para este credor:
+              {isReceivable ? 'Total de juros já recebidos:' : 'Você já pagou em juros:'}
             </span>
             <span className="font-bold text-amber-300 font-mono">
               {mask(formatValue(totalInterestPaid))}
@@ -310,7 +356,24 @@ export function DebtCard({
       <div className="mt-5 pt-3 border-t border-white/10 flex items-center gap-2 flex-wrap">
         {!isPaid ? (
           <>
-            {/* Botão Rolar / Renovar (Pagar só os juros) */}
+            {/* Se for a receber, botão direto para cobrar no WhatsApp */}
+            {isReceivable && (
+              <button
+                type="button"
+                onClick={handleWhatsAppReminder}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                title={
+                  debt.phone
+                    ? `Cobrar ${debt.lenderName} no WhatsApp (${debt.phone})`
+                    : `Enviar mensagem de cobrança para ${debt.lenderName}`
+                }
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Cobrar no WhatsApp</span>
+              </button>
+            )}
+
+            {/* Botão Dar Baixa */}
             <button
               type="button"
               onClick={() => {
@@ -320,7 +383,7 @@ export function DebtCard({
               className="flex-1 min-w-30 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-linear-to-r from-emerald-500 to-teal-500 text-black text-xs font-bold shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Dar Baixa / Rolar</span>
+              <span>{isReceivable ? 'Receber / Baixa' : 'Dar Baixa / Rolar'}</span>
             </button>
 
             {/* Botão Ver Histórico */}
@@ -340,7 +403,8 @@ export function DebtCard({
         ) : (
           <div className="w-full flex items-center justify-between">
             <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" /> Dívida Liquidada
+              <CheckCircle2 className="w-4 h-4" />{' '}
+              {isReceivable ? 'Empréstimo Quitado' : 'Dívida Liquidada'}
             </span>
             <button
               type="button"

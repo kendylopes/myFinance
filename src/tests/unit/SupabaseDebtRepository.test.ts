@@ -160,4 +160,32 @@ describe('SupabaseDebtRepository (Dívidas, Agiotas e Renovações)', () => {
     const remainingPayments = await repo.getPayments(debt.id)
     expect(remainingPayments).toHaveLength(0)
   })
+
+  it('deve criar uma cobrança a receber (receivable) com telefone e taxa 0% e permitir atualizar', async () => {
+    const repo = new SupabaseDebtRepository(null)
+
+    const debt = await repo.create({
+      lenderName: 'João Silva',
+      description: 'Empréstimo sem juros para reforma',
+      originalAmount: 1500,
+      interestRate: 0,
+      interestType: 'monthly',
+      startDate: '2026-10-01',
+      dueDate: '2026-11-01',
+      type: 'receivable',
+      phone: '5511999998888',
+    })
+
+    expect(debt.type).toBe('receivable')
+    expect(debt.phone).toBe('5511999998888')
+    expect(debt.interestRate).toBe(0)
+
+    const updated = await repo.update(debt.id, {
+      phone: '5511977776666',
+      description: 'Empréstimo reformado',
+    })
+
+    expect(updated.phone).toBe('5511977776666')
+    expect(updated.description).toBe('Empréstimo reformado')
+  })
 })

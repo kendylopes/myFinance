@@ -102,22 +102,23 @@ export function useDebts({ onAddTransaction }: UseDebtsProps = {}) {
       setDebts((prev) => prev.map((d) => (d.id === updatedDebt.id ? updatedDebt : d)))
       setPayments((prev) => [payment, ...prev])
 
-      // Se solicitado, registra automaticamente como despesa no extrato do myFinance
-      if (dto.registerAsExpense && onAddTransaction && dto.amount > 0) {
+      // Se solicitado, registra automaticamente como despesa ou receita no extrato do myFinance
+      if (
+        (dto.registerAsExpense || dto.registerAsTransaction) &&
+        onAddTransaction &&
+        dto.amount > 0
+      ) {
         try {
-          const typeLabelMap = {
-            renewal: 'Renovação / Juros',
-            amortization: 'Amortização de Dívida',
-            installment: 'Parcela de Empréstimo',
-            full_payoff: 'Quitação Total de Dívida',
-          }
-          const label = typeLabelMap[dto.type] || 'Pagamento de Dívida'
+          const isReceivable = updatedDebt.type === 'receivable'
+          const label = isReceivable
+            ? `Recebimento de Empréstimo: ${updatedDebt.lenderName}`
+            : `Pagamento de Dívida: ${updatedDebt.lenderName}`
 
           await onAddTransaction({
-            title: `${label}: ${updatedDebt.lenderName}`,
+            title: label,
             amount: Number(dto.amount),
-            type: 'expense',
-            category: 'Dívidas & Juros',
+            type: isReceivable ? 'income' : 'expense',
+            category: 'Empréstimo',
             date: dto.paymentDate,
             status: 'paid',
           })
@@ -136,9 +137,24 @@ export function useDebts({ onAddTransaction }: UseDebtsProps = {}) {
   const paidDebts = useMemo(() => debts.filter((d) => d.status === 'paid'), [debts])
   const overdueDebts = useMemo(() => debts.filter((d) => d.status === 'overdue'), [debts])
 
+  const payableDebts = useMemo(() => debts.filter((d) => d.type !== 'receivable'), [debts])
+  const receivableDebts = useMemo(() => debts.filter((d) => d.type === 'receivable'), [debts])
+
   const totalDebtBalance = useMemo(() => {
     return activeDebts.reduce((acc, curr) => acc + curr.currentBalance, 0)
   }, [activeDebts])
+
+  const totalPayableBalance = useMemo(() => {
+    return payableDebts
+      .filter((d) => d.status !== 'paid')
+      .reduce((acc, curr) => acc + curr.currentBalance, 0)
+  }, [payableDebts])
+
+  const totalReceivableBalance = useMemo(() => {
+    return receivableDebts
+      .filter((d) => d.status !== 'paid')
+      .reduce((acc, curr) => acc + curr.currentBalance, 0)
+  }, [receivableDebts])
 
   const totalInterestPaid = useMemo(() => {
     return payments.reduce((acc, curr) => acc + (curr.interestPaid || 0), 0)
@@ -158,7 +174,11 @@ export function useDebts({ onAddTransaction }: UseDebtsProps = {}) {
     activeDebts,
     paidDebts,
     overdueDebts,
+    payableDebts,
+    receivableDebts,
     totalDebtBalance,
+    totalPayableBalance,
+    totalReceivableBalance,
     totalInterestPaid,
     totalPrincipalPaid,
     totalAmountPaid,
