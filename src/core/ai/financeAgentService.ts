@@ -164,9 +164,14 @@ function localRuleBasedParser(
   }
 
   // 4. Detecção de tipo (Receita vs Despesa)
-  const isIncome = /recebi|ganhei|sal(a|á)rio|dep(o|ó)sito|pix de|entrada|rendimento|freela/i.test(
+  const isDebtRepaymentReceived = /me pagou|recebi empr[eé]stimo|pagamento de empr[eé]stimo/i.test(
     normalized,
   )
+  const isDebtLent = /emprestei|dei emprestado|cobrar|fiz um empr[eé]stimo/i.test(normalized)
+
+  const isIncome =
+    isDebtRepaymentReceived ||
+    /recebi|ganhei|sal(a|á)rio|dep(o|ó)sito|pix de|entrada|rendimento|freela/i.test(normalized)
   const type: 'income' | 'expense' = isIncome ? 'income' : 'expense'
 
   // 5. Detecção de categoria
@@ -174,6 +179,8 @@ function localRuleBasedParser(
   const foundCat = categories.find((c) => normalized.includes(c.toLowerCase()))
   if (foundCat) {
     category = foundCat
+  } else if (isDebtLent || isDebtRepaymentReceived || /empr[eé]stimo|d[ií]vida/i.test(normalized)) {
+    category = 'Empréstimo'
   } else if (
     /almoço|jantar|lanche|padaria|mercado|açaí|pizza|restaurante|ifood|burger/i.test(normalized)
   ) {

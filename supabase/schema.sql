@@ -166,3 +166,243 @@ CREATE POLICY "Pagamentos de dividas do usuario autenticado - ALL"
     TO authenticated
     USING (auth.uid() = user_id)
     WITH CHECK (auth.uid() = user_id);
+
+-- 7. Funções RPC de Integração com o WhatsApp Bot (Myfi)
+
+CREATE OR REPLACE FUNCTION public.record_whatsapp_debt(
+    p_user_id UUID,
+    p_lender_name TEXT,
+    p_amount NUMERIC,
+    p_type TEXT DEFAULT 'receivable',
+    p_phone TEXT DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_due_date DATE DEFAULT NULL,
+    p_interest_rate NUMERIC DEFAULT 0
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_new_id UUID;
+    v_due DATE;
+    v_desc TEXT;
+BEGIN
+    v_due := COALESCE(p_due_date, (current_date + interval '30 days')::DATE);
+    v_desc := COALESCE(p_description, 
+        CASE WHEN p_type = 'receivable' 
+             THEN 'Empréstimo concedido a ' || p_lender_name 
+             ELSE 'Dívida com ' || p_lender_name 
+        END
+    );
+
+    INSERT INTO public.debts (
+        user_id,
+        lender_name,
+        original_amount,
+        current_balance,
+        interest_rate,
+        interest_type,
+        start_date,
+        due_date,
+        status,
+        type,
+        phone,
+        description
+    ) VALUES (
+        p_user_id,
+        p_lender_name,
+        p_amount,
+        p_amount,
+        COALESCE(p_interest_rate, 0),
+        'monthly',
+        current_date,
+        v_due,
+        'active',
+        p_type,
+        p_phone,
+        v_desc
+    ) RETURNING id INTO v_new_id;
+
+    IF p_type = 'receivable' THEN
+        INSERT INTO public.transactions (
+            user_id,
+            title,
+            amount,
+            type,
+            category,
+            date,
+            status
+        ) VALUES (
+            p_user_id,
+            'Empréstimo para ' || p_lender_name,
+            p_amount,
+            'expense',
+            'Empréstimo',
+            current_date,
+            'paid'
+        );
+    END IF;
+
+    RETURN jsonb_build_object(
+        'success', true, 
+        'debt_id', v_new_id,
+        'lender_name', p_lender_name,
+        'amount', p_amount,
+        'type', p_type,
+        'due_date', v_due
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.get_whatsapp_debts_summary(
+    p_user_id UUID,
+    p_type TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_total_receivable NUMERIC := 0;
+    v_total_payable NUMERIC := 0;
+    v_receivables JSONB := '[]'::jsonb;
+    v_payables JSONB := '[]'::jsonb;
+BEGIN
+    SELECT 
+        COALESCE(SUM(current_balance), 0),
+        COALESCE(jsonb_agg(
+            jsonb_build_object(
+                'id', id,
+                'name', lender_name,
+                'balance', current_balance,
+                'due_date', due_date,
+                'phone', phone,
+                'status', status
+            ) ORDER BY due_date ASC
+        ), '[]'::jsonb)
+    INTO v_total_receivable, v_receivables
+    FROM public.debts
+    WHERE user_id = p_user_id
+      AND type = 'receivable'
+      AND status != 'paid';
+
+    SELECT 
+        COALESCE(SUM(current_balance), 0),
+        COALESCE(jsonb_agg(
+            jsonb_build_object(
+                'id', id,
+                'name', lender_name,
+                'balance', current_balance,
+                'due_date', due_date,
+                'status', status
+            ) ORDER BY due_date ASC
+        ), '[]'::jsonb)
+    INTO v_total_payable, v_payables
+    FROM public.debts
+    WHERE user_id = p_user_id
+      AND type = 'payable'
+      AND status != 'paid';
+
+    RETURN jsonb_build_object(
+        'total_receivable', v_total_receivable,
+        'total_payable', v_total_payable,
+        'receivables', v_receivables,
+        'payables', v_payables
+    );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.pay_whatsapp_debt_by_name(
+    p_user_id UUID,
+    p_name TEXT,
+    p_amount NUMERIC
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_debt RECORD;
+    v_new_balance NUMERIC;
+    v_new_status TEXT;
+    v_payment_id UUID;
+BEGIN
+    SELECT * INTO v_debt
+    FROM public.debts
+    WHERE user_id = p_user_id
+      AND status != 'paid'
+      AND lender_name ILIKE '%' || p_name || '%'
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false, 
+            'error', 'Nenhum empréstimo ou dívida ativa encontrada para ' || p_name
+        );
+    END IF;
+
+    v_new_balance := GREATEST(0, v_debt.current_balance - p_amount);
+    IF v_new_balance = 0 THEN
+        v_new_status := 'paid';
+    ELSE
+        v_new_status := v_debt.status;
+    END IF;
+
+    UPDATE public.debts
+    SET current_balance = v_new_balance,
+        status = v_new_status,
+        updated_at = now()
+    WHERE id = v_debt.id;
+
+    INSERT INTO public.debt_payments (
+        debt_id,
+        amount,
+        payment_date,
+        type,
+        principal_paid,
+        interest_paid,
+        notes
+    ) VALUES (
+        v_debt.id,
+        p_amount,
+        current_date,
+        CASE WHEN v_new_balance = 0 THEN 'full_payoff' ELSE 'amortization' END,
+        p_amount,
+        0,
+        'Registrado via WhatsApp Myfi'
+    ) RETURNING id INTO v_payment_id;
+
+    INSERT INTO public.transactions (
+        user_id,
+        title,
+        amount,
+        type,
+        category,
+        date,
+        status
+    ) VALUES (
+        p_user_id,
+        CASE WHEN v_debt.type = 'receivable' 
+             THEN 'Recebimento de empréstimo: ' || v_debt.lender_name
+             ELSE 'Pagamento de dívida: ' || v_debt.lender_name
+        END,
+        p_amount,
+        CASE WHEN v_debt.type = 'receivable' THEN 'income' ELSE 'expense' END,
+        'Empréstimo',
+        current_date,
+        'paid'
+    );
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'debt_id', v_debt.id,
+        'lender_name', v_debt.lender_name,
+        'type', v_debt.type,
+        'amount_paid', p_amount,
+        'new_balance', v_new_balance,
+        'status', v_new_status
+    );
+END;
+$$;

@@ -197,7 +197,8 @@ export function WhatsAppView({ userId, onAddTransaction }: WhatsAppViewProps) {
   const examplePrompts = [
     'Gastei 55 reais no mercado',
     'Recebi 1.200 de um freela',
-    'Paguei 30 de farmácia',
+    'Emprestei 50 pro Carlos',
+    'Carlos me pagou 50',
     'Qual meu saldo atual?',
   ]
 

@@ -40,14 +40,29 @@ describe('financeAgentService', () => {
     expect(res.action).toBe('query_summary')
   })
 
-  it('deve responder educadamente a saudações sem valor', async () => {
+  it('deve reconhecer despesa de empréstimo concedido', async () => {
     const res = await processFinanceAgentMessage({
-      message: 'Olá bom dia!',
+      message: 'Emprestei 100 pro Carlos',
       currentDate: '2026-10-19',
       apiKey: '',
     })
 
-    expect(res.action).toBe('clarification')
-    expect(res.replyText).toContain('Olá! Sou o assistente do myFinance')
+    expect(res.action).toBe('create_transaction')
+    expect(res.proposedTransaction?.type).toBe('expense')
+    expect(res.proposedTransaction?.amount).toBe(100)
+    expect(res.proposedTransaction?.category).toBe('Empréstimo')
+  })
+
+  it('deve reconhecer receita de empréstimo devolvido', async () => {
+    const res = await processFinanceAgentMessage({
+      message: 'Carlos me pagou 100 do empréstimo',
+      currentDate: '2026-10-19',
+      apiKey: '',
+    })
+
+    expect(res.action).toBe('create_transaction')
+    expect(res.proposedTransaction?.type).toBe('income')
+    expect(res.proposedTransaction?.amount).toBe(100)
+    expect(res.proposedTransaction?.category).toBe('Empréstimo')
   })
 })

@@ -241,6 +241,115 @@ function parseFinancialMessage(text) {
   }
 }
 
+// Extrator inteligente de comandos de Cobranças & Empréstimos
+function parseDebtAction(text) {
+  const clean = text.trim()
+
+  // 1. Consulta: "Quem me deve?" / "Cobranças" / "Quem tá devendo?"
+  if (
+    /^(quem\s+(?:me\s+deve|t[aá]\s+me\s+devendo|est[aá]\s+me\s+devendo)|cobran[cç]as?|meus\s+empr[eé]stimos|lista\s+de\s+cobran[cç]as?)$/i.test(
+      clean,
+    ) ||
+    /quem\s+(?:me\s+deve|t[aá]\s+me\s+devendo)/i.test(clean)
+  ) {
+    return { action: 'query_receivables' }
+  }
+
+  // 2. Consulta: "Minhas dívidas" / "Quanto eu devo?" / "Quem eu devo?"
+  if (
+    /^(minhas\s+d[ií]vidas|quanto\s+(?:eu\s+)?devo|quem\s+eu\s+devo|minhas\s+contas\s+a\s+pagar)$/i.test(
+      clean,
+    ) ||
+    /(?:minhas\s+d[ií]vidas|quanto\s+eu\s+devo)/i.test(clean)
+  ) {
+    return { action: 'query_payables' }
+  }
+
+  // 3. Pagamento / Baixa:
+  // "Carlos me pagou 50", "Recebi 50 do Carlos", "Paguei 100 pro Zé"
+  // 3.1. Recebimento de cobrança (ex: "Carlos me pagou 50" ou "Recebi 50 do Carlos")
+  const paidMatch1 = clean.match(
+    /^(.+?)\s+(?:me\s+)?pagou\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)/i,
+  )
+  if (paidMatch1) {
+    let name = paidMatch1[1].trim()
+    name = name.replace(/\bme\b$/i, '').trim()
+    const rawVal = paidMatch1[2]
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'pay_debt', name, amount, type: 'receivable' }
+    }
+  }
+
+  const paidMatch2 = clean.match(
+    /^(?:recebi|recebimento\s+de)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)(?:\s*reais)?\s+(?:do|da|de)\s+([a-záàâãéèêíïóôõöúçñ\w]+(?:\s+[a-záàâãéèêíïóôõöúçñ\w]+)?)/i,
+  )
+  if (paidMatch2) {
+    const rawVal = paidMatch2[1]
+    const name = paidMatch2[2].trim()
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'pay_debt', name, amount, type: 'receivable' }
+    }
+  }
+
+  // 3.2. Pagamento de dívida própria (ex: "Paguei 100 pro Zé" ou "Quitei 200 do Zé")
+  const paidMatch3 = clean.match(
+    /^(?:paguei|quitei|amortizei)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)(?:\s*reais)?\s+(?:pro|pra|para o|para a|para|ao|a|do|da)\s+([a-záàâãéèêíïóôõöúçñ\w]+(?:\s+[a-záàâãéèêíïóôõöúçñ\w]+)?)/i,
+  )
+  if (paidMatch3) {
+    const rawVal = paidMatch3[1]
+    const name = paidMatch3[2].trim()
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'pay_debt', name, amount, type: 'payable' }
+    }
+  }
+
+  // 4. Criação de Empréstimo Concedido (A Receber / Cobrança):
+  // "emprestei 50 pro Carlos", "emprestei 100 reais para Mariana", "cobrar 80 do João"
+  const lendMatch1 = clean.match(
+    /^(?:emprestei|dei\s+emprestado|fiz\s+um\s+empr[eé]stimo\s+de|cobrar|criei\s+cobran[cç]a\s+de)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)(?:\s*reais)?\s+(?:pro|pra|para o|para a|para|ao|a|do|da)\s+([a-záàâãéèêíïóôõöúçñ\w]+(?:\s+[a-záàâãéèêíïóôõöúçñ\w]+)?)/i,
+  )
+  if (lendMatch1) {
+    const rawVal = lendMatch1[1]
+    const name = lendMatch1[2].trim()
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'create_debt', name, amount, type: 'receivable' }
+    }
+  }
+
+  // Inverso: "emprestei pro Carlos 50" ou "cobrar do Carlos 50"
+  const lendMatch2 = clean.match(
+    /^(?:emprestei|cobrar)\s+(?:pro|pra|para o|para a|para|ao|a|do|da)\s+([a-záàâãéèêíïóôõöúçñ\w]+(?:\s+[a-záàâãéèêíïóôõöúçñ\w]+)?)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)/i,
+  )
+  if (lendMatch2) {
+    const name = lendMatch2[1].trim()
+    const rawVal = lendMatch2[2]
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'create_debt', name, amount, type: 'receivable' }
+    }
+  }
+
+  // 5. Criação de Dívida Pessoal (A Pagar):
+  // "peguei emprestado 500 do Zé", "peguei 300 com o Zé", "estou devendo 150 pro Marcelo"
+  const borrowMatch = clean.match(
+    /^(?:peguei\s+emprestado|peguei|tomei\s+emprestado|estou\s+devendo|devo)\s+(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)(?:\s*reais)?\s+(?:do|da|de|com o|com a|com|pro|pra|para o|para a|para|ao|a)\s+([a-záàâãéèêíïóôõöúçñ\w]+(?:\s+[a-záàâãéèêíïóôõöúçñ\w]+)?)/i,
+  )
+  if (borrowMatch) {
+    const rawVal = borrowMatch[1]
+    const name = borrowMatch[2].trim()
+    const amount = Number.parseFloat(rawVal.replace(',', '.'))
+    if (!Number.isNaN(amount) && amount > 0) {
+      return { action: 'create_debt', name, amount, type: 'payable' }
+    }
+  }
+
+  return null
+}
+
 // Cria o servidor HTTP do Webhook
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
@@ -462,6 +571,202 @@ const server = http.createServer(async (req, res) => {
           return
         }
 
+        // 6.1. Cobranças & Empréstimos (Criar, Consultar e Dar Baixa)
+        const debtAction = parseDebtAction(textToProcess)
+
+        if (debtAction) {
+          const formatBRL = (val) =>
+            val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+          // A) CONSULTA DE QUEM ME DEVE (Cobranças a receber)
+          if (debtAction.action === 'query_receivables') {
+            const { data: summary, error: dErr } = await supabase.rpc('get_whatsapp_debts_summary', {
+              p_user_id: userId,
+              p_type: 'receivable',
+            })
+
+            if (dErr) {
+              console.error('[Erro get_whatsapp_debts_summary]:', dErr)
+              await sendWhatsAppMessage(
+                cleanSender,
+                '⚠️ Não foi possível consultar suas cobranças no momento.',
+              )
+              return
+            }
+
+            const receivables = summary?.receivables || []
+            const total = Number(summary?.total_receivable || 0)
+
+            if (receivables.length === 0) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}🎉 *Nenhuma cobrança pendente!*\n\nVocê não tem valores a receber de terceiros cadastrados no momento.\n\n_Para cadastrar um empréstimo concedido, mande:_\n👉 *"Myfi emprestei 50 pro Carlos"*`,
+              )
+              return
+            }
+
+            let msg = `${audioTranscribedNotice}📋 *Cobranças Pendentes*\n`
+            msg += `💰 *Total a Receber:* ${formatBRL(total)}\n`
+            msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`
+
+            receivables.forEach((rec, idx) => {
+              const dueFormatted = rec.due_date ? rec.due_date.split('-').reverse().join('/') : 'A combinar'
+              const isOverdue =
+                rec.due_date &&
+                new Date(rec.due_date) < new Date(new Date().toISOString().split('T')[0])
+              const alert = isOverdue ? ' ⚠️ *(Vencido)*' : ''
+              msg += `${idx + 1}. *${rec.name}*: ${formatBRL(Number(rec.balance))}\n`
+              msg += `   📅 Vencimento: ${dueFormatted}${alert}\n\n`
+            })
+
+            msg += `💡 *Para registrar recebimento, mande:*\n👉 *"Myfi [Nome] me pagou [Valor]"*`
+
+            await sendWhatsAppMessage(cleanSender, msg)
+            return
+          }
+
+          // B) CONSULTA DE MINHAS DÍVIDAS (A pagar)
+          if (debtAction.action === 'query_payables') {
+            const { data: summary, error: dErr } = await supabase.rpc('get_whatsapp_debts_summary', {
+              p_user_id: userId,
+              p_type: 'payable',
+            })
+
+            if (dErr) {
+              console.error('[Erro get_whatsapp_debts_summary]:', dErr)
+              await sendWhatsAppMessage(
+                cleanSender,
+                '⚠️ Não foi possível consultar suas dívidas no momento.',
+              )
+              return
+            }
+
+            const payables = summary?.payables || []
+            const total = Number(summary?.total_payable || 0)
+
+            if (payables.length === 0) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}🎉 *Parabéns! Nenhuma dívida ativa!*\n\nVocê não possui compromissos a pagar pendentes no myFinance. 🚀`,
+              )
+              return
+            }
+
+            let msg = `${audioTranscribedNotice}📑 *Minhas Dívidas a Pagar*\n`
+            msg += `💸 *Total a Pagar:* ${formatBRL(total)}\n`
+            msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`
+
+            payables.forEach((p, idx) => {
+              const dueFormatted = p.due_date ? p.due_date.split('-').reverse().join('/') : 'A combinar'
+              const isOverdue =
+                p.due_date &&
+                new Date(p.due_date) < new Date(new Date().toISOString().split('T')[0])
+              const alert = isOverdue ? ' ⚠️ *(Atrasada)*' : ''
+              msg += `${idx + 1}. *${p.name}*: ${formatBRL(Number(p.balance))}\n`
+              msg += `   📅 Vencimento: ${dueFormatted}${alert}\n\n`
+            })
+
+            msg += `💡 *Para registrar pagamento, mande:*\n👉 *"Myfi paguei [Valor] pro [Nome]"*`
+
+            await sendWhatsAppMessage(cleanSender, msg)
+            return
+          }
+
+          // C) BAIXA / RECEBIMENTO / PAGAMENTO DE EMPRÉSTIMO
+          if (debtAction.action === 'pay_debt') {
+            const { data: payRes, error: payErr } = await supabase.rpc('pay_whatsapp_debt_by_name', {
+              p_user_id: userId,
+              p_name: debtAction.name,
+              p_amount: debtAction.amount,
+            })
+
+            if (payErr || !payRes?.success) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}⚠️ *Não encontrei nenhum contrato ativo para "${debtAction.name}".*\n\nVerifique se o nome está correto ou pergunte *"Myfi quem me deve?"* para ver a lista de cobranças em aberto.`,
+              )
+              return
+            }
+
+            const isRec = payRes.type === 'receivable'
+            const isPaidOff = payRes.status === 'paid'
+            const amountFormatted = formatBRL(debtAction.amount)
+            const newBalFormatted = formatBRL(Number(payRes.new_balance || 0))
+
+            if (isPaidOff) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}🎉 *Empréstimo Quitado com Sucesso!*\n\n` +
+                  `👤 *Pessoa:* ${payRes.lender_name}\n` +
+                  `💰 *Valor Liquidado:* ${amountFormatted}\n` +
+                  `🏁 *Saldo Restante:* R$ 0,00 (Totalmente Quitado)\n\n` +
+                  (isRec
+                    ? `_Uma receita de ${amountFormatted} foi creditada no seu extrato!_ 💵`
+                    : `_Seu compromisso foi marcado como quitado no myFinance!_ 🚀`),
+              )
+            } else {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}✅ *Pagamento Parcial Registrado!*\n\n` +
+                  `👤 *Pessoa:* ${payRes.lender_name}\n` +
+                  `💰 *Valor Pago:* ${amountFormatted}\n` +
+                  `📉 *Novo Saldo:* ${newBalFormatted} restantes\n\n` +
+                  `_Lançamento atualizado no painel de Cobranças & Dívidas!_ 📱`,
+              )
+            }
+            return
+          }
+
+          // D) CRIAR COBRANÇA OU DÍVIDA
+          if (debtAction.action === 'create_debt') {
+            const { data: createdDebt, error: cErr } = await supabase.rpc('record_whatsapp_debt', {
+              p_user_id: userId,
+              p_lender_name: debtAction.name,
+              p_amount: debtAction.amount,
+              p_type: debtAction.type,
+            })
+
+            if (cErr || !createdDebt?.success) {
+              console.error('[Erro record_whatsapp_debt]:', cErr)
+              await sendWhatsAppMessage(
+                cleanSender,
+                '⚠️ Não foi possível registrar este empréstimo no banco de dados. Tente novamente.',
+              )
+              return
+            }
+
+            const isRec = debtAction.type === 'receivable'
+            const formatted = formatBRL(debtAction.amount)
+
+            if (isRec) {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}🤝 *Cobrança Registrada com Sucesso!*\n\n` +
+                  `👤 *Quem deve:* ${debtAction.name}\n` +
+                  `💰 *Valor:* ${formatted}\n` +
+                  `📅 *Prazo Inicial:* 30 dias\n` +
+                  `🏷️ *Status:* A Receber (Empréstimo Concedido)\n\n` +
+                  `_Uma despesa de ${formatted} foi registrada no seu extrato para manter seu saldo real em dia._\n\n` +
+                  `💡 *Dica:* Quando ${debtAction.name} te pagar, mande:\n` +
+                  `👉 *"Myfi ${debtAction.name} me pagou ${debtAction.amount}"*`,
+              )
+            } else {
+              await sendWhatsAppMessage(
+                cleanSender,
+                `${audioTranscribedNotice}📌 *Dívida Registrada no myFinance!*\n\n` +
+                  `🏦 *Credor:* ${debtAction.name}\n` +
+                  `💸 *Valor:* ${formatted}\n` +
+                  `📅 *Prazo:* 30 dias\n` +
+                  `🏷️ *Status:* A Pagar\n\n` +
+                  `_Acompanhe vencimentos e simule quitação no menu Dívidas._\n\n` +
+                  `💡 *Quando você pagar, mande:*\n` +
+                  `👉 *"Myfi paguei ${debtAction.amount} pro ${debtAction.name}"*`,
+              )
+            }
+            return
+          }
+        }
+
         // 7. Extração e Registro de Transação (Receita ou Despesa)
         const parsedTx = parseFinancialMessage(textToProcess)
 
@@ -514,7 +819,17 @@ const server = http.createServer(async (req, res) => {
         ) {
           await sendWhatsAppMessage(
             cleanSender,
-            `🤖 *Myfi — Assistente myFinance*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n*Como me chamar:*\n• *"Myfi almoço 45 reais"*\n• *"Myfi gasolina 120"*\n• *"Myfi recebi 2500 salário"*\n• *"Myfi qual meu saldo?"*`,
+            `🤖 *Myfi — Assistente myFinance*\n\nEstou pronto para te ajudar com o controle financeiro! 🚀\n\n` +
+              `*Gastos & Receitas:*\n` +
+              `• *"Myfi almoço 45 reais"*\n` +
+              `• *"Myfi gasolina 120"*\n` +
+              `• *"Myfi recebi 2500 salário"*\n` +
+              `• *"Myfi qual meu saldo?"*\n\n` +
+              `*Cobranças & Empréstimos:*\n` +
+              `• *"Myfi emprestei 50 pro Carlos"*\n` +
+              `• *"Myfi quem me deve?"*\n` +
+              `• *"Myfi Carlos me pagou 50"*\n` +
+              `• *"Myfi peguei 300 com o Zé"*`,
           )
           return
         }
@@ -539,17 +854,21 @@ const server = http.createServer(async (req, res) => {
   res.end('Not Found')
 })
 
-server.listen(PORT, '0.0.0.0', async () => {
-  console.log(`\n======================================================`)
-  console.log(`🚀 [myFinance WhatsApp Bridge] Rodando na porta ${PORT}`)
-  console.log(`🌐 Endpoint do Webhook: http://0.0.0.0:${PORT}/webhook`)
-  console.log(`🤖 IA Gemini: ${GEMINI_API_KEY ? 'Ativa ✅' : 'Chave Pendente no .env ⚠️'}`)
-  console.log(
-    `🔔 Apelido de Ativação: ${
-      REQUIRE_TRIGGER ? `Ativo ✅ ("${BOT_TRIGGER_NAME}")` : 'Desativado (responde a tudo)'
-    }`,
-  )
-  console.log(`======================================================\n`)
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, '0.0.0.0', async () => {
+    console.log(`\n======================================================`)
+    console.log(`🚀 [myFinance WhatsApp Bridge] Rodando na porta ${PORT}`)
+    console.log(`🌐 Endpoint do Webhook: http://0.0.0.0:${PORT}/webhook`)
+    console.log(`🤖 IA Gemini: ${GEMINI_API_KEY ? 'Ativa ✅' : 'Chave Pendente no .env ⚠️'}`)
+    console.log(
+      `🔔 Apelido de Ativação: ${
+        REQUIRE_TRIGGER ? `Ativo ✅ ("${BOT_TRIGGER_NAME}")` : 'Desativado (responde a tudo)'
+      }`,
+    )
+    console.log(`======================================================\n`)
 
-  await setupWebhook()
-})
+    await setupWebhook()
+  })
+}
+
+export { parseDebtAction, parseFinancialMessage }
