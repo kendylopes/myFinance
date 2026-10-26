@@ -82,7 +82,7 @@ export const Header = ({
         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-sm truncate">
           {displayTitle}
         </h1>
-        <p className="text-xs text-zinc-400 mt-0.5 truncate">{displaySubtitle}</p>
+        <p className="text-xs text-zinc-400 mt-0.5 line-clamp-1">{displaySubtitle}</p>
       </div>
 
       {/* Ações e Perfil do Usuário */}
