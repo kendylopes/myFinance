@@ -79,7 +79,9 @@ export function BalanceSparkline({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="drop-shadow-[0_2px_8px_rgba(16,185,129,0.3)]"
+          style={{
+            filter: `drop-shadow(0 2px 6px ${strokeColor}60)`,
+          }}
         />
       </svg>
     </div>
