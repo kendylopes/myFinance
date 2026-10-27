@@ -85,14 +85,14 @@ export function TransactionFilters({
     (selectedStatus !== 'all' ? 1 : 0) + (selectedCategory !== 'all' ? 1 : 0)
 
   return (
-    <div data-testid="transaction-filters" className="space-y-2.5 pb-1 relative">
+    <div data-testid="transaction-filters" className="space-y-2 pb-1 relative">
       {/* LINHA 1 PRINCIPAL: BUSCA OMNIBAR + SEGMENTED CONTROL + ORDENAÇÃO + BOTÃO DE FILTROS */}
       <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center justify-between">
         {/* BUSCA RÁPIDA OMNIBAR COM ATALHO */}
         <div className="relative flex-1 group min-w-0">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10 text-emerald-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-emerald-400">
             <Search
-              className="w-4 h-4 text-emerald-400/80 group-focus-within:text-emerald-400 transition-colors"
+              className="w-3.5 h-3.5 text-zinc-400 group-focus-within:text-emerald-400 transition-colors"
               aria-hidden="true"
             />
           </div>
@@ -102,20 +102,20 @@ export function TransactionFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por descrição ou categoria..."
-            className="w-full h-10 rounded-2xl bg-white/4 border border-white/10 pl-9 pr-12 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:bg-white/6 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-xs"
+            className="w-full h-9.5 rounded-xl bg-white/3 border border-white/8 pl-8.5 pr-10 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/5 transition-all"
           />
           {searchQuery ? (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Limpar busca"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer z-10"
+              className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-zinc-400 hover:text-white transition-colors cursor-pointer z-10"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           ) : (
-            <div className="absolute inset-y-0 right-0 pr-3 hidden sm:flex items-center pointer-events-none">
-              <kbd className="text-3xs font-mono font-medium px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-zinc-400">
+            <div className="absolute inset-y-0 right-0 pr-2.5 hidden sm:flex items-center pointer-events-none">
+              <kbd className="text-3xs font-mono font-medium px-1.5 py-0.5 rounded border border-white/8 bg-white/4 text-zinc-500">
                 /
               </kbd>
             </div>
@@ -125,14 +125,14 @@ export function TransactionFilters({
         {/* CONTROLES INTEGRADOS LADO DIREITO */}
         <div className="flex items-center gap-1.5 self-stretch lg:self-auto shrink-0 flex-wrap sm:flex-nowrap">
           {/* SEGMENTED CONTROL: TODOS / ENTRADAS / SAÍDAS */}
-          <div className="flex items-center p-1 rounded-2xl bg-white/4 border border-white/10 shadow-inner overflow-x-auto custom-scrollbar gap-1 flex-1 sm:flex-initial">
+          <div className="h-9.5 flex items-center p-0.5 rounded-xl bg-white/3 border border-white/8 gap-0.5 flex-1 sm:flex-initial">
             <button
               type="button"
               onClick={() => handleTypeSelect('all')}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'all'
-                  ? 'bg-white/15 text-white shadow-xs font-bold'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/5 font-medium'
+                  ? 'bg-white/12 text-white font-medium shadow-xs'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/4'
               }`}
             >
               Todos
@@ -140,10 +140,10 @@ export function TransactionFilters({
             <button
               type="button"
               onClick={() => handleTypeSelect('income')}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'income'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs font-bold'
-                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-white/5'
+                  ? 'bg-emerald-500/20 text-emerald-300 font-medium shadow-xs'
+                  : 'text-zinc-400 hover:text-emerald-300 hover:bg-white/4'
               }`}
             >
               Entradas
@@ -151,10 +151,10 @@ export function TransactionFilters({
             <button
               type="button"
               onClick={() => handleTypeSelect('expense')}
-              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'expense'
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-xs font-bold'
-                  : 'text-zinc-400 hover:text-rose-400 hover:bg-white/5'
+                  ? 'bg-rose-500/20 text-rose-300 font-medium shadow-xs'
+                  : 'text-zinc-400 hover:text-rose-300 hover:bg-white/4'
               }`}
             >
               Saídas
@@ -163,13 +163,13 @@ export function TransactionFilters({
 
           {/* SELETOR DE ORDENAÇÃO COMPACTO */}
           {onSortChange && (
-            <div className="h-10 flex items-center gap-1.5 px-3 rounded-2xl bg-white/4 border border-white/10 hover:border-white/20 transition-all text-xs shadow-xs shrink-0">
-              <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
+            <div className="h-9.5 flex items-center gap-1.5 px-2.5 rounded-xl bg-white/3 border border-white/8 hover:border-white/15 transition-all text-xs shrink-0">
+              <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Ordenar transações"
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value as TransactionSortOption)}
-                className="bg-transparent text-zinc-300 font-medium text-xs focus:outline-none cursor-pointer pr-1"
+                className="bg-transparent text-zinc-300 text-xs focus:outline-none cursor-pointer pr-1"
               >
                 <option value="date_desc" className="bg-zinc-900 text-white">
                   Mais recentes
@@ -197,13 +197,13 @@ export function TransactionFilters({
               }}
               aria-label="Filtros avançados"
               aria-expanded={isFiltersOpen}
-              className={`h-10 flex items-center gap-1.5 px-3.5 rounded-2xl border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+              className={`h-9.5 flex items-center gap-1.5 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 isFiltersOpen || extraFiltersCount > 0
-                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 ring-1 ring-emerald-500/20'
-                  : 'bg-white/4 border-white/10 text-zinc-300 hover:border-white/20 hover:text-white'
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                  : 'bg-white/3 border-white/8 text-zinc-300 hover:border-white/15 hover:text-white'
               }`}
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-400" />
               <span>Filtros</span>
               {extraFiltersCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-emerald-500 text-zinc-950 text-3xs font-bold flex items-center justify-center">
@@ -226,18 +226,18 @@ export function TransactionFilters({
             <div
               className={`${
                 isFiltersOpen
-                  ? 'absolute right-0 top-full mt-2 w-72 sm:w-80 p-4 rounded-3xl border border-white/15 bg-zinc-950/95 backdrop-blur-2xl shadow-2xl z-40 animate-in zoom-in-95 duration-150'
+                  ? 'absolute right-0 top-full mt-2 w-72 sm:w-80 p-4 rounded-2xl border border-white/10 bg-zinc-950/95 backdrop-blur-2xl shadow-xl z-40 animate-in zoom-in-95 duration-150'
                   : 'hidden'
               }`}
             >
-              <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
-                <span className="text-xs font-bold text-white tracking-wide uppercase">
+              <div className="flex items-center justify-between pb-2 border-b border-white/8">
+                <span className="text-xs font-semibold text-white tracking-wide uppercase">
                   Filtros Refinados
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsFiltersOpen(false)}
-                  className="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/8 transition-colors cursor-pointer"
                   aria-label="Fechar painel de filtros"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -250,12 +250,12 @@ export function TransactionFilters({
                   <div className="space-y-1.5">
                     <label
                       htmlFor="status-filter-select"
-                      className="text-2xs font-semibold text-zinc-400 flex items-center gap-1.5"
+                      className="text-2xs font-medium text-zinc-400 flex items-center gap-1.5"
                     >
                       <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                       Situação do Pagamento
                     </label>
-                    <div className="h-9 px-2.5 rounded-xl bg-white/4 border border-white/10 flex items-center">
+                    <div className="h-9 px-2.5 rounded-xl bg-white/3 border border-white/8 flex items-center">
                       <select
                         id="status-filter-select"
                         aria-label="Filtrar por status"
@@ -286,12 +286,12 @@ export function TransactionFilters({
                   <div className="space-y-1.5">
                     <label
                       htmlFor="category-filter-select"
-                      className="text-2xs font-semibold text-zinc-400 flex items-center gap-1.5"
+                      className="text-2xs font-medium text-zinc-400 flex items-center gap-1.5"
                     >
                       <Tag className="w-3 h-3 text-emerald-400" />
                       Categoria
                     </label>
-                    <div className="h-9 px-2.5 rounded-xl bg-white/4 border border-white/10 flex items-center">
+                    <div className="h-9 px-2.5 rounded-xl bg-white/3 border border-white/8 flex items-center">
                       <select
                         id="category-filter-select"
                         aria-label="Filtrar por categoria"
@@ -324,7 +324,7 @@ export function TransactionFilters({
                       onStatusChange?.('all')
                       onCategoryChange?.('all')
                     }}
-                    className="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 font-medium transition-colors cursor-pointer"
+                    className="w-full py-1.5 rounded-xl bg-white/4 hover:bg-white/8 text-xs text-zinc-300 font-medium transition-colors cursor-pointer"
                   >
                     Resetar situação e categoria
                   </button>
@@ -335,13 +335,13 @@ export function TransactionFilters({
         </div>
       </div>
 
-      {/* LINHA 2: FILTROS RÁPIDOS DE STATUS E TAGS DE CATEGORIA (ACESSO COM 1 CLIQUE) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+      {/* LINHA 2: FILTROS RÁPIDOS UNIFICADOS COM ROLAGEM SUAVE SEM SCROLLBAR VISÍVEL */}
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 text-2xs">
         {/* Pílulas de Status Rápidas */}
         {onStatusChange && (
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-2xs">
-            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1 select-none">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-zinc-500 font-medium shrink-0 mr-1 flex items-center gap-1 select-none text-2xs">
+              <CheckCircle2 className="w-3 h-3 text-emerald-400/80" />
               <span>Situação:</span>
             </span>
             <button
@@ -350,10 +350,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('all')
               }}
-              className={`px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
+              className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                 selectedStatus === 'all'
-                  ? 'bg-white/15 text-white border-white/25 shadow-xs font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6 hover:bg-white/6 hover:border-white/12'
+                  ? 'bg-white/12 text-white border-white/20 font-medium'
+                  : 'bg-white/2 text-zinc-400 hover:text-white border-white/6 hover:bg-white/5'
               }`}
             >
               Todas
@@ -364,10 +364,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('paid')
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                 selectedStatus === 'paid'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs font-bold ring-1 ring-emerald-500/30'
-                  : 'bg-white/3 text-zinc-400 hover:text-emerald-300 border-white/6 hover:bg-white/6 hover:border-emerald-500/20'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-medium'
+                  : 'bg-white/2 text-zinc-400 hover:text-emerald-300 border-white/6 hover:bg-white/5'
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
@@ -379,10 +379,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('pending')
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                 selectedStatus === 'pending'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs font-bold ring-1 ring-amber-500/30'
-                  : 'bg-white/3 text-zinc-400 hover:text-amber-300 border-white/6 hover:bg-white/6 hover:border-amber-500/20'
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-medium'
+                  : 'bg-white/2 text-zinc-400 hover:text-amber-300 border-white/6 hover:bg-white/5'
               }`}
             >
               <Clock className="w-2.5 h-2.5 text-amber-400 shrink-0" />
@@ -391,11 +391,16 @@ export function TransactionFilters({
           </div>
         )}
 
-        {/* Carrossel de Categorias Rápidas */}
+        {/* Separador sutil */}
+        {onStatusChange && onCategoryChange && categories.length > 0 && (
+          <div className="w-px h-3.5 bg-white/10 shrink-0 mx-0.5" aria-hidden="true" />
+        )}
+
+        {/* Categorias Rápidas */}
         {onCategoryChange && categories.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-2xs sm:justify-end">
-            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1 select-none">
-              <Tag className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-zinc-500 font-medium shrink-0 mr-1 flex items-center gap-1 select-none text-2xs">
+              <Tag className="w-3 h-3 text-emerald-400/80" />
               <span>Categorias:</span>
             </span>
             <button
@@ -404,10 +409,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onCategoryChange('all')
               }}
-              className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
+              className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                 selectedCategory === 'all'
-                  ? 'bg-white/15 text-white border-white/20 font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6 hover:bg-white/6 hover:border-white/12'
+                  ? 'bg-white/12 text-white border-white/20 font-medium'
+                  : 'bg-white/2 text-zinc-400 hover:text-white border-white/6 hover:bg-white/5'
               }`}
             >
               Todas
@@ -422,10 +427,10 @@ export function TransactionFilters({
                     soundFX.playClick()
                     onCategoryChange(isSelected ? 'all' : cat)
                   }}
-                  className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
+                  className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
                     isSelected
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold ring-1 ring-emerald-500/30'
-                      : 'bg-white/3 text-zinc-400 hover:text-zinc-200 border-white/6 hover:bg-white/6 hover:border-white/12'
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-medium'
+                      : 'bg-white/2 text-zinc-400 hover:text-zinc-200 border-white/6 hover:bg-white/5'
                   }`}
                 >
                   {cat}

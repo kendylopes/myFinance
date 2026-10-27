@@ -84,10 +84,10 @@ export const TransactionItem = ({
   return (
     <div
       data-testid={`transaction-item-${transaction.id}`}
-      className={`p-3.5 sm:p-4 glass-pill rounded-3xl border transition-all duration-200 group shadow-xs ${
+      className={`px-3.5 sm:px-4 py-3 rounded-2xl border transition-all duration-150 group ${
         isSelected
-          ? 'border-emerald-500/40 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-md shadow-emerald-950/20'
-          : 'border-white/8 hover:border-white/20 hover:bg-white/6 hover:shadow-md'
+          ? 'border-emerald-500/35 bg-emerald-500/8 ring-1 ring-emerald-500/20'
+          : 'border-white/6 bg-white/2 hover:border-white/12 hover:bg-white/4'
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -100,39 +100,25 @@ export const TransactionItem = ({
               onChange={() => onToggleSelect(transaction.id)}
               aria-label={`Selecionar ${transaction.title}`}
               data-testid={`checkbox-select-${transaction.id}`}
-              className="w-4 h-4 rounded-md border border-white/20 bg-white/5 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 transition cursor-pointer accent-emerald-500 shrink-0 mt-1 sm:mt-0"
+              className="w-4 h-4 rounded border border-white/20 bg-white/4 text-emerald-500 focus:ring-emerald-500/20 focus:ring-offset-0 transition cursor-pointer accent-emerald-500 shrink-0 mt-1 sm:mt-0"
             />
           )}
 
-          <div className="relative shrink-0 mt-0.5 sm:mt-0">
-            <div
-              className={`p-2.5 sm:p-2.5 rounded-2xl border backdrop-blur-md shadow-xs transition-transform duration-200 group-hover:scale-105 ${
-                isIncome
-                  ? 'bg-linear-to-br from-emerald-500/20 to-emerald-500/5 text-emerald-400 border-emerald-500/30 shadow-emerald-950/40'
-                  : 'bg-linear-to-br from-rose-500/20 to-rose-500/5 text-rose-400 border-rose-500/30 shadow-rose-950/40'
-              }`}
-            >
-              <CategoryIcon className="w-4.5 h-4.5 sm:w-5 sm:h-5" aria-hidden="true" />
-            </div>
-            {/* Mini-badge discreto indicando tipo (+ para entrada, - para saída) */}
-            <div
-              className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border text-3xs font-bold shadow-xs select-none ${
-                isIncome
-                  ? 'bg-emerald-500 text-zinc-950 border-zinc-900'
-                  : 'bg-rose-500 text-white border-zinc-900'
-              }`}
-              aria-hidden="true"
-              title={isIncome ? 'Entrada' : 'Saída'}
-            >
-              {isIncome ? '+' : '-'}
-            </div>
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform duration-150 group-hover:scale-105 ${
+              isIncome
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+            }`}
+          >
+            <CategoryIcon className="w-4.5 h-4.5" aria-hidden="true" />
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
                 <p
-                  className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate"
+                  className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors truncate"
                   title={installmentInfo ? installmentInfo.baseTitle : transaction.title}
                 >
                   {installmentInfo ? installmentInfo.baseTitle : transaction.title}
@@ -140,7 +126,7 @@ export const TransactionItem = ({
                 {installmentInfo && (
                   <span
                     data-testid={`installment-badge-${transaction.id}`}
-                    className="px-1.5 py-0.5 rounded-md text-2xs font-bold font-mono bg-white/10 text-emerald-300 border border-white/10 shrink-0 shadow-2xs"
+                    className="px-1.5 py-0.5 rounded-md text-3xs font-semibold font-mono bg-white/8 text-emerald-300 border border-white/8 shrink-0"
                     title={`Parcela ${installmentInfo.current} de ${installmentInfo.total}`}
                   >
                     {installmentInfo.current}/{installmentInfo.total}
@@ -149,7 +135,7 @@ export const TransactionItem = ({
                 {isRecurring && (
                   <span
                     data-testid={`recurring-badge-${transaction.id}`}
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-2xs font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0 shadow-2xs"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-3xs font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0"
                     title="Lançamento Recorrente"
                   >
                     <Repeat className="w-2.5 h-2.5" />
@@ -164,7 +150,7 @@ export const TransactionItem = ({
                 onClick={handleToggleExpand}
                 aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
                 aria-expanded={isExpanded}
-                className="sm:hidden p-1 rounded-xl text-zinc-400 hover:text-white bg-white/5 border border-white/5 transition-colors cursor-pointer shrink-0 active:scale-90"
+                className="sm:hidden p-1 rounded-lg text-zinc-400 hover:text-white bg-white/4 border border-white/6 transition-colors cursor-pointer shrink-0 active:scale-90"
               >
                 {isExpanded ? (
                   <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -174,15 +160,15 @@ export const TransactionItem = ({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-zinc-400 mt-1">
-              <span className="glass-pill px-2.5 py-0.5 rounded-lg text-2xs text-zinc-300 font-medium border border-white/6">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-zinc-400 mt-0.5">
+              <span className="px-2 py-0.5 rounded-md text-3xs text-zinc-300 font-medium border border-white/6 bg-white/3">
                 {transaction.category}
               </span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-zinc-400 font-medium font-mono text-2xs sm:text-xs">
+              <span className="text-zinc-600 text-3xs">•</span>
+              <span className="text-zinc-400 font-medium font-mono text-3xs sm:text-2xs">
                 {formatDate(transaction.date)}
               </span>
-              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-600 text-3xs">•</span>
               <button
                 type="button"
                 data-testid={`status-toggle-${transaction.id}`}
@@ -199,14 +185,14 @@ export const TransactionItem = ({
                       ? 'Recebido. Clique para marcar como pendente.'
                       : 'Pago. Clique para marcar como pendente.'
                 }
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-semibold border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 shrink-0 shadow-2xs ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-medium border transition-all duration-150 cursor-pointer active:scale-95 shrink-0 ${
                   isPending
                     ? isExpired
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse ring-1 ring-rose-500/30'
+                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
                       : isIncome
-                        ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/25'
-                        : 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25'
-                    : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'
+                        ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/25'
+                        : 'bg-amber-500/10 text-amber-300 border-amber-500/25'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25'
                 }`}
               >
                 {isPending ? (
@@ -226,16 +212,16 @@ export const TransactionItem = ({
         </div>
 
         {/* Lado Direito: Valor Monetário + Ações */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t border-white/5 sm:border-t-0 pl-11 sm:pl-0">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 shrink-0 pt-2 sm:pt-0 border-t border-white/4 sm:border-t-0 pl-11 sm:pl-0">
           <span
-            className={`font-bold font-mono tabular-nums text-sm sm:text-base whitespace-nowrap tracking-tight ${
-              isIncome ? 'text-emerald-400' : 'text-rose-400'
+            className={`font-semibold font-mono tabular-nums text-sm sm:text-base whitespace-nowrap tracking-tight ${
+              isIncome ? 'text-emerald-400' : 'text-rose-400/90'
             }`}
           >
             {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
           </span>
 
-          <div className="flex items-center gap-0.5 sm:gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity duration-200">
+          <div className="flex items-center gap-0.5 sm:gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-opacity duration-150">
             {onDuplicate && (
               <button
                 type="button"
@@ -243,9 +229,9 @@ export const TransactionItem = ({
                 onClick={handleDuplicate}
                 aria-label={`Duplicar transação ${transaction.title}`}
                 title="Duplicar transação"
-                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
-                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+                <Copy className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             )}
 
@@ -259,9 +245,9 @@ export const TransactionItem = ({
                 }}
                 aria-label={`Editar transação ${transaction.title}`}
                 title="Editar transação"
-                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
-                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+                <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             )}
 
@@ -271,9 +257,9 @@ export const TransactionItem = ({
               onClick={handleDelete}
               aria-label={`Excluir transação ${transaction.title}`}
               title="Excluir transação"
-              className="p-1.5 sm:p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all active:scale-90 cursor-pointer focus:outline-none focus:ring-1 focus:ring-rose-500"
             >
-              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
+              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>
