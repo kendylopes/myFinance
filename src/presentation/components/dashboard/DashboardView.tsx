@@ -1,4 +1,4 @@
-import { ArrowRight, Layers, Plus, Rocket, Upload } from 'lucide-react'
+import { ArrowRight, Layers, Plus, Receipt, Rocket, Upload } from 'lucide-react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useTheme } from '../../../core/theme/themeContext'
 import type {
@@ -6,6 +6,7 @@ import type {
   FinanceSummary,
   Transaction,
 } from '../../../domain/models/transaction'
+import { useSpotlight } from '../../hooks/useSpotlight'
 import { DashboardSkeleton } from './DashboardSkeleton'
 import { ExpenseCategoryChart } from './ExpenseCategoryChart'
 import { FinancialFlowChart } from './FinancialFlowChart'
@@ -49,6 +50,7 @@ export function DashboardView({
   onToggleTransactionStatus,
 }: DashboardViewProps) {
   const { currentTheme } = useTheme()
+  const recentSpotlightRef = useSpotlight<HTMLDivElement>()
 
   if (isLoading) {
     return <DashboardSkeleton />
@@ -90,25 +92,33 @@ export function DashboardView({
         </div>
 
         {/* Card de Transações Recentes */}
-        <div className="glass-card p-5 sm:p-6 rounded-3xl space-y-4 min-w-0 w-full">
-          <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-white/8 pb-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <Layers className="w-5 h-5 text-emerald-400 shrink-0" aria-hidden="true" />
-              <h2 className="text-base sm:text-lg font-semibold text-white drop-shadow-sm whitespace-nowrap">
-                Transações Recentes
-              </h2>
-              <span className="text-xs text-zinc-400 whitespace-nowrap">
-                ({periodTransactions.length} no período)
-              </span>
+        <div
+          ref={recentSpotlightRef}
+          data-testid="recent-transactions-card"
+          className="glass-card spotlight-card p-6 sm:p-7 rounded-3xl space-y-5 min-w-0 w-full border border-white/10 shadow-xl bg-linear-to-b from-white/4 to-transparent relative overflow-hidden"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 pb-4">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0 shadow-xs">
+                <Layers className="w-5 h-5" aria-hidden="true" />
+              </div>
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs whitespace-nowrap">
+                  Transações Recentes
+                </h2>
+                <span className="glass-pill px-2.5 py-0.5 rounded-full text-xs font-mono font-medium text-zinc-300 border border-white/8 whitespace-nowrap">
+                  ({periodTransactions.length} no período)
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   soundFX.playClick()
                   onOpenImportModal()
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                className="glass-pill px-3 py-1.5 rounded-xl border border-white/10 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-200 cursor-pointer active:scale-95 inline-flex items-center gap-1.5"
                 title="Importar extrato bancário OFX ou CSV"
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -120,7 +130,7 @@ export function DashboardView({
                   soundFX.playClick()
                   onSelectSection('transactions')
                 }}
-                className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="glass-pill px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium text-zinc-300 hover:text-white hover:border-white/20 hover:bg-white/6 transition-all duration-200 cursor-pointer active:scale-95 inline-flex items-center gap-1.5"
               >
                 <span>Ver todos</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -129,16 +139,24 @@ export function DashboardView({
           </div>
 
           {periodTransactions.length === 0 ? (
-            <div className="text-center py-10 text-zinc-400">
-              <p className="text-sm">Nenhuma movimentação neste período.</p>
-              <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+            <div className="text-center py-10 px-4 text-zinc-400">
+              <div className="w-12 h-12 rounded-2xl bg-white/4 border border-white/8 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <Receipt className="w-6 h-6 text-zinc-500" />
+              </div>
+              <p className="text-sm font-medium text-zinc-300">
+                Nenhuma movimentação neste período.
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">
+                Cadastre suas receitas ou despesas para visualizar o histórico imediato.
+              </p>
+              <div className="flex items-center justify-center gap-2.5 mt-5 flex-wrap">
                 <button
                   type="button"
                   onClick={() => {
                     soundFX.playClick()
                     onOpenNewTransaction()
                   }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-semibold backdrop-blur-md cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm"
                   style={{
                     backgroundColor: `${currentTheme.primaryColor}20`,
                     borderColor: `${currentTheme.primaryColor}40`,
@@ -155,7 +173,7 @@ export function DashboardView({
                     soundFX.playClick()
                     onOpenImportModal()
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20 active:scale-95"
                 >
                   <Upload className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Importar Extrato</span>
@@ -167,7 +185,7 @@ export function DashboardView({
                     soundFX.playClick()
                     onOpenOnboarding()
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 text-xs font-medium glass-pill text-zinc-300 hover:text-white cursor-pointer transition-all hover:border-white/20 active:scale-95"
                 >
                   <Rocket className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Guia de Início</span>
@@ -175,7 +193,7 @@ export function DashboardView({
               </div>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {periodTransactions.slice(0, 5).map((tx) => (
                 <TransactionItem
                   key={tx.id}
