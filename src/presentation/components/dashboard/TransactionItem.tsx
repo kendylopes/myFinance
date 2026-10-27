@@ -84,8 +84,10 @@ export const TransactionItem = ({
   return (
     <div
       data-testid={`transaction-item-${transaction.id}`}
-      className={`p-3.5 sm:p-4 glass-pill rounded-2xl hover:border-white/20 hover:bg-white/6 transition-all group shadow-sm ${
-        isSelected ? 'border-emerald-500/40 bg-emerald-500/5 ring-1 ring-emerald-500/20' : ''
+      className={`p-3.5 sm:p-4 glass-pill rounded-3xl hover:border-white/20 hover:bg-white/6 transition-all duration-200 group shadow-sm ${
+        isSelected
+          ? 'border-emerald-500/40 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-md shadow-emerald-950/20'
+          : 'border-white/8'
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -104,7 +106,7 @@ export const TransactionItem = ({
 
           <div className="relative shrink-0 mt-0.5 sm:mt-0">
             <div
-              className={`p-2 sm:p-2.5 rounded-xl border backdrop-blur-md shadow-sm transition-transform group-hover:scale-105 ${
+              className={`p-2 sm:p-2.5 rounded-2xl border backdrop-blur-md shadow-sm transition-transform duration-200 group-hover:scale-105 ${
                 isIncome
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
                   : 'bg-rose-500/10 text-rose-400 border-rose-500/25'
@@ -162,7 +164,7 @@ export const TransactionItem = ({
                 onClick={handleToggleExpand}
                 aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
                 aria-expanded={isExpanded}
-                className="sm:hidden p-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 border border-white/5 transition-colors cursor-pointer shrink-0"
+                className="sm:hidden p-1 rounded-xl text-zinc-400 hover:text-white bg-white/5 border border-white/5 transition-colors cursor-pointer shrink-0"
               >
                 {isExpanded ? (
                   <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -173,11 +175,11 @@ export const TransactionItem = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-zinc-400 mt-1">
-              <span className="glass-pill px-2 py-0.5 rounded-lg text-2xs text-zinc-300 font-medium">
+              <span className="glass-pill px-2.5 py-0.5 rounded-lg text-2xs text-zinc-300 font-medium border border-white/6">
                 {transaction.category}
               </span>
               <span className="text-zinc-600">•</span>
-              <span className="text-zinc-400">{formatDate(transaction.date)}</span>
+              <span className="text-zinc-400 font-medium">{formatDate(transaction.date)}</span>
               <span className="text-zinc-600">•</span>
               <button
                 type="button"
@@ -195,14 +197,14 @@ export const TransactionItem = ({
                       ? 'Recebido. Clique para marcar como pendente.'
                       : 'Pago. Clique para marcar como pendente.'
                 }
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-2xs font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0 ${
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 shrink-0 shadow-2xs ${
                   isPending
                     ? isExpired
                       ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 animate-pulse ring-1 ring-rose-500/30'
                       : isIncome
                         ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
                         : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25 hover:bg-emerald-500/20'
                 }`}
               >
                 {isPending ? (
@@ -239,7 +241,7 @@ export const TransactionItem = ({
                 onClick={handleDuplicate}
                 aria-label={`Duplicar transação ${transaction.title}`}
                 title="Duplicar transação"
-                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               </button>
@@ -255,7 +257,7 @@ export const TransactionItem = ({
                 }}
                 aria-label={`Editar transação ${transaction.title}`}
                 title="Editar transação"
-                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="p-1.5 sm:p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
               </button>
@@ -267,7 +269,7 @@ export const TransactionItem = ({
               onClick={handleDelete}
               aria-label={`Excluir transação ${transaction.title}`}
               title="Excluir transação"
-              className="p-1.5 sm:p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="p-1.5 sm:p-2 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
             >
               <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
             </button>

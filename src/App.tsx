@@ -196,6 +196,7 @@ export function AppContent() {
     toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
+    updateMultipleTransactionsStatus,
     importTransactions,
   } = useFinance(undefined, undefined, user)
 
@@ -549,6 +550,7 @@ export function AppContent() {
                 onDuplicate={handleDuplicateTransaction}
                 onToggleStatus={toggleTransactionStatus}
                 onDeleteMultiple={deleteMultipleTransactions}
+                onUpdateMultipleStatus={updateMultipleTransactionsStatus}
                 onOpenNewTransaction={handleOpenNewTransaction}
                 onOpenOnboarding={() => setIsOnboardingOpen(true)}
                 onOpenImport={() => setIsImportModalOpen(true)}

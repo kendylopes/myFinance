@@ -205,4 +205,29 @@ describe('useFinance (Ações Rápidas: Duplicação & Exclusão em Massa)', () 
     const toggledBackTx = result.current.transactions.find((t) => t.id === 'tx-100')
     expect(toggledBackTx?.status).toBe('paid')
   })
+
+  it('deve atualizar o status de múltiplas transações em lote', async () => {
+    const { transactionRepo, budgetRepo, categoryRepo } = createMockRepos()
+    const { result } = renderHook(() => useFinance(transactionRepo, budgetRepo, null, categoryRepo))
+
+    await act(async () => {
+      await result.current.refresh()
+    })
+
+    let success = false
+    await act(async () => {
+      success = await result.current.updateMultipleTransactionsStatus(
+        ['tx-100', 'tx-101'],
+        'pending',
+      )
+    })
+
+    expect(success).toBe(true)
+    const tx100 = result.current.transactions.find((t) => t.id === 'tx-100')
+    const tx101 = result.current.transactions.find((t) => t.id === 'tx-101')
+    expect(tx100?.status).toBe('pending')
+    expect(tx101?.status).toBe('pending')
+    expect(transactionRepo.update).toHaveBeenCalledWith('tx-100', { status: 'pending' })
+    expect(transactionRepo.update).toHaveBeenCalledWith('tx-101', { status: 'pending' })
+  })
 })

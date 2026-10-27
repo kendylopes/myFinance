@@ -11,6 +11,7 @@ import type {
   BudgetProgress,
   CreateTransactionDTO,
   FinanceSummary,
+  PaymentStatus,
   Transaction,
   TransactionFilterType,
   TransactionStatusFilter,
@@ -68,6 +69,7 @@ export interface UseFinanceReturn {
   toggleTransactionStatus: (id: string) => Promise<boolean>
   deleteTransaction: (id: string) => Promise<boolean>
   deleteMultipleTransactions: (ids: string[]) => Promise<boolean>
+  updateMultipleTransactionsStatus: (ids: string[], status: PaymentStatus) => Promise<boolean>
   importTransactions: (dtos: CreateTransactionDTO[]) => Promise<boolean>
   refresh: () => Promise<void>
 }
@@ -327,6 +329,28 @@ export function useFinance(
     [activeTransactionRepo],
   )
 
+  // Atualizar status de pagamento de múltiplas transações (Ação em Lote)
+  const updateMultipleTransactionsStatus = useCallback(
+    async (ids: string[], newStatus: PaymentStatus): Promise<boolean> => {
+      if (ids.length === 0) return true
+      try {
+        setError(null)
+        // Atualização otimista imediata na UI
+        setTransactions((prev) =>
+          prev.map((t) => (ids.includes(t.id) ? { ...t, status: newStatus } : t)),
+        )
+        await Promise.all(ids.map((id) => activeTransactionRepo.update(id, { status: newStatus })))
+        return true
+      } catch (err) {
+        console.error('[useFinance] Falha ao atualizar status de transações em massa:', err)
+        setError('Erro ao atualizar status das movimentações selecionadas.')
+        await refresh()
+        return false
+      }
+    },
+    [activeTransactionRepo, refresh],
+  )
+
   // Importar múltiplas transações (ex: de extrato bancário OFX/CSV)
   const importTransactions = useCallback(
     async (dtos: CreateTransactionDTO[]): Promise<boolean> => {
@@ -495,6 +519,7 @@ export function useFinance(
     toggleTransactionStatus,
     deleteTransaction,
     deleteMultipleTransactions,
+    updateMultipleTransactionsStatus,
     importTransactions,
     refresh,
   }

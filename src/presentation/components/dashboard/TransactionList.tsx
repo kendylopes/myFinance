@@ -1,10 +1,21 @@
-import { ChevronLeft, ChevronRight, Layers, Plus, Rocket, Trash2, Upload } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Layers,
+  Plus,
+  Rocket,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import { soundFX } from '../../../core/sound/soundEffects'
 import { useToast } from '../../../core/toast/toastContext'
 import type {
   FinanceSummary,
+  PaymentStatus,
   Transaction,
   TransactionFilterType,
   TransactionStatusFilter,
@@ -23,6 +34,7 @@ export interface TransactionListProps {
   onDuplicate?: (id: string) => void
   onToggleStatus?: (id: string) => void
   onDeleteMultiple?: (ids: string[]) => Promise<boolean>
+  onUpdateMultipleStatus?: (ids: string[], status: PaymentStatus) => Promise<boolean>
   onOpenNewTransaction?: () => void
   onOpenOnboarding?: () => void
   // Props de filtro opcionais
@@ -53,6 +65,7 @@ export const TransactionList = ({
   onDuplicate,
   onToggleStatus,
   onDeleteMultiple,
+  onUpdateMultipleStatus,
   onOpenNewTransaction,
   onOpenOnboarding,
   onOpenImport,
@@ -74,10 +87,12 @@ export const TransactionList = ({
 }: TransactionListProps) => {
   const toast = useToast()
   const showFilters = Boolean(onSearchChange && onCategoryChange && onTypeChange)
+  const canSelect = Boolean(onDeleteMultiple || onUpdateMultipleStatus)
   const [sortBy, setSortBy] = useState<TransactionSortOption>('date_desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isDeletingBulk, setIsDeletingBulk] = useState(false)
+  const [isUpdatingStatusBulk, setIsUpdatingStatusBulk] = useState(false)
   const [showConfirmBulkModal, setShowConfirmBulkModal] = useState(false)
 
   // Limpar IDs selecionados que não existem mais na lista
@@ -182,6 +197,24 @@ export const TransactionList = ({
     }
   }
 
+  const handleUpdateBulkStatus = async (status: PaymentStatus) => {
+    if (!onUpdateMultipleStatus || selectedIds.length === 0) return
+    setIsUpdatingStatusBulk(true)
+    const count = selectedIds.length
+    const success = await onUpdateMultipleStatus(selectedIds, status)
+    setIsUpdatingStatusBulk(false)
+    if (success) {
+      soundFX.playSuccess()
+      toast.success(
+        'Situação atualizada',
+        `${count} ${count === 1 ? 'transação foi marcada' : 'transações foram marcadas'} como ${
+          status === 'paid' ? 'paga/recebida' : 'pendente'
+        }.`,
+      )
+      setSelectedIds([])
+    }
+  }
+
   const selectedTransactions = useMemo(() => {
     return transactions.filter((tx) => selectedIds.includes(tx.id))
   }, [transactions, selectedIds])
@@ -196,17 +229,25 @@ export const TransactionList = ({
   const filteredMetrics = useMemo(() => {
     let income = 0
     let expense = 0
+    let pendingCount = 0
+    let pendingAmount = 0
     for (const tx of transactions) {
       if (tx.type === 'income') {
         income += tx.amount
       } else {
         expense += tx.amount
       }
+      if ((tx.status || 'paid') === 'pending') {
+        pendingCount += 1
+        pendingAmount += tx.amount
+      }
     }
     return {
       income,
       expense,
       balance: income - expense,
+      pendingCount,
+      pendingAmount,
     }
   }, [transactions])
 
@@ -265,7 +306,7 @@ export const TransactionList = ({
 
       {/* BARRA DE RESUMO DISCRETA & SELEÇÃO EM MASSA */}
       {transactions.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-white/3 border border-white/6 text-2xs text-zinc-400">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-white/3 border border-white/6 text-2xs text-zinc-400">
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
@@ -294,10 +335,23 @@ export const TransactionList = ({
                 {formatCurrency(filteredMetrics.balance)}
               </span>
             </div>
+
+            {filteredMetrics.pendingCount > 0 && (
+              <>
+                <span className="text-zinc-700 hidden sm:inline">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                  <span className="text-zinc-400">Pendentes:</span>
+                  <span className="font-mono font-bold text-amber-300">
+                    {filteredMetrics.pendingCount} ({formatCurrency(filteredMetrics.pendingAmount)})
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* SELETOR EM MASSA DA PÁGINA INTEGRADO */}
-          {onDeleteMultiple && (
+          {canSelect && (
             <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-200 transition-colors select-none shrink-0 self-end sm:self-auto">
               <input
                 type="checkbox"
@@ -314,16 +368,16 @@ export const TransactionList = ({
         </div>
       )}
 
-      {/* BARRA DE AÇÕES EM MASSA (QUANDO HOUVER ITENS SELECIONADOS) */}
+      {/* BARRA DE AÇÕES EM MASSA FLUTUANTE (QUANDO HOUVER ITENS SELECIONADOS) */}
       {selectedIds.length > 0 && (
         <div
           data-testid="bulk-action-bar"
-          className="p-3.5 sm:p-4 rounded-2xl glass-card border border-emerald-500/30 bg-emerald-950/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-emerald-950/20 animate-fadeIn"
+          className="p-3.5 sm:p-4 rounded-3xl glass-card border border-emerald-500/30 bg-emerald-950/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl shadow-emerald-950/25 animate-fadeIn"
         >
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
             <div>
-              <p className="text-sm font-bold text-white">
+              <p className="text-sm font-bold text-white tracking-tight">
                 {selectedIds.length}{' '}
                 {selectedIds.length === 1 ? 'transação selecionada' : 'transações selecionadas'}
               </p>
@@ -338,10 +392,38 @@ export const TransactionList = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {onUpdateMultipleStatus && (
+              <>
+                <button
+                  type="button"
+                  data-testid="bulk-mark-paid-btn"
+                  onClick={() => handleUpdateBulkStatus('paid')}
+                  disabled={isUpdatingStatusBulk}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
+                  title="Marcar selecionadas como pagas/recebidas"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Marcar Pagas</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="bulk-mark-pending-btn"
+                  onClick={() => handleUpdateBulkStatus('pending')}
+                  disabled={isUpdatingStatusBulk}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
+                  title="Marcar selecionadas como pendentes"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Marcar Pendentes</span>
+                </button>
+              </>
+            )}
+
             <button
               type="button"
               onClick={handleClearSelection}
-              className="px-3 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/25 transition cursor-pointer"
+              className="px-3 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/25 active:scale-95 transition cursor-pointer"
             >
               Desmarcar todas
             </button>
@@ -355,7 +437,7 @@ export const TransactionList = ({
                   setShowConfirmBulkModal(true)
                 }}
                 disabled={isDeletingBulk}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:border-rose-500/60 transition cursor-pointer shadow-xs disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:border-rose-500/60 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Excluir {selectedIds.length}</span>
@@ -447,7 +529,7 @@ export const TransactionList = ({
                 onDuplicate={onDuplicate ? () => onDuplicate(item.id) : undefined}
                 onToggleStatus={onToggleStatus}
                 isSelected={selectedIds.includes(item.id)}
-                onToggleSelect={onDeleteMultiple ? handleToggleSelect : undefined}
+                onToggleSelect={canSelect ? handleToggleSelect : undefined}
               />
             ))}
           </div>

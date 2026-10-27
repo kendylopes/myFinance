@@ -151,4 +151,29 @@ describe('<TransactionList /> (Ações Rápidas no Extrato & Seleção em Massa)
 
     expect(mockDeleteMultiple).toHaveBeenCalledWith(['tx-1', 'tx-3'])
   })
+
+  it('deve disparar onUpdateMultipleStatus ao clicar em Marcar Pagas', async () => {
+    const mockDelete = vi.fn()
+    const mockUpdateMultipleStatus = vi.fn().mockResolvedValue(true)
+    const user = userEvent.setup()
+
+    render(
+      <TransactionList
+        transactions={mockTransactions}
+        isLoading={false}
+        onDelete={mockDelete}
+        onUpdateMultipleStatus={mockUpdateMultipleStatus}
+      />,
+    )
+
+    // Selecionar 2 itens
+    await user.click(screen.getByTestId('checkbox-select-tx-1'))
+    await user.click(screen.getByTestId('checkbox-select-tx-2'))
+
+    const markPaidBtn = screen.getByTestId('bulk-mark-paid-btn')
+    expect(markPaidBtn).toBeInTheDocument()
+    await user.click(markPaidBtn)
+
+    expect(mockUpdateMultipleStatus).toHaveBeenCalledWith(['tx-1', 'tx-2'], 'paid')
+  })
 })
