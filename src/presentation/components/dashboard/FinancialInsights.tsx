@@ -3,12 +3,9 @@ import {
   ArrowDownRight,
   Award,
   CalendarClock,
-  CheckCircle2,
   Flame,
-  Info,
   PiggyBank,
   Sparkles,
-  TrendingUp,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import type {
@@ -243,92 +240,39 @@ export function FinancialInsights({
             </div>
           </div>
 
-          {/* Lado Direito: Os 4 Pilares da Avaliação */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-2.5 shrink-0 pt-3 xl:pt-0 border-t xl:border-t-0 border-white/6">
+          {/* Lado Direito: Os 4 Pilares da Avaliação de forma Minimalista e Arejada */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-2 shrink-0 pt-3 xl:pt-0 border-t xl:border-t-0 border-white/6">
             {/* Pilar 1: Poupança */}
-            <div className="p-2.5 rounded-2xl bg-white/3 hover:bg-white/5 border border-white/6 transition-all duration-200">
-              <div className="flex items-center justify-between text-2xs text-zinc-400 font-medium">
-                <span className="flex items-center gap-1">
-                  <PiggyBank className="w-3 h-3 text-emerald-400" />
-                  Poupança
-                </span>
-                <span className="font-mono text-emerald-400 font-bold tabular-nums">
-                  {healthScore.factors.savings.points}/{healthScore.factors.savings.maxPoints}
-                </span>
-              </div>
-              <div className="w-full h-1.5 bg-white/8 rounded-full mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${(healthScore.factors.savings.points / healthScore.factors.savings.maxPoints) * 100}%`,
-                  }}
-                />
-              </div>
+            <div className="px-3 py-2 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-between gap-2.5 text-2xs">
+              <span className="text-zinc-400 font-medium">Poupança</span>
+              <span className="font-mono text-emerald-400 font-bold tabular-nums">
+                {healthScore.factors.savings.points}/{healthScore.factors.savings.maxPoints}
+              </span>
             </div>
 
             {/* Pilar 2: Orçamento */}
-            <div className="p-2.5 rounded-2xl bg-white/3 hover:bg-white/5 border border-white/6 transition-all duration-200">
-              <div className="flex items-center justify-between text-2xs text-zinc-400 font-medium">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-cyan-400" />
-                  Orçamento
-                </span>
-                <span className="font-mono text-cyan-400 font-bold tabular-nums">
-                  {healthScore.factors.budget.points}/{healthScore.factors.budget.maxPoints}
-                </span>
-              </div>
-              <div className="w-full h-1.5 bg-white/8 rounded-full mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-cyan-500 to-blue-400 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${(healthScore.factors.budget.points / healthScore.factors.budget.maxPoints) * 100}%`,
-                  }}
-                />
-              </div>
+            <div className="px-3 py-2 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-between gap-2.5 text-2xs">
+              <span className="text-zinc-400 font-medium">Orçamento</span>
+              <span className="font-mono text-cyan-400 font-bold tabular-nums">
+                {healthScore.factors.budget.points}/{healthScore.factors.budget.maxPoints}
+              </span>
             </div>
 
             {/* Pilar 3: Distribuição */}
-            <div className="p-2.5 rounded-2xl bg-white/3 hover:bg-white/5 border border-white/6 transition-all duration-200">
-              <div className="flex items-center justify-between text-2xs text-zinc-400 font-medium">
-                <span className="flex items-center gap-1">
-                  <Info className="w-3 h-3 text-amber-400" />
-                  Distribuição
-                </span>
-                <span className="font-mono text-amber-400 font-bold tabular-nums">
-                  {healthScore.factors.distribution.points}/
-                  {healthScore.factors.distribution.maxPoints}
-                </span>
-              </div>
-              <div className="w-full h-1.5 bg-white/8 rounded-full mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${(healthScore.factors.distribution.points / healthScore.factors.distribution.maxPoints) * 100}%`,
-                  }}
-                />
-              </div>
+            <div className="px-3 py-2 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-between gap-2.5 text-2xs">
+              <span className="text-zinc-400 font-medium">Distribuição</span>
+              <span className="font-mono text-amber-400 font-bold tabular-nums">
+                {healthScore.factors.distribution.points}/
+                {healthScore.factors.distribution.maxPoints}
+              </span>
             </div>
 
             {/* Pilar 4: Controle */}
-            <div className="p-2.5 rounded-2xl bg-white/3 hover:bg-white/5 border border-white/6 transition-all duration-200">
-              <div className="flex items-center justify-between text-2xs text-zinc-400 font-medium">
-                <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-violet-400" />
-                  Controle
-                </span>
-                <span className="font-mono text-violet-400 font-bold tabular-nums">
-                  {healthScore.factors.consistency.points}/
-                  {healthScore.factors.consistency.maxPoints}
-                </span>
-              </div>
-              <div className="w-full h-1.5 bg-white/8 rounded-full mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${(healthScore.factors.consistency.points / healthScore.factors.consistency.maxPoints) * 100}%`,
-                  }}
-                />
-              </div>
+            <div className="px-3 py-2 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-between gap-2.5 text-2xs">
+              <span className="text-zinc-400 font-medium">Controle</span>
+              <span className="font-mono text-violet-400 font-bold tabular-nums">
+                {healthScore.factors.consistency.points}/{healthScore.factors.consistency.maxPoints}
+              </span>
             </div>
           </div>
         </div>
