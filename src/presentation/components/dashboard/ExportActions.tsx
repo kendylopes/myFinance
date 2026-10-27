@@ -137,7 +137,7 @@ export function ExportActions({
           title="Importar extrato bancário (OFX ou CSV)"
           aria-label="Importar Extrato"
           data-testid="open-import-statement-btn"
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 transition-all duration-150 shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-white/8 bg-white/3 hover:bg-white/6 text-zinc-300 hover:text-white transition-all duration-150 cursor-pointer"
         >
           <Upload className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Importar Extrato</span>

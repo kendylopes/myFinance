@@ -309,30 +309,30 @@ export const TransactionList = ({
         />
       )}
 
-      {/* BARRA DE RESUMO DISCRETA & SELEÇÃO EM MASSA */}
+      {/* BARRA DE RESUMO DISCRETA & SELEÇÃO EM MASSA INTEGRADA */}
       {transactions.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-white/2 border border-white/6 text-2xs text-zinc-400">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 pt-1 text-2xs text-zinc-500 border-b border-white/6 pb-2.5">
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span className="text-zinc-500">Entradas:</span>
-              <span className="font-mono tabular-nums font-semibold text-zinc-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80 shrink-0" />
+              <span>Entradas:</span>
+              <span className="font-mono tabular-nums font-medium text-zinc-300">
                 {formatCurrency(filteredMetrics.income)}
               </span>
             </div>
             <span className="text-zinc-700 hidden sm:inline">•</span>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0" />
-              <span className="text-zinc-500">Saídas:</span>
-              <span className="font-mono tabular-nums font-semibold text-zinc-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400/80 shrink-0" />
+              <span>Saídas:</span>
+              <span className="font-mono tabular-nums font-medium text-zinc-300">
                 {formatCurrency(filteredMetrics.expense)}
               </span>
             </div>
             <span className="text-zinc-700 hidden sm:inline">•</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-zinc-500">Saldo:</span>
+              <span>Saldo:</span>
               <span
-                className={`font-mono tabular-nums font-semibold ${
+                className={`font-mono tabular-nums font-medium ${
                   filteredMetrics.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >
@@ -345,9 +345,9 @@ export const TransactionList = ({
               <>
                 <span className="text-zinc-700 hidden sm:inline">•</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                  <span className="text-zinc-500">Pendentes:</span>
-                  <span className="font-mono tabular-nums font-semibold text-amber-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 shrink-0" />
+                  <span>Pendentes:</span>
+                  <span className="font-mono tabular-nums font-medium text-amber-300/90">
                     {filteredMetrics.pendingCount} ({formatCurrency(filteredMetrics.pendingAmount)})
                   </span>
                 </div>
@@ -357,7 +357,7 @@ export const TransactionList = ({
 
           {/* SELETOR EM MASSA DA PÁGINA INTEGRADO */}
           {canSelect && (
-            <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-200 transition-colors select-none shrink-0 self-end sm:self-auto">
+            <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-300 transition-colors select-none shrink-0 self-end sm:self-auto">
               <input
                 type="checkbox"
                 checked={isAllPageSelected}

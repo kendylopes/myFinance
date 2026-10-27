@@ -1,4 +1,4 @@
-import { ArrowUpDown, CheckCircle2, Clock, Search, SlidersHorizontal, Tag, X } from 'lucide-react'
+import { ArrowUpDown, CheckCircle2, Search, SlidersHorizontal, Tag, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { soundFX } from '../../../core/sound/soundEffects'
 import type {
@@ -85,16 +85,13 @@ export function TransactionFilters({
     (selectedStatus !== 'all' ? 1 : 0) + (selectedCategory !== 'all' ? 1 : 0)
 
   return (
-    <div data-testid="transaction-filters" className="space-y-2 pb-1 relative">
-      {/* LINHA 1 PRINCIPAL: BUSCA OMNIBAR + SEGMENTED CONTROL + ORDENAÇÃO + BOTÃO DE FILTROS */}
-      <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center justify-between">
-        {/* BUSCA RÁPIDA OMNIBAR COM ATALHO */}
-        <div className="relative flex-1 group min-w-0">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-emerald-400">
-            <Search
-              className="w-3.5 h-3.5 text-zinc-400 group-focus-within:text-emerald-400 transition-colors"
-              aria-hidden="true"
-            />
+    <div data-testid="transaction-filters" className="space-y-2 relative">
+      {/* BARRA DE FERRAMENTAS UNIFICADA: BUSCA CONTEXTUAL + TIPO + ORDENAÇÃO + FILTROS */}
+      <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between">
+        {/* BUSCA CONTEXTUAL NO EXTRATO (DISCRETA E SEM DUPLICAÇÃO COM O TOPO) */}
+        <div className="relative max-w-sm w-full group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-zinc-400 group-focus-within:text-emerald-400 transition-colors">
+            <Search className="w-3.5 h-3.5" aria-hidden="true" />
           </div>
           <input
             id="transaction-search-input"
@@ -102,9 +99,9 @@ export function TransactionFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por descrição ou categoria..."
-            className="w-full h-9.5 rounded-xl bg-white/3 border border-white/8 pl-8.5 pr-10 text-xs sm:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/5 transition-all"
+            className="w-full h-9 rounded-xl bg-white/3 border border-white/8 pl-8.5 pr-8 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/5 transition-all"
           />
-          {searchQuery ? (
+          {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
@@ -113,23 +110,17 @@ export function TransactionFilters({
             >
               <X className="w-3.5 h-3.5" />
             </button>
-          ) : (
-            <div className="absolute inset-y-0 right-0 pr-2.5 hidden sm:flex items-center pointer-events-none">
-              <kbd className="text-3xs font-mono font-medium px-1.5 py-0.5 rounded border border-white/8 bg-white/4 text-zinc-500">
-                /
-              </kbd>
-            </div>
           )}
         </div>
 
         {/* CONTROLES INTEGRADOS LADO DIREITO */}
-        <div className="flex items-center gap-1.5 self-stretch lg:self-auto shrink-0 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap justify-end">
           {/* SEGMENTED CONTROL: TODOS / ENTRADAS / SAÍDAS */}
-          <div className="h-9.5 flex items-center p-0.5 rounded-xl bg-white/3 border border-white/8 gap-0.5 flex-1 sm:flex-initial">
+          <div className="h-9 flex items-center p-0.5 rounded-xl bg-white/3 border border-white/8 gap-0.5">
             <button
               type="button"
               onClick={() => handleTypeSelect('all')}
-              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'all'
                   ? 'bg-white/12 text-white font-medium shadow-xs'
                   : 'text-zinc-400 hover:text-white hover:bg-white/4'
@@ -140,7 +131,7 @@ export function TransactionFilters({
             <button
               type="button"
               onClick={() => handleTypeSelect('income')}
-              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'income'
                   ? 'bg-emerald-500/20 text-emerald-300 font-medium shadow-xs'
                   : 'text-zinc-400 hover:text-emerald-300 hover:bg-white/4'
@@ -151,7 +142,7 @@ export function TransactionFilters({
             <button
               type="button"
               onClick={() => handleTypeSelect('expense')}
-              className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
+              className={`px-3 py-1 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap text-center ${
                 selectedType === 'expense'
                   ? 'bg-rose-500/20 text-rose-300 font-medium shadow-xs'
                   : 'text-zinc-400 hover:text-rose-300 hover:bg-white/4'
@@ -161,9 +152,9 @@ export function TransactionFilters({
             </button>
           </div>
 
-          {/* SELETOR DE ORDENAÇÃO COMPACTO */}
+          {/* SELETOR DE ORDENAÇÃO */}
           {onSortChange && (
-            <div className="h-9.5 flex items-center gap-1.5 px-2.5 rounded-xl bg-white/3 border border-white/8 hover:border-white/15 transition-all text-xs shrink-0">
+            <div className="h-9 flex items-center gap-1.5 px-2.5 rounded-xl bg-white/3 border border-white/8 hover:border-white/15 transition-all text-xs shrink-0">
               <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
               <select
                 aria-label="Ordenar transações"
@@ -187,7 +178,7 @@ export function TransactionFilters({
             </div>
           )}
 
-          {/* BOTÃO UNIFICADO "FILTROS" COM POPOVER */}
+          {/* BOTÃO DE FILTROS REFINADOS COM POPOVER */}
           <div className="relative shrink-0">
             <button
               type="button"
@@ -197,7 +188,7 @@ export function TransactionFilters({
               }}
               aria-label="Filtros avançados"
               aria-expanded={isFiltersOpen}
-              className={`h-9.5 flex items-center gap-1.5 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+              className={`h-9 flex items-center gap-1.5 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                 isFiltersOpen || extraFiltersCount > 0
                   ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
                   : 'bg-white/3 border-white/8 text-zinc-300 hover:border-white/15 hover:text-white'
@@ -333,112 +324,6 @@ export function TransactionFilters({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* LINHA 2: FILTROS RÁPIDOS UNIFICADOS COM ROLAGEM SUAVE SEM SCROLLBAR VISÍVEL */}
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1 text-2xs">
-        {/* Pílulas de Status Rápidas */}
-        {onStatusChange && (
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-zinc-500 font-medium shrink-0 mr-1 flex items-center gap-1 select-none text-2xs">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400/80" />
-              <span>Situação:</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('all')
-              }}
-              className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
-                selectedStatus === 'all'
-                  ? 'bg-white/12 text-white border-white/20 font-medium'
-                  : 'bg-white/2 text-zinc-400 hover:text-white border-white/6 hover:bg-white/5'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('paid')
-              }}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
-                selectedStatus === 'paid'
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-medium'
-                  : 'bg-white/2 text-zinc-400 hover:text-emerald-300 border-white/6 hover:bg-white/5'
-              }`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span>Pagas / Recebidas</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onStatusChange('pending')
-              }}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
-                selectedStatus === 'pending'
-                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-medium'
-                  : 'bg-white/2 text-zinc-400 hover:text-amber-300 border-white/6 hover:bg-white/5'
-              }`}
-            >
-              <Clock className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-              <span>Pendentes</span>
-            </button>
-          </div>
-        )}
-
-        {/* Separador sutil */}
-        {onStatusChange && onCategoryChange && categories.length > 0 && (
-          <div className="w-px h-3.5 bg-white/10 shrink-0 mx-0.5" aria-hidden="true" />
-        )}
-
-        {/* Categorias Rápidas */}
-        {onCategoryChange && categories.length > 0 && (
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-zinc-500 font-medium shrink-0 mr-1 flex items-center gap-1 select-none text-2xs">
-              <Tag className="w-3 h-3 text-emerald-400/80" />
-              <span>Categorias:</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                soundFX.playClick()
-                onCategoryChange('all')
-              }}
-              className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
-                selectedCategory === 'all'
-                  ? 'bg-white/12 text-white border-white/20 font-medium'
-                  : 'bg-white/2 text-zinc-400 hover:text-white border-white/6 hover:bg-white/5'
-              }`}
-            >
-              Todas
-            </button>
-            {categories.slice(0, 8).map((cat) => {
-              const isSelected = selectedCategory === cat
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => {
-                    soundFX.playClick()
-                    onCategoryChange(isSelected ? 'all' : cat)
-                  }}
-                  className={`px-2.5 py-1 rounded-lg border text-2xs transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
-                    isSelected
-                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 font-medium'
-                      : 'bg-white/2 text-zinc-400 hover:text-zinc-200 border-white/6 hover:bg-white/5'
-                  }`}
-                >
-                  {cat}
-                </button>
-              )
-            })}
-          </div>
-        )}
       </div>
 
       {/* LINHA DE PILLS / CHIPS DE FILTROS ATIVOS (QUANDO HOUVER FILTROS APLICADOS) */}
