@@ -340,8 +340,8 @@ export function TransactionFilters({
         {/* Pílulas de Status Rápidas */}
         {onStatusChange && (
           <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-2xs">
-            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1 select-none">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>Situação:</span>
             </span>
             <button
@@ -350,10 +350,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('all')
               }}
-              className={`px-2.5 py-1 rounded-xl border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
                 selectedStatus === 'all'
                   ? 'bg-white/15 text-white border-white/25 shadow-xs font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6 hover:bg-white/6'
+                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6 hover:bg-white/6 hover:border-white/12'
               }`}
             >
               Todas
@@ -364,13 +364,13 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('paid')
               }}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
                 selectedStatus === 'paid'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-emerald-400 border-white/6 hover:bg-white/6'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs font-bold ring-1 ring-emerald-500/30'
+                  : 'bg-white/3 text-zinc-400 hover:text-emerald-300 border-white/6 hover:bg-white/6 hover:border-emerald-500/20'
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
               <span>Pagas / Recebidas</span>
             </button>
             <button
@@ -379,13 +379,13 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onStatusChange('pending')
               }}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-2xs font-semibold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
                 selectedStatus === 'pending'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-amber-400 border-white/6 hover:bg-white/6'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs font-bold ring-1 ring-amber-500/30'
+                  : 'bg-white/3 text-zinc-400 hover:text-amber-300 border-white/6 hover:bg-white/6 hover:border-amber-500/20'
               }`}
             >
-              <Clock className="w-2.5 h-2.5 text-amber-400" />
+              <Clock className="w-2.5 h-2.5 text-amber-400 shrink-0" />
               <span>Pendentes</span>
             </button>
           </div>
@@ -394,8 +394,8 @@ export function TransactionFilters({
         {/* Carrossel de Categorias Rápidas */}
         {onCategoryChange && categories.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-2xs sm:justify-end">
-            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1">
-              <Tag className="w-3 h-3 text-emerald-400" />
+            <span className="text-zinc-500 font-semibold shrink-0 mr-0.5 flex items-center gap-1 select-none">
+              <Tag className="w-3.5 h-3.5 text-emerald-400" />
               <span>Categorias:</span>
             </span>
             <button
@@ -404,10 +404,10 @@ export function TransactionFilters({
                 soundFX.playClick()
                 onCategoryChange('all')
               }}
-              className={`px-2 py-0.5 rounded-lg border transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
                 selectedCategory === 'all'
                   ? 'bg-white/15 text-white border-white/20 font-bold'
-                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6'
+                  : 'bg-white/3 text-zinc-400 hover:text-white border-white/6 hover:bg-white/6 hover:border-white/12'
               }`}
             >
               Todas
@@ -422,10 +422,10 @@ export function TransactionFilters({
                     soundFX.playClick()
                     onCategoryChange(isSelected ? 'all' : cat)
                   }}
-                  className={`px-2 py-0.5 rounded-lg border transition-all cursor-pointer whitespace-nowrap ${
+                  className={`px-2.5 py-1 rounded-lg border transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-2xs ${
                     isSelected
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold'
-                      : 'bg-white/3 text-zinc-400 hover:text-zinc-200 border-white/6 hover:bg-white/6'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold ring-1 ring-emerald-500/30'
+                      : 'bg-white/3 text-zinc-400 hover:text-zinc-200 border-white/6 hover:bg-white/6 hover:border-white/12'
                   }`}
                 >
                   {cat}
@@ -438,64 +438,67 @@ export function TransactionFilters({
 
       {/* LINHA DE PILLS / CHIPS DE FILTROS ATIVOS (QUANDO HOUVER FILTROS APLICADOS) */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-white/6 animate-fade-in">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/8 animate-fade-in">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-2xs text-zinc-500 font-medium mr-1">Filtros ativos:</span>
+            <span className="text-2xs text-zinc-500 font-semibold mr-1 select-none">
+              Filtros ativos:
+            </span>
 
             {selectedCategory !== 'all' && onCategoryChange && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-2xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-2xs font-semibold shadow-xs shadow-emerald-950/20">
                 <span>Cat: {selectedCategory}</span>
                 <button
                   type="button"
                   onClick={() => onCategoryChange('all')}
-                  className="hover:text-white cursor-pointer ml-0.5"
+                  className="hover:text-white cursor-pointer ml-0.5 p-0.5 rounded-full hover:bg-emerald-500/30 transition-colors active:scale-90"
                   aria-label={`Remover filtro de categoria ${selectedCategory}`}
                 >
-                  <X className="w-2.5 h-2.5" />
+                  <X className="w-3 h-3" />
                 </button>
               </span>
             )}
 
             {selectedStatus !== 'all' && onStatusChange && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-2xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 text-2xs font-semibold shadow-xs shadow-cyan-950/20">
                 <span>Status: {selectedStatus === 'paid' ? 'Pagas/Recebidas' : 'Pendentes'}</span>
                 <button
                   type="button"
                   onClick={() => onStatusChange('all')}
-                  className="hover:text-white cursor-pointer ml-0.5"
+                  className="hover:text-white cursor-pointer ml-0.5 p-0.5 rounded-full hover:bg-cyan-500/30 transition-colors active:scale-90"
                   aria-label="Remover filtro de status"
                 >
-                  <X className="w-2.5 h-2.5" />
+                  <X className="w-3 h-3" />
                 </button>
               </span>
             )}
 
             {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-zinc-200 text-2xs font-semibold">
-                <span>"{searchQuery}"</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-zinc-200 text-2xs font-semibold shadow-xs">
+                <span className="truncate max-w-40">"{searchQuery}"</span>
                 <button
                   type="button"
                   onClick={() => onSearchChange('')}
-                  className="hover:text-white cursor-pointer ml-0.5"
+                  className="hover:text-white cursor-pointer ml-0.5 p-0.5 rounded-full hover:bg-white/20 transition-colors active:scale-90"
                   aria-label="Remover filtro de busca"
                 >
-                  <X className="w-2.5 h-2.5" />
+                  <X className="w-3 h-3" />
                 </button>
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-zinc-400 shrink-0 ml-auto">
-            <span className="text-[11px]">
-              Exibindo <strong className="text-white font-semibold">{totalFilteredCount}</strong> de{' '}
-              <strong className="text-white font-semibold">{totalPeriodCount}</strong>
+          <div className="flex items-center gap-2.5 text-xs text-zinc-400 shrink-0 ml-auto">
+            <span className="text-2xs sm:text-xs">
+              Exibindo{' '}
+              <strong className="text-white font-mono font-bold">{totalFilteredCount}</strong> de{' '}
+              <strong className="text-white font-mono font-bold">{totalPeriodCount}</strong>
             </span>
             <button
               type="button"
               onClick={handleClear}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 text-xs font-medium transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 hover:bg-rose-500/20 hover:border-rose-500/40 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-xs"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
               <span>Limpar filtros</span>
             </button>
           </div>

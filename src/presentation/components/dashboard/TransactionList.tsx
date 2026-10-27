@@ -20,6 +20,7 @@ import type {
   TransactionFilterType,
   TransactionStatusFilter,
 } from '../../../domain/models/transaction'
+import { useSpotlight } from '../../hooks/useSpotlight'
 import { ExportActions } from './ExportActions'
 import { TransactionFilters, type TransactionSortOption } from './TransactionFilters'
 import { TransactionItem } from './TransactionItem'
@@ -85,6 +86,7 @@ export const TransactionList = ({
   exportSummary,
   selectedMonth,
 }: TransactionListProps) => {
+  const spotlightRef = useSpotlight<HTMLElement>()
   const toast = useToast()
   const showFilters = Boolean(onSearchChange && onCategoryChange && onTypeChange)
   const canSelect = Boolean(onDeleteMultiple || onUpdateMultipleStatus)
@@ -253,23 +255,26 @@ export const TransactionList = ({
 
   return (
     <section
+      ref={spotlightRef}
       aria-labelledby="list-title"
-      className="glass-card p-6 rounded-3xl space-y-4 shadow-xl"
+      className="glass-card spotlight-card p-6 sm:p-7 rounded-3xl space-y-5 shadow-2xl border border-white/10 bg-linear-to-b from-white/4 to-transparent relative overflow-hidden"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/8 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/8 pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <Layers className="w-4 h-4" aria-hidden="true" />
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0 shadow-xs">
+            <Layers className="w-5 h-5" aria-hidden="true" />
           </div>
-          <h2
-            id="list-title"
-            className="text-base sm:text-lg font-semibold text-white tracking-tight"
-          >
-            Histórico de Transações
-          </h2>
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/5 border border-white/10 text-zinc-400">
-            {transactions.length} {transactions.length === 1 ? 'registro' : 'registros'}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2
+              id="list-title"
+              className="text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-xs"
+            >
+              Histórico de Transações
+            </h2>
+            <span className="glass-pill px-2.5 py-0.5 rounded-full text-xs font-mono font-medium text-zinc-300 border border-white/8 whitespace-nowrap">
+              {transactions.length} {transactions.length === 1 ? 'registro' : 'registros'}
+            </span>
+          </div>
         </div>
 
         {/* AÇÕES DE EXPORTAÇÃO (CSV E PDF) E IMPORTAÇÃO */}
@@ -372,10 +377,13 @@ export const TransactionList = ({
       {selectedIds.length > 0 && (
         <div
           data-testid="bulk-action-bar"
-          className="p-3.5 sm:p-4 rounded-3xl glass-card border border-emerald-500/30 bg-emerald-950/30 backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl shadow-emerald-950/25 animate-fadeIn"
+          className="sticky bottom-4 z-40 p-4 sm:p-4.5 rounded-3xl glass-card border border-emerald-500/40 bg-zinc-950/90 backdrop-blur-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xl shadow-emerald-950/60 ring-1 ring-emerald-500/30 animate-in slide-in-from-bottom-3 duration-200"
         >
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            </span>
             <div>
               <p className="text-sm font-bold text-white tracking-tight">
                 {selectedIds.length}{' '}
@@ -383,7 +391,11 @@ export const TransactionList = ({
               </p>
               <p className="text-xs text-zinc-400">
                 Impacto líquido no período:{' '}
-                <strong className={selectedNetTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                <strong
+                  className={`font-mono tabular-nums ${
+                    selectedNetTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
                   {selectedNetTotal >= 0 ? '+' : ''}
                   {formatCurrency(selectedNetTotal)}
                 </strong>
@@ -399,7 +411,7 @@ export const TransactionList = ({
                   data-testid="bulk-mark-paid-btn"
                   onClick={() => handleUpdateBulkStatus('paid')}
                   disabled={isUpdatingStatusBulk}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
                   title="Marcar selecionadas como pagas/recebidas"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -411,7 +423,7 @@ export const TransactionList = ({
                   data-testid="bulk-mark-pending-btn"
                   onClick={() => handleUpdateBulkStatus('pending')}
                   disabled={isUpdatingStatusBulk}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
                   title="Marcar selecionadas como pendentes"
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -423,7 +435,7 @@ export const TransactionList = ({
             <button
               type="button"
               onClick={handleClearSelection}
-              className="px-3 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/25 active:scale-95 transition cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl border border-white/10 glass-pill text-xs font-medium text-zinc-300 hover:text-white hover:border-white/25 active:scale-95 transition cursor-pointer"
             >
               Desmarcar todas
             </button>
@@ -437,7 +449,7 @@ export const TransactionList = ({
                   setShowConfirmBulkModal(true)
                 }}
                 disabled={isDeletingBulk}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:border-rose-500/60 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 hover:border-rose-500/60 active:scale-95 transition cursor-pointer shadow-xs disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Excluir {selectedIds.length}</span>
@@ -537,12 +549,16 @@ export const TransactionList = ({
           {/* BARRA DE PAGINAÇÃO MODERNA */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-white/8 text-xs text-zinc-400">
-              <span>
+              <span className="text-2xs sm:text-xs">
                 Exibindo{' '}
-                <strong className="text-zinc-200">
+                <strong className="text-zinc-200 font-mono font-semibold">
                   {startIndex + 1} - {Math.min(startIndex + PAGE_SIZE, sortedTransactions.length)}
                 </strong>{' '}
-                de <strong className="text-zinc-200">{sortedTransactions.length}</strong> transações
+                de{' '}
+                <strong className="text-zinc-200 font-mono font-semibold">
+                  {sortedTransactions.length}
+                </strong>{' '}
+                transações
               </span>
 
               <div className="flex items-center gap-2">
@@ -550,13 +566,13 @@ export const TransactionList = ({
                   type="button"
                   onClick={handlePrevPage}
                   disabled={safeCurrentPage <= 1}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-white/10 glass-pill hover:border-white/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-zinc-300 hover:text-white"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-white/10 glass-pill hover:border-white/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-zinc-300 hover:text-white active:scale-95"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                   <span>Anterior</span>
                 </button>
 
-                <span className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 font-semibold text-emerald-400">
+                <span className="px-3.5 py-1 rounded-xl bg-white/6 border border-white/12 font-mono font-bold text-emerald-400 shadow-2xs">
                   {safeCurrentPage} / {totalPages}
                 </span>
 
@@ -564,7 +580,7 @@ export const TransactionList = ({
                   type="button"
                   onClick={handleNextPage}
                   disabled={safeCurrentPage >= totalPages}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-white/10 glass-pill hover:border-white/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-zinc-300 hover:text-white"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-white/10 glass-pill hover:border-white/20 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer text-zinc-300 hover:text-white active:scale-95"
                 >
                   <span>Próxima</span>
                   <ChevronRight className="w-3.5 h-3.5" />
