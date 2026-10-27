@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { formatCurrency } from '../../../core/formatters/currency'
 import type { Transaction } from '../../../domain/models/transaction'
 import { calculateExpensesByCategory } from '../../../domain/services/financeCalculations'
+import { useSpotlight } from '../../hooks/useSpotlight'
 
 interface ExpenseCategoryChartProps {
   transactions: Transaction[]
@@ -10,6 +11,7 @@ interface ExpenseCategoryChartProps {
 
 export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps) => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
+  const spotlightRef = useSpotlight<HTMLElement>()
 
   const categoryExpenses = useMemo(() => {
     return calculateExpensesByCategory(transactions)
@@ -43,20 +45,29 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
 
   return (
     <section
+      ref={spotlightRef}
       aria-labelledby="chart-title"
       data-testid="expense-category-chart"
-      className="glass-card p-5 sm:p-6 rounded-3xl space-y-6 @container"
+      className="glass-card spotlight-card p-6 sm:p-7 rounded-3xl space-y-6 @container border border-white/10 shadow-xl bg-linear-to-b from-white/4 to-transparent relative overflow-hidden"
     >
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between border-b border-white/8 pb-3">
-        <div className="flex items-center gap-2">
-          <PieChart className="w-5 h-5 text-emerald-400" aria-hidden="true" />
-          <h2 id="chart-title" className="text-base sm:text-lg font-bold text-white tracking-tight">
-            Despesas por Categorias
-          </h2>
+      <div className="flex items-center justify-between border-b border-white/8 pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0 shadow-xs">
+            <PieChart className="w-5 h-5" aria-hidden="true" />
+          </div>
+          <div>
+            <h2
+              id="chart-title"
+              className="text-base sm:text-lg font-bold text-white tracking-tight drop-shadow-sm"
+            >
+              Despesas por Categorias
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5">Distribuição proporcional do orçamento</p>
+          </div>
         </div>
         {categoryExpenses.length > 0 && (
-          <span className="text-xs text-slate-300 font-medium px-2.5 py-1 rounded-xl glass-pill font-mono">
+          <span className="text-xs text-emerald-300 font-bold px-3 py-1.5 rounded-2xl glass-pill font-mono border border-emerald-500/30 bg-emerald-500/10 shadow-xs">
             Total: {formatCurrency(totalExpense)}
           </span>
         )}
@@ -65,35 +76,35 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
       {categoryExpenses.length === 0 ? (
         <div
           data-testid="chart-empty-state"
-          className="text-center py-10 text-slate-400 border border-dashed border-white/10 rounded-2xl glass-pill"
+          className="text-center py-14 text-zinc-400 border border-dashed border-white/10 rounded-3xl glass-pill space-y-2.5"
         >
-          <PieChart
-            className="w-10 h-10 mx-auto mb-2 text-slate-500 opacity-60"
-            aria-hidden="true"
-          />
-          <p className="font-medium text-sm text-slate-300">
+          <div className="w-12 h-12 rounded-2xl bg-white/4 border border-white/8 flex items-center justify-center mx-auto text-zinc-500">
+            <PieChart className="w-6 h-6 opacity-75" aria-hidden="true" />
+          </div>
+          <p className="font-semibold text-sm text-zinc-200">
             Sem despesas registradas neste período
           </p>
-          <p className="text-xs text-slate-400 mt-1">
-            As despesas adicionadas aparecerão aqui divididas por categoria.
+          <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+            As despesas adicionadas aparecerão aqui divididas por categoria com cálculo automático
+            de porcentagem.
           </p>
         </div>
       ) : (
-        <div className="flex flex-col @md:flex-row items-center gap-6">
+        <div className="flex flex-col @md:flex-row items-center gap-6 sm:gap-8">
           {/* Gráfico Donut SVG Interativo */}
-          <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center shrink-0">
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center shrink-0">
             <svg
-              className="w-full h-full -rotate-90 transform"
+              className="w-full h-full -rotate-90 transform drop-shadow-md"
               viewBox="0 0 160 160"
               role="img"
               aria-label="Gráfico de pizza de despesas por categoria"
             >
-              {/* Trilha base de fundo */}
+              {/* Trilha base de fundo com acabamento suave */}
               <circle
                 cx="80"
                 cy="80"
                 r={radius}
-                className="stroke-slate-800/60"
+                className="stroke-white/8"
                 strokeWidth="18"
                 fill="transparent"
               />
@@ -110,7 +121,7 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                     cy="80"
                     r={radius}
                     stroke={slice.color}
-                    strokeWidth={isHovered ? 23 : 18}
+                    strokeWidth={isHovered ? 24 : 18}
                     strokeDasharray={slice.strokeDasharray}
                     strokeDashoffset={slice.strokeDashoffset}
                     strokeLinecap="round"
@@ -119,10 +130,8 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                     onMouseLeave={() => setHoveredCategory(null)}
                     className="transition-all duration-300 ease-out cursor-pointer"
                     style={{
-                      opacity: hoveredCategory ? (isHovered ? 1 : 0.45) : 1,
-                      filter: isHovered
-                        ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.35))'
-                        : undefined,
+                      opacity: hoveredCategory ? (isHovered ? 1 : 0.4) : 1,
+                      filter: isHovered ? `drop-shadow(0 0 8px ${slice.color}80)` : undefined,
                     }}
                   />
                 )
@@ -133,23 +142,27 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-2 transition-all">
               {hoveredSlice ? (
                 <>
-                  <span className="text-2xs sm:text-xs font-semibold text-emerald-400 truncate max-w-full">
+                  <span className="text-2xs sm:text-xs font-bold text-emerald-400 truncate max-w-full">
                     {hoveredSlice.category}
                   </span>
-                  <span className="text-xs sm:text-sm font-black text-white font-mono tracking-tight truncate max-w-full">
+                  <span className="text-xs sm:text-base font-black text-white font-mono tracking-tight truncate max-w-full">
                     {formatCurrency(hoveredSlice.amount)}
                   </span>
-                  <span className="text-3xs font-mono text-zinc-400">
+                  <span className="text-3xs font-mono font-semibold text-zinc-400 uppercase tracking-wider mt-0.5">
                     {hoveredSlice.percentage}% do total
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-2xs sm:text-xs font-medium text-slate-400">
+                  <span className="text-2xs sm:text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                     Total Gasto
                   </span>
-                  <span className="text-xs sm:text-sm font-bold text-white tracking-tight truncate max-w-full font-mono">
+                  <span className="text-xs sm:text-base font-bold text-white tracking-tight truncate max-w-full font-mono">
                     {formatCurrency(totalExpense)}
+                  </span>
+                  <span className="text-3xs text-zinc-500 font-medium">
+                    {categoryExpenses.length}{' '}
+                    {categoryExpenses.length === 1 ? 'categoria' : 'categorias'}
                   </span>
                 </>
               )}
@@ -157,7 +170,7 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
           </div>
 
           {/* Legenda & Barras de Progresso */}
-          <div className="w-full min-w-0 flex-1 space-y-2.5">
+          <div className="w-full min-w-0 flex-1 space-y-2">
             {categoryExpenses.map((item) => {
               const isHovered = hoveredCategory === item.category
 
@@ -165,8 +178,8 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                 <button
                   type="button"
                   key={item.category}
-                  className={`w-full text-left space-y-1.5 min-w-0 p-1.5 -mx-1.5 rounded-xl transition-all cursor-pointer ${
-                    isHovered ? 'bg-white/8 shadow-xs ring-1 ring-white/10' : 'hover:bg-white/4'
+                  className={`w-full text-left space-y-1.5 min-w-0 p-2 rounded-2xl transition-all duration-200 cursor-pointer ${
+                    isHovered ? 'bg-white/8 shadow-sm ring-1 ring-white/15' : 'hover:bg-white/4'
                   }`}
                   data-testid={`cat-row-${item.category}`}
                   onMouseEnter={() => setHoveredCategory(item.category)}
@@ -178,26 +191,30 @@ export const ExpenseCategoryChart = ({ transactions }: ExpenseCategoryChartProps
                   <div className="flex items-center justify-between text-xs gap-2 min-w-0">
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
-                        style={{ backgroundColor: item.color }}
+                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs transition-transform duration-200"
+                        style={{
+                          backgroundColor: item.color,
+                          boxShadow: isHovered ? `0 0 8px ${item.color}` : undefined,
+                          transform: isHovered ? 'scale(1.25)' : 'scale(1)',
+                        }}
                         aria-hidden="true"
                       />
-                      <span className="font-semibold text-slate-200 truncate" title={item.category}>
+                      <span className="font-semibold text-zinc-200 truncate" title={item.category}>
                         {item.category}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
-                      <span className="font-bold text-slate-300 font-mono whitespace-nowrap">
+                      <span className="font-bold text-zinc-300 font-mono tabular-nums whitespace-nowrap">
                         {formatCurrency(item.amount)}
                       </span>
-                      <span className="px-1.5 py-0.5 rounded-md bg-slate-800/80 text-slate-400 font-mono text-2xs shrink-0 border border-white/5">
+                      <span className="px-2 py-0.5 rounded-full bg-white/6 text-zinc-300 font-mono font-semibold text-2xs shrink-0 border border-white/8">
                         {item.percentage}%
                       </span>
                     </div>
                   </div>
 
                   {/* Barra de Progresso Proporcional */}
-                  <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800/60">
+                  <div className="w-full h-1.5 bg-white/8 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500 ease-out"
                       style={{
