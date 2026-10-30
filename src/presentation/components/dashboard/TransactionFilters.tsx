@@ -45,14 +45,14 @@ export function TransactionFilters({
 }: TransactionFiltersProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
 
-  // Atalho de teclado para focar na busca ao pressionar "/" ou "Ctrl+K"
+  // Atalho de teclado para focar na busca do extrato ao pressionar "/"
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = (document.activeElement as HTMLElement)?.tagName
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag)) {
         return
       }
-      if (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+      if (e.key === '/') {
         e.preventDefault()
         const input = document.getElementById('transaction-search-input') as HTMLInputElement | null
         if (input) {

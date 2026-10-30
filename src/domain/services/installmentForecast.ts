@@ -120,12 +120,15 @@ export function getInstallmentGroups(transactions: Transaction[]): InstallmentGr
     })
   }
 
-  // Ordena pelas compras com parcelas ainda pendentes primeiro
+  // Ordena pelas compras com parcelas ainda pendentes primeiro e vencimento mais próximo no topo
   return result.sort((a, b) => {
     if (a.isCompleted !== b.isCompleted) {
       return a.isCompleted ? 1 : -1
     }
-    return (b.nextDueDate || '').localeCompare(a.nextDueDate || '')
+    if (!a.nextDueDate && !b.nextDueDate) return 0
+    if (!a.nextDueDate) return 1
+    if (!b.nextDueDate) return -1
+    return a.nextDueDate.localeCompare(b.nextDueDate)
   })
 }
 

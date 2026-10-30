@@ -105,11 +105,14 @@ export const TransactionItem = ({
           )}
 
           <div
+            role="img"
             className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-transform duration-150 group-hover:scale-105 ${
               isIncome
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
             }`}
+            title={isIncome ? 'Entrada' : 'Saída'}
+            aria-label={isIncome ? 'Receita' : 'Despesa'}
           >
             <CategoryIcon className="w-4.5 h-4.5" aria-hidden="true" />
           </div>

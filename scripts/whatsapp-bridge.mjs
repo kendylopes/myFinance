@@ -39,6 +39,20 @@ const REQUIRE_TRIGGER = process.env.WHATSAPP_REQUIRE_TRIGGER !== 'false'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// Retorna a data local no formato YYYY-MM-DD sem sofrer roll-over prematuro de fuso horário UTC (ex: UTC-3)
+function getLocalTodayDateString(d = new Date()) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getLocalYearMonthString(d = new Date()) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
+
 // Função para enviar mensagem de volta ao WhatsApp via Evolution API
 async function sendWhatsAppMessage(remoteJid, text) {
   try {
@@ -230,7 +244,7 @@ function parseFinancialMessage(text) {
     title = title.charAt(0).toUpperCase() + title.slice(1)
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalTodayDateString()
 
   return {
     type,
@@ -546,7 +560,7 @@ const server = http.createServer(async (req, res) => {
 
         // 6. Consulta de Saldo / Resumo Financeiro
         if (/saldo|quanto tenho|extrato|resumo|gastei quanto|quanto gastei/i.test(textToProcess)) {
-          const currentYM = new Date().toISOString().slice(0, 7)
+          const currentYM = getLocalYearMonthString()
           const { data: summary } = await supabase.rpc('get_whatsapp_summary', {
             p_user_id: userId,
             p_month: currentYM,
@@ -609,11 +623,10 @@ const server = http.createServer(async (req, res) => {
             msg += `💰 *Total a Receber:* ${formatBRL(total)}\n`
             msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`
 
+            const localToday = getLocalTodayDateString()
             receivables.forEach((rec, idx) => {
               const dueFormatted = rec.due_date ? rec.due_date.split('-').reverse().join('/') : 'A combinar'
-              const isOverdue =
-                rec.due_date &&
-                new Date(rec.due_date) < new Date(new Date().toISOString().split('T')[0])
+              const isOverdue = rec.due_date && rec.due_date < localToday
               const alert = isOverdue ? ' ⚠️ *(Vencido)*' : ''
               msg += `${idx + 1}. *${rec.name}*: ${formatBRL(Number(rec.balance))}\n`
               msg += `   📅 Vencimento: ${dueFormatted}${alert}\n\n`
@@ -656,11 +669,10 @@ const server = http.createServer(async (req, res) => {
             msg += `💸 *Total a Pagar:* ${formatBRL(total)}\n`
             msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`
 
+            const localToday = getLocalTodayDateString()
             payables.forEach((p, idx) => {
               const dueFormatted = p.due_date ? p.due_date.split('-').reverse().join('/') : 'A combinar'
-              const isOverdue =
-                p.due_date &&
-                new Date(p.due_date) < new Date(new Date().toISOString().split('T')[0])
+              const isOverdue = p.due_date && p.due_date < localToday
               const alert = isOverdue ? ' ⚠️ *(Atrasada)*' : ''
               msg += `${idx + 1}. *${p.name}*: ${formatBRL(Number(p.balance))}\n`
               msg += `   📅 Vencimento: ${dueFormatted}${alert}\n\n`

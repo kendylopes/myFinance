@@ -29,8 +29,8 @@ describe('<TransactionItem />', () => {
 
     expect(screen.getByText('Supermercado Mensal')).toBeInTheDocument()
     expect(screen.getByText('Alimentação')).toBeInTheDocument()
-    expect(screen.getByTitle('Saída')).toHaveTextContent('-')
-    expect(screen.getByText(/- R\$\s*350,75/)).toBeInTheDocument()
+    expect(screen.getByTitle('Saída')).toBeInTheDocument()
+    expect(screen.getByText(/-\s*R\$\s*350,75/)).toBeInTheDocument()
   })
 
   it('deve renderizar os detalhes da transação de receita com badge de mais (+)', () => {
@@ -39,8 +39,8 @@ describe('<TransactionItem />', () => {
 
     expect(screen.getByText('Salário Mensal')).toBeInTheDocument()
     expect(screen.getByText('Salário')).toBeInTheDocument()
-    expect(screen.getByTitle('Entrada')).toHaveTextContent('+')
-    expect(screen.getByText(/\+ R\$\s*5\.000,00/)).toBeInTheDocument()
+    expect(screen.getByTitle('Entrada')).toBeInTheDocument()
+    expect(screen.getByText(/\+\s*R\$\s*5\.000,00/)).toBeInTheDocument()
   })
 
   it('deve acionar onDelete com o ID correto ao clicar no botão de exclusão', async () => {

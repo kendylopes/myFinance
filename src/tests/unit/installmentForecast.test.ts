@@ -73,6 +73,58 @@ describe('installmentForecast (Projeção de Compras Parceladas e Faturas)', () 
     expect(geladeira.isCompleted).toBe(false)
   })
 
+  it('deve ordenar grupos pendentes com base no vencimento mais próximo no topo (ordem cronológica)', () => {
+    const mockTransactions: Transaction[] = [
+      {
+        id: '1',
+        title: 'TV 55 Polegadas (1/3)',
+        amount: 800,
+        type: 'expense',
+        category: 'Lazer',
+        date: '2026-12-05',
+        status: 'pending',
+      },
+      {
+        id: '2',
+        title: 'Notebook Gamer (1/3)',
+        amount: 1500,
+        type: 'expense',
+        category: 'Trabalho',
+        date: '2026-11-05',
+        status: 'pending',
+      },
+      {
+        id: '3',
+        title: 'Smartphone (1/2)',
+        amount: 1000,
+        type: 'expense',
+        category: 'Comunicação',
+        date: '2026-10-15',
+        status: 'paid',
+      },
+      {
+        id: '4',
+        title: 'Smartphone (2/2)',
+        amount: 1000,
+        type: 'expense',
+        category: 'Comunicação',
+        date: '2026-10-20',
+        status: 'paid',
+      },
+    ]
+
+    const groups = getInstallmentGroups(mockTransactions)
+    expect(groups).toHaveLength(3)
+
+    // Primeiro os pendentes: Notebook (11/05) antes de TV (12/05)
+    expect(groups[0].title).toBe('Notebook Gamer')
+    expect(groups[1].title).toBe('TV 55 Polegadas')
+
+    // Concluídos ficam no final
+    expect(groups[2].title).toBe('Smartphone')
+    expect(groups[2].isCompleted).toBe(true)
+  })
+
   it('deve calcular a projeção mensal de faturas para os próximos 12 meses', () => {
     const mockTransactions: Transaction[] = [
       {
